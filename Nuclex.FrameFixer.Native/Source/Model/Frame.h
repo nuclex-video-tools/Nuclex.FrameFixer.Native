@@ -35,6 +35,12 @@ namespace Nuclex::Telecide {
   /// <summary>Stores informations about a single frame in a movie clip</summary>
   class Frame {
 
+    public: Frame(std::size_t index, const std::string &filename) :
+      Index(index),
+      Filename(filename),
+      Type(FrameType::Unknown),
+      Combedness() {}
+
     /// <summary>Absolute index of the frame from the beginning of the movie</summary>
     public: std::size_t Index;
     /// <summary>Name of the image file to which the frame has been extracted</summary>

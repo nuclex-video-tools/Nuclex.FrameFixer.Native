@@ -36,6 +36,17 @@ namespace Nuclex::Telecide::Services {
 
 }
 
+namespace Nuclex::Telecide {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class FrameThumbnailItemModel;
+  class Movie;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
 namespace Ui {
 
   // ------------------------------------------------------------------------------------------- //
@@ -73,8 +84,8 @@ namespace Nuclex::Telecide {
       //const std::shared_ptr<Nuclex::Support::Services::ServiceProvider> &instanceFactory
     );
 
-    /// <summary>Updates the list of managed processes from the database</summary>
-    private: void updateProcessList();
+    /// <summary>Loads the currently selected movie's frames</summary>
+    private: void ingestMovieFrames();
 
     /// <summary>
     ///   Let's the user browse for the frames folder when the button is clicked
@@ -90,8 +101,15 @@ namespace Nuclex::Telecide {
 
     /// <summary>The user interface arrangement generated from the .ui file</summary>
     private: std::unique_ptr<Ui::MainWindow> ui;
+    /// <summary>Item model that manages the thumbnails</summary>
+    private: std::unique_ptr<FrameThumbnailItemModel> thumbnailItemModel;
     /// <summary>Root service container doing the application's work</summary>
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
+    /// <summary>The movie whose frames are currently loaded for processing</summary>
+    private: std::shared_ptr<Movie> currentMovie;
+    /// <summary>Index of the frame currently being displayed</summary>
+    private: std::size_t selectedFrame;
+
 
   };
 

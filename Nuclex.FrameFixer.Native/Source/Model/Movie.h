@@ -25,6 +25,9 @@ along with this library
 #include "./Frame.h"
 
 #include <vector> // for std::vector
+#include <memory> // for std::shared_ptr
+
+#include <Nuclex/Platform/Tasks/CancellationWatcher.h> // for CancellationWatcher
 
 namespace Nuclex::Telecide {
 
@@ -33,10 +36,23 @@ namespace Nuclex::Telecide {
   /// <summary>Stores the list of all frames in a movie</summary>
   class Movie {
 
+    typedef Nuclex::Platform::Tasks::CancellationWatcher CancellationWatcher;
+
     /// <summary>Path to the directory in which the frame images are stored</summary>
     public: std::string FrameDirectory;
     /// <summary>Informations about each frame in the movie</summary>
     public: std::vector<Frame> Frames;
+
+    /// <summarys>Sets up a movie using images stored in a folder</summary>
+    /// <param name="path">Path in which the movie's frames are stored</param>
+    /// <param name="cancellationWatcher">Allows the scan to be cancelled</param>
+    /// <returns>A movie with all frames set up
+    public: static std::shared_ptr<Movie> FromImageFolder(
+      const std::string &path,
+      const std::shared_ptr<const CancellationWatcher> &cancellationWatcher = (
+        std::shared_ptr<const CancellationWatcher>()
+      )
+    );
 
   };
 

@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/Include/**",
+                "${workspaceFolder}/obj/cmake-Debug/NuclexTelecideNative_autogen/include/**",
+                "${workspaceFolder}/../Nuclex.Support.Native/Include/**",
+                "${workspaceFolder}/../Nuclex.Platform.Native/Include/**",
+                "${workspaceFolder}/../Nuclex.Pixels.Native/Include/**",
+                "${workspaceFolder}/../ThirdParty/celero/build/include/**",
+                "${workspaceFolder}/../ThirdParty/gtest/Include/**",
+                "/usr/include/qt5/**"
+            ],
+            "defines": [
+                "NUCLEX_TELECIDE_EXECUTABLE",
+                "NUCLEX_TELECIDE_SOURCE"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64",
+            "compilerArgs": [
+                "-fvisibility=hidden",
+                "-Wpedantic",
+                "-Wall",
+                "-Wextra",
+                "-Wno-unknown-pragmas",
+                "-fpic",
+                "-funsafe-math-optimizations",
+                "-std=c++17",
+                "-fvisibility-inlines-hidden"
+            ]
+        }
+    ],
+    "version": 4
+}

@@ -23,9 +23,45 @@ along with this library
 
 #include "Movie.h"
 
+#include <QDirIterator>
+
 namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<Movie> Movie::FromImageFolder(
+    const std::string &path,
+    const std::shared_ptr<const CancellationWatcher> &cancellationWatcher /* = (
+      std::shared_ptr<const CancellationWatcher>()
+    ) */
+  ) {
+    std::shared_ptr<Movie> movie = std::make_shared<Movie>();
+    movie->FrameDirectory = path;
+
+    {
+      QDirIterator directoryEnumerator(
+        QString::fromStdString(path),
+        QDir::Filter::Files,
+        QDirIterator::IteratorFlag::NoIteratorFlags
+      );
+
+      std::size_t frameIndex = 0;
+      while(directoryEnumerator.hasNext()) {
+        directoryEnumerator.next();
+        movie->Frames.emplace_back(frameIndex, directoryEnumerator.fileName().toStdString());
+        ++frameIndex;
+
+        if((frameIndex % 100) == 0) {
+          if(static_cast<bool>(cancellationWatcher)) {
+            cancellationWatcher->ThrowIfCanceled();
+          }
+        }
+      }
+    }
+
+    return movie;
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 } // namespace Nuclex::Telecide
