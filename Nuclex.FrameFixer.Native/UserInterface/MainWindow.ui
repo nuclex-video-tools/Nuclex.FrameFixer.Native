@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>803</width>
-    <height>794</height>
+    <width>569</width>
+    <height>652</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
      <widget class="QGraphicsView" name="currentFrameImage"/>
     </item>
     <item row="3" column="0" colspan="3">
-     <widget class="QGraphicsView" name="thumbnailsImage">
+     <widget class="QListView" name="thumbnailsImage">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>

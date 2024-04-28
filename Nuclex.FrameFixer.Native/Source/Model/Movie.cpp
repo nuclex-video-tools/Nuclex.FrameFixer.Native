@@ -25,6 +25,16 @@ along with this library
 
 #include <QDirIterator>
 
+namespace {
+
+  bool compareFramesByFilename(
+    const Nuclex::Telecide::Frame &left, const Nuclex::Telecide::Frame &right
+  ) {
+    return left.Filename < right.Filename;
+  }
+
+}
+
 namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
@@ -37,10 +47,11 @@ namespace Nuclex::Telecide {
   ) {
     std::shared_ptr<Movie> movie = std::make_shared<Movie>();
     movie->FrameDirectory = path;
-
     {
+      QStringList acceptedExtensions({"*.png", "*.tif", "*.bmp"});
       QDirIterator directoryEnumerator(
         QString::fromStdString(path),
+        acceptedExtensions,
         QDir::Filter::Files,
         QDirIterator::IteratorFlag::NoIteratorFlags
       );
@@ -48,7 +59,7 @@ namespace Nuclex::Telecide {
       std::size_t frameIndex = 0;
       while(directoryEnumerator.hasNext()) {
         directoryEnumerator.next();
-        movie->Frames.emplace_back(frameIndex, directoryEnumerator.fileName().toStdString());
+        movie->Frames.emplace_back(-1, directoryEnumerator.fileName().toStdString());
         ++frameIndex;
 
         if((frameIndex % 100) == 0) {
@@ -56,6 +67,11 @@ namespace Nuclex::Telecide {
             cancellationWatcher->ThrowIfCanceled();
           }
         }
+      }
+
+      std::sort(movie->Frames.begin(), movie->Frames.end(), &compareFramesByFilename);
+      for(std::size_t index = 0; index < movie->Frames.size(); ++index) {
+        movie->Frames[index].Index = index;
       }
     }
 

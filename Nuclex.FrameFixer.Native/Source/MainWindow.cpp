@@ -27,8 +27,6 @@ along with this library
 #include "./Model/Movie.h"
 
 #include "./FrameThumbnailItemModel.h"
-//#include "./MyModel.h"
-//#include "./AnimalModel.h"
 
 #include <QFileDialog>
 
@@ -46,24 +44,12 @@ namespace Nuclex::Telecide {
 
     this->ui->setupUi(this);
 
+    this->ui->thumbnailsImage->setViewMode(QListView::ViewMode::IconMode);
+    this->ui->thumbnailsImage->setIconSize(QSize(100, 100));
+    this->ui->thumbnailsImage->setWrapping(false);
+    this->ui->thumbnailsImage->setUniformItemSizes(true);
     this->thumbnailItemModel.reset(new FrameThumbnailItemModel());
-
-    //FrameThumbnailItemModel *fuck = new FrameThumbnailItemModel();
-    //this->ui->thumbnailsImage->setModel(fuck);
-
-    //AnimalModel *shit = new AnimalModel();
-    //this->ui->thumbnailsImage->setModel(shit);
-
-    //MyModel *shit = new MyModel();
-    //this->ui->thumbnailsImage->setModel(shit);
-
-    AnimalModel *fuck = new AnimalModel();
-    fuck->addAnimal(Animal("dragon", "huge"));
-    fuck->addAnimal(Animal("horse", "large"));
-    fuck->addAnimal(Animal("dog", "medium"));
-    fuck->addAnimal(Animal("pig", "medium"));
-    fuck->addAnimal(Animal("snake", "small"));
-    this->ui->thumbnailsImage->setModel(fuck);
+    this->ui->thumbnailsImage->setModel(this->thumbnailItemModel.get());
 
     connect(
       this->ui->browseButton, &QPushButton::clicked,
@@ -111,6 +97,8 @@ namespace Nuclex::Telecide {
   void MainWindow::ingestMovieFrames() {
     std::string frameDirectoryPath = this->ui->frameDirectoryText->text().toStdString();
     this->currentMovie = Movie::FromImageFolder(frameDirectoryPath);
+
+    this->thumbnailItemModel->SetMovie(this->currentMovie);
   }
 
   // ------------------------------------------------------------------------------------------- //
