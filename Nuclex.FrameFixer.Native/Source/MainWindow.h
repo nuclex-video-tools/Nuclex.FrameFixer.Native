@@ -21,9 +21,11 @@ along with this library
 #ifndef NUCLEX_CRIUGUI_MAINWINDOW_H
 #define NUCLEX_CRIUGUI_MAINWINDOW_H
 
-#include "./Config.h"
+#include "Nuclex/Telecide/Config.h"
 
 #include <QMainWindow> // for QMainWindow
+#include <QItemSelection> // for QItemSelection
+
 #include <memory> // for std::unique_ptr
 
 namespace Nuclex::Telecide::Services {
@@ -42,6 +44,7 @@ namespace Nuclex::Telecide {
 
   class FrameThumbnailItemModel;
   class Movie;
+  class Frame;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -84,6 +87,8 @@ namespace Nuclex::Telecide {
       //const std::shared_ptr<Nuclex::Support::Services::ServiceProvider> &instanceFactory
     );
 
+    //protected: void wheelEvent(QWheelEvent *event) override {}
+
     /// <summary>Loads the currently selected movie's frames</summary>
     private: void ingestMovieFrames();
 
@@ -95,6 +100,12 @@ namespace Nuclex::Telecide {
     private: void markBcFrameClicked();
     private: void markCdFrameClicked();
     private: void markProgressiveFrameClicked();
+
+    private: void selectedThumbnailChanged(
+      const QItemSelection &selected, const QItemSelection &deselected
+    );
+
+    private: void displayFrameInView(const Frame &frame);
 
     /// <summary>Quits the application when the user clicks the quit button</summary>
     private: void quitClicked();

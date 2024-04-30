@@ -18,38 +18,34 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_FRAMETYPE_H
-#define NUCLEX_TELECIDE_FRAMETYPE_H
+#ifndef NUCLEX_TELECIDE_QZOOMABLEGRAPHICSVIEW_H
+#define NUCLEX_TELECIDE_QZOOMABLEGRAPHICSVIEW_H
 
 #include "Nuclex/Telecide/Config.h"
 
-#include <cstddef> // for std::size_t
-#include <string> // for std::string
+#include <QGraphicsView>
 
-namespace Nuclex::Telecide {
+// no namespace
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Types of frames appearing in a telecined movie</summary>
-  enum class FrameType {
+  /// <summary>Graphics view which allows zooming in and out using the mouse wheel</summary>
+  class QZoomableGraphicsView : public QGraphicsView {
+    Q_OBJECT
 
-    /// <summary>Frame type has not been detected yet</summary>
-    Unknown,
-    /// <summary>Frame is the first frame in a telecine sequence</summary>
-    A,
-    /// <summary>Frame is the second frame in a telecine sequence</summary>
-    B,
-    /// <summary>Second frame overlaid with the fields of the third frame</summary>
-    BC,
-    /// <summary>Third frame overlaid with the fields of the fourth frame</summary>
-    CD,
-    /// <summary>Frame is the fourth frame in a telecine sequence</summary>
-    D
+    /// <summary>Initializes a new item model for frame thumbnails</summary>
+    /// <param name="parent">Always null</param>
+    public: explicit QZoomableGraphicsView(QWidget *parent = nullptr) :
+      QGraphicsView(parent) {}
+
+    /// <summary>Zooms the view in or out when the user turns the mouse wheel</summary>
+    /// <param name="wheelEvent">Describes how far the mouse wheel was turned</param>
+    public: void wheelEvent(QWheelEvent *wheelEvent) override;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+// no namespace
 
-#endif // NUCLEX_TELECIDE_FRAMETYPE_H
+#endif // NUCLEX_TELECIDE_QZOOMABLEGRAPHICSVIEW_H

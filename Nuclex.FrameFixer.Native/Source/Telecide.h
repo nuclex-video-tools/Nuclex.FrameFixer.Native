@@ -21,7 +21,7 @@ along with this library
 #ifndef NUCLEX_TELECIDE_TELECIDE_H
 #define NUCLEX_TELECIDE_TELECIDE_H
 
-#include "./Config.h"
+#include "Nuclex/Telecide/Config.h"
 
 #include <tuple>
 

@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_CRIUGUI_SOURCE 1
 
-#include "./Config.h"
+#include "Nuclex/Telecide/Config.h"
 
 #include "./MainWindow.h"
 
@@ -32,7 +32,7 @@ along with this library
 #include <vector>
 #include <stdexcept>
 #include <cmath>
-#include <algorithm>>
+#include <algorithm>
 //#include <tinywav.h>
 #include <sys/stat.h>
 #include <dirent.h>

@@ -21,7 +21,7 @@ along with this library
 #ifndef NUCLEX_TELECIDE_FRAMETHUMBNAILITEMMODEL_H
 #define NUCLEX_TELECIDE_FRAMETHUMBNAILITEMMODEL_H
 
-#include "./Config.h"
+#include "Nuclex/Telecide/Config.h"
 
 #include <QAbstractItemModel>
 #include <QStringList>
@@ -58,6 +58,10 @@ namespace Nuclex::Telecide {
     /// <summary>Loads the movie frames from the specified folder</summary>
     /// <param name="path">Path from which the movie frames will be loaded</param>
     public: void SetMovie(const std::shared_ptr<Movie> &movie);
+
+    /// <summary>Sets the resolution in which thumbnails will be generated</summary>
+    /// <param name="resolution">The desired thumbnail resolution</param>
+    public: void SetThumbnailResolution(const QSize &resolution);
 
     /// <summary>Retrieves the number of rows present in the virtual list</summary>
     /// <param name="parent">Parent item, only relevant when items form a tree</param>

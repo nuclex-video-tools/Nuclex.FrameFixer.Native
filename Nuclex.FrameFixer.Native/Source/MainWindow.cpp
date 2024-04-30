@@ -29,6 +29,7 @@ along with this library
 #include "./FrameThumbnailItemModel.h"
 
 #include <QFileDialog>
+#include <QGraphicsPixmapItem>
 
 // Qt Image Viewer example (uses QLabel in QScrollArea)
 // https://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-example.html
@@ -48,8 +49,13 @@ namespace Nuclex::Telecide {
     this->ui->thumbnailsImage->setIconSize(QSize(100, 100));
     this->ui->thumbnailsImage->setWrapping(false);
     this->ui->thumbnailsImage->setUniformItemSizes(true);
+    this->ui->thumbnailsImage->setSelectionMode(
+      QAbstractItemView::SelectionMode::SingleSelection
+    );
     this->thumbnailItemModel.reset(new FrameThumbnailItemModel());
     this->ui->thumbnailsImage->setModel(this->thumbnailItemModel.get());
+
+    this->ui->currentFrameImage->setDragMode(QGraphicsView::DragMode::ScrollHandDrag);
 
     connect(
       this->ui->browseButton, &QPushButton::clicked,
@@ -67,6 +73,10 @@ namespace Nuclex::Telecide {
     connect(
       this->ui->prFrameButton, &QPushButton::clicked,
       this, &MainWindow::markProgressiveFrameClicked
+    );
+    connect(
+      this->ui->thumbnailsImage->selectionModel(), &QItemSelectionModel::selectionChanged,
+      this, &MainWindow::selectedThumbnailChanged
     );
     /*
     connect(
@@ -142,6 +152,43 @@ namespace Nuclex::Telecide {
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::markProgressiveFrameClicked() {
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::selectedThumbnailChanged(
+    const QItemSelection &selected, const QItemSelection &deselected
+  ) {
+    (void)deselected;
+
+    if(selected.size() >= 1) {
+      const QModelIndexList &selectedRanges = selected.at(0).indexes();
+      if(selectedRanges.size() >= 1) {
+        const QModelIndex selectedItem = selectedRanges.at(0);
+        if(static_cast<bool>(this->currentMovie)) {
+          displayFrameInView(this->currentMovie->Frames[selectedItem.row()]);
+        }
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::displayFrameInView(const Frame &frame) {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
+      QPixmap bitmap(QString::fromStdString(imagePath));
+
+      std::unique_ptr<QGraphicsScene> frameScene = std::make_unique<QGraphicsScene>();
+      std::unique_ptr<QGraphicsPixmapItem> pixmapItem = (
+        std::make_unique<QGraphicsPixmapItem>(bitmap)
+      );
+      frameScene->addItem(pixmapItem.get());
+
+      this->ui->currentFrameImage->setScene(frameScene.get());
+      frameScene.release();
+      pixmapItem.release();
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_TELECIDE_SOURCE 1
 
-#include "./Config.h"
+#include "Nuclex/Telecide/Config.h"
 
 // --------------------------------------------------------------------------------------------- //
 

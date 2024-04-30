@@ -61,6 +61,12 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void FrameThumbnailItemModel::SetThumbnailResolution(const QSize &resolution) {
+    // TODO
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   int FrameThumbnailItemModel::rowCount(const QModelIndex &parent) const {
     if(static_cast<bool>(this->movie)) {
       return static_cast<int>(this->movie->Frames.size());

@@ -21,7 +21,7 @@ along with this library
 #ifndef NUCLEX_TELECIDE_MOVIE_H
 #define NUCLEX_TELECIDE_MOVIE_H
 
-#include "../Config.h"
+#include "Nuclex/Telecide/Config.h"
 #include "./Frame.h"
 
 #include <vector> // for std::vector
@@ -53,6 +53,8 @@ namespace Nuclex::Telecide {
         std::shared_ptr<const CancellationWatcher>()
       )
     );
+
+    public: std::string GetFramePath(std::size_t frameIndex) const;
 
   };
 

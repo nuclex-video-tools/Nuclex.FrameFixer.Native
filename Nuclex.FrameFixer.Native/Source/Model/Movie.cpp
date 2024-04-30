@@ -27,11 +27,19 @@ along with this library
 
 namespace {
 
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Compares the sort order relation of two frames using their filenames</summary>
+  /// <param name="left">Frame that will be compared on the left side</param>
+  /// <param name="left">Frame that will be compared on the right side</param>
+  /// <returns>True if the left frame is ordered before the right frame</returns>
   bool compareFramesByFilename(
     const Nuclex::Telecide::Frame &left, const Nuclex::Telecide::Frame &right
   ) {
     return left.Filename < right.Filename;
   }
+
+  // ------------------------------------------------------------------------------------------- //
 
 }
 
@@ -56,10 +64,12 @@ namespace Nuclex::Telecide {
         QDirIterator::IteratorFlag::NoIteratorFlags
       );
 
+      // Enumerate all image files in the target directory and add them to the frames
+      // list of the movie. The files will be enumerated in an undefined order.
       std::size_t frameIndex = 0;
       while(directoryEnumerator.hasNext()) {
         directoryEnumerator.next();
-        movie->Frames.emplace_back(-1, directoryEnumerator.fileName().toStdString());
+        movie->Frames.emplace_back(directoryEnumerator.fileName().toStdString());
         ++frameIndex;
 
         if((frameIndex % 100) == 0) {
@@ -69,13 +79,35 @@ namespace Nuclex::Telecide {
         }
       }
 
+      // Now sort the frames by their filename. This assumes frames have been exported
+      // with leading zeroes (i.e. what you get when you export images with ffmpeg),
       std::sort(movie->Frames.begin(), movie->Frames.end(), &compareFramesByFilename);
+
+      // Now that the frames are ordered, give them an index to easily address them.
       for(std::size_t index = 0; index < movie->Frames.size(); ++index) {
         movie->Frames[index].Index = index;
       }
     }
 
     return movie;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::string Movie::GetFramePath(std::size_t frameIndex) const {
+    std::string path = this->FrameDirectory;
+    {
+      std::string::size_type length = path.length();
+      if(length >= 1) {
+        if(path[length - 1] != '/') {
+          path.push_back('/');
+        }
+      }
+
+      path.append(this->Frames.at(frameIndex).Filename);
+    }
+
+    return path;
   }
 
   // ------------------------------------------------------------------------------------------- //

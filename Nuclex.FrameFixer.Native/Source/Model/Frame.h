@@ -21,7 +21,7 @@ along with this library
 #ifndef NUCLEX_TELECIDE_FRAME_H
 #define NUCLEX_TELECIDE_FRAME_H
 
-#include "../Config.h"
+#include "Nuclex/Telecide/Config.h"
 #include "./FrameType.h"
 
 #include <cstddef> // for std::size_t
@@ -35,8 +35,10 @@ namespace Nuclex::Telecide {
   /// <summary>Stores informations about a single frame in a movie clip</summary>
   class Frame {
 
-    public: Frame(std::size_t index, const std::string &filename) :
-      Index(index),
+    /// <summary>Initializes a new frame</summary>
+    /// <param name="filename">File name (without path) of the image storing the frame</param>
+    public: Frame(const std::string &filename) :
+      Index(std::size_t(-1)),
       Filename(filename),
       Type(FrameType::Unknown),
       Combedness() {}
