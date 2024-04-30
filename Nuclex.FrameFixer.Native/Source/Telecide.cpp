@@ -25,12 +25,47 @@ along with this library
 
 namespace {
 
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Divides all color channels in a color by 3</summary>
+  /// <param name="color">Color whose channels will be divided by 3</param>
   inline void div3(Nuclex::Pixels::ColorModels::RgbColor &color) {
     color.Red /= 3.0f;
     color.Green /= 3.0f;
     color.Blue /= 3.0f;
   }
 
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Divides all color channels in a color by 5</summary>
+  /// <param name="color">Color whose channels will be divided by 3</param>
+  inline void div5(Nuclex::Pixels::ColorModels::RgbColor &color) {
+    color.Red /= 5.0f;
+    color.Green /= 5.0f;
+    color.Blue /= 5.0f;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Adds the color channels of another color to a color</summary>
+  /// <param name="color">Color to which another color's channels will be added</param>
+  /// <param name="otherColor">Other color that will be added to the first color</param>
+  inline void add(
+    Nuclex::Pixels::ColorModels::RgbColor &color,
+    const Nuclex::Pixels::ColorModels::RgbColor &otherColor
+  ) {
+    color.Red += otherColor.Red;
+    color.Green += otherColor.Green;
+    color.Blue += otherColor.Blue;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Calculates the maximum value out of 3 values</summary>
+  /// <param name="a">First value to consider for being the maximum</param>
+  /// <param name="b">Second value to consider for being the maximum</param>
+  /// <param name="c">Third value to consider for being the maximum</param>
+  /// <returns>The highest of the three values</returns>
   inline double max3(double a, double b, double c) {
     if(a > b) {
       if(a > c) {
@@ -47,6 +82,8 @@ namespace {
     }
   }
 
+  // ------------------------------------------------------------------------------------------- //
+
 } // anonymous namespace
 
 namespace Nuclex::Telecide {
@@ -57,95 +94,165 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::tuple<double, double> Telecide::CalculateCombiness(
+  SwipeSample Telecide::Sample3(
     Nuclex::Pixels::ColorModels::RgbPixelIterator &iterator
   ) {
-    Nuclex::Pixels::ColorModels::RgbColor center = *iterator;
-    Nuclex::Pixels::ColorModels::RgbColor top, bottom, left, right;
+    SwipeSample sample;
+
+    sample.Center = *iterator;
     {
       ++iterator;
-      right = *iterator;
+      sample.Right = *iterator;
       
       {
         iterator -= Nuclex::Pixels::Lines(1);
         Nuclex::Pixels::ColorModels::RgbColor topRight = *iterator;
-        
-        right.Red += topRight.Red;
-        right.Green += topRight.Green;
-        right.Blue += topRight.Blue;
-
+        add(sample.Right, topRight);
         --iterator;
-        top = *iterator;
-
-        top.Red += topRight.Red;
-        top.Green += topRight.Green;
-        top.Blue += topRight.Blue;
+        sample.Above = *iterator;
+        add(sample.Above, topRight);
       }
 
       {
         --iterator;
         Nuclex::Pixels::ColorModels::RgbColor topLeft = *iterator;
-
-        top.Red += topLeft.Red;
-        top.Green += topLeft.Green;
-        top.Blue += topLeft.Blue;
-
+        add(sample.Above, topLeft);
         iterator += Nuclex::Pixels::Lines(1);
-        left = *iterator;
-
-        left.Red += topLeft.Red;
-        left.Green += topLeft.Green;
-        left.Blue += topLeft.Blue;
+        sample.Left = *iterator;
+        add(sample.Left, topLeft);
       }
 
       {
         iterator += Nuclex::Pixels::Lines(1);
         Nuclex::Pixels::ColorModels::RgbColor bottomLeft = *iterator;
-
-        left.Red += bottomLeft.Red;
-        left.Green += bottomLeft.Green;
-        left.Blue += bottomLeft.Blue;
-
+        add(sample.Left, bottomLeft);
         ++iterator;
-        bottom = *iterator;
-
-        bottom.Red += bottomLeft.Red;
-        bottom.Green += bottomLeft.Green;
-        bottom.Blue += bottomLeft.Blue;
+        sample.Below = *iterator;
+        add(sample.Below, bottomLeft);
       }
 
       {
         ++iterator;
         Nuclex::Pixels::ColorModels::RgbColor bottomRight = *iterator;
-
-        bottom.Red += bottomRight.Red;
-        bottom.Green += bottomRight.Green;
-        bottom.Blue += bottomRight.Blue;
-
+        add(sample.Below, bottomRight);
         iterator -= Nuclex::Pixels::Lines(1);
         --iterator;
-
-        right.Red += bottomRight.Red;
-        right.Green += bottomRight.Green;
-        right.Blue += bottomRight.Blue;
+        add(sample.Right, bottomRight);
       }
     }
 
-    div3(left);
-    div3(right);
-    div3(top);
-    div3(bottom);
+    div3(sample.Left);
+    div3(sample.Right);
+    div3(sample.Above);
+    div3(sample.Below);
 
+    return sample;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  SwipeSample Telecide::Sample5(
+    Nuclex::Pixels::ColorModels::RgbPixelIterator &iterator
+  ) {
+    SwipeSample sample;
+
+    sample.Center = *iterator;
+    {
+      ++iterator;
+      sample.Right = *iterator;
+      
+      // From +1,0
+      {
+        iterator -= Nuclex::Pixels::Lines(1);
+        sample.Above = *iterator;
+        add(sample.Right, sample.Above);
+        ++iterator;
+        add(sample.Above, *iterator);
+        iterator -= Nuclex::Pixels::Lines(1);
+        --iterator;
+        add(sample.Right, *iterator);
+        iterator += Nuclex::Pixels::Lines(1);
+      }
+
+      // From +!,-1
+      {
+        --iterator;
+        add(sample.Above, *iterator);
+        --iterator;
+        sample.Left = *iterator;
+        add(sample.Above, sample.Left);
+        iterator -= Nuclex::Pixels::Lines(1);
+        add(sample.Left, *iterator);
+        iterator += Nuclex::Pixels::Lines(1);
+        --iterator;
+        add(sample.Above, *iterator);
+        ++iterator;
+      }
+
+      // From -1,-1
+      {
+        iterator += Nuclex::Pixels::Lines(1);
+        add(sample.Left, *iterator);
+        iterator += Nuclex::Pixels::Lines(1);
+        sample.Below = *iterator;
+        add(sample.Left, sample.Below);
+        iterator += Nuclex::Pixels::Lines(1);
+        add(sample.Left, *iterator);
+        iterator -= Nuclex::Pixels::Lines(1);
+        --iterator;
+        add(sample.Below, *iterator);
+        ++iterator;
+      }
+
+      // From -1,+1
+      {
+        ++iterator;
+        add(sample.Below, *iterator);
+        ++iterator;
+        Nuclex::Pixels::ColorModels::RgbColor bottomRight = *iterator;
+        add(sample.Right, bottomRight);
+        add(sample.Below, bottomRight);
+        ++iterator;
+        add(sample.Below, *iterator);
+        iterator += Nuclex::Pixels::Lines(1);
+        --iterator;
+        add(sample.Right, *iterator);
+      }
+    }
+
+    div5(sample.Left);
+    div5(sample.Right);
+    div5(sample.Above);
+    div5(sample.Below);
+
+    return sample;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::tuple<double, double> Telecide::CalculateCombiness(const SwipeSample &sample) {
     double horizontal;
     {
       double topBottomDelta = std::abs(
-        max3(top.Red - bottom.Red, top.Green - bottom.Green, top.Blue - bottom.Blue)
+        max3(
+          sample.Above.Red - sample.Below.Red,
+          sample.Above.Green - sample.Below.Green,
+          sample.Above.Blue - sample.Below.Blue
+        )
       );
       double centerTopDelta = std::abs(
-        max3(center.Red - top.Red, center.Green - top.Green, center.Blue - top.Blue)
+        max3(
+          sample.Center.Red - sample.Above.Red,
+          sample.Center.Green - sample.Above.Green,
+          sample.Center.Blue - sample.Above.Blue
+        )
       );
       double centerBottomDelta = std::abs(
-        max3(center.Red - top.Red, center.Green - top.Green, center.Blue - top.Blue)
+        max3(
+          sample.Center.Red - sample.Above.Red,
+          sample.Center.Green - sample.Above.Green,
+          sample.Center.Blue - sample.Above.Blue
+        )
       );
       horizontal = (centerTopDelta + centerBottomDelta) - (topBottomDelta * 2.0);
     }
@@ -153,13 +260,25 @@ namespace Nuclex::Telecide {
     double vertical;
     {
       double leftRightDelta = std::abs(
-        max3(left.Red - right.Red, left.Green - right.Green, left.Blue - right.Blue)
+        max3(
+          sample.Left.Red - sample.Right.Red,
+          sample.Left.Green - sample.Right.Green,
+          sample.Left.Blue - sample.Right.Blue
+        )
       );
       double centerLeftDelta = std::abs(
-        max3(center.Red - left.Red, center.Green - left.Green, center.Blue - left.Blue)
+        max3(
+          sample.Center.Red - sample.Left.Red,
+          sample.Center.Green - sample.Left.Green,
+          sample.Center.Blue - sample.Left.Blue
+        )
       );
       double centerRightDelta = std::abs(
-        max3(center.Red - right.Red, center.Green - right.Green, center.Blue - right.Blue)
+        max3(
+          sample.Center.Red - sample.Right.Red,
+          sample.Center.Green - sample.Right.Green,
+          sample.Center.Blue - sample.Right.Blue
+        )
       );
       vertical = (centerLeftDelta + centerRightDelta) - (leftRightDelta * 2.0);
     }

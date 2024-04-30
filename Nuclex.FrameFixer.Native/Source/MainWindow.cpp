@@ -57,6 +57,10 @@ namespace Nuclex::Telecide {
 
     this->ui->currentFrameImage->setDragMode(QGraphicsView::DragMode::ScrollHandDrag);
 
+    QPixmap i;
+    
+    
+
     connect(
       this->ui->browseButton, &QPushButton::clicked,
       this, &MainWindow::browseClicked

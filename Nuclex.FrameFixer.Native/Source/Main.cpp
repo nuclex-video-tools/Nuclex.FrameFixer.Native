@@ -308,12 +308,13 @@ std::tuple<double, double> calculateCombedness(const Nuclex::Pixels::Bitmap &bit
     for(std::size_t x = 1; x < memory.Width - 2; ++x) {
       it.MoveTo(x, y);
 
-      std::tuple<double, double> sample = (
-        Nuclex::Telecide::Telecide::CalculateCombiness(it)
+      Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::Telecide::Sample3(it);
+      std::tuple<double, double> combiness = Nuclex::Telecide::Telecide::CalculateCombiness(
+        sample
       );
 
-      totalHorizontal += std::get<0>(sample);
-      totalVertical += std::get<1>(sample);
+      totalHorizontal += std::get<0>(combiness);
+      totalVertical += std::get<1>(combiness);
     }
   }
 
