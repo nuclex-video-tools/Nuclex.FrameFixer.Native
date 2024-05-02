@@ -39,7 +39,7 @@ along with this library
 //#include <AudioFile.h>
 //#include <opusfile.h>
 
-#include "./Algorithm/Telecide.h"
+#include "./Algorithm/InterlaceDetector.h"
 
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
 #include <Nuclex/Pixels/ColorModels/RgbPixelIterator.h>
@@ -308,8 +308,8 @@ std::tuple<double, double> calculateCombedness(const Nuclex::Pixels::Bitmap &bit
     for(std::size_t x = 1; x < memory.Width - 2; ++x) {
       it.MoveTo(x, y);
 
-      Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::Telecide::Sample3(it);
-      std::tuple<double, double> combiness = Nuclex::Telecide::Telecide::CalculateCombiness(
+      Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample3(it);
+      std::tuple<double, double> combiness = Nuclex::Telecide::InterlaceDetector::CalculateCombiness(
         sample
       );
 

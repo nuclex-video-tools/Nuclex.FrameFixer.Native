@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_TELECIDE_SOURCE 1
 
-#include "./Telecide.h"
+#include "./InterlaceDetector.h"
 
 namespace {
 
@@ -94,7 +94,7 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  SwipeSample Telecide::Sample3(
+  SwipeSample InterlaceDetector::Sample3(
     Nuclex::Pixels::ColorModels::RgbPixelIterator &iterator
   ) {
     SwipeSample sample;
@@ -151,7 +151,7 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  SwipeSample Telecide::Sample5(
+  SwipeSample InterlaceDetector::Sample5(
     Nuclex::Pixels::ColorModels::RgbPixelIterator &iterator
   ) {
     SwipeSample sample;
@@ -230,7 +230,7 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::tuple<double, double> Telecide::CalculateCombiness(const SwipeSample &sample) {
+  std::tuple<double, double> InterlaceDetector::CalculateCombiness(const SwipeSample &sample) {
     double horizontal;
     {
       double topBottomDelta = std::abs(

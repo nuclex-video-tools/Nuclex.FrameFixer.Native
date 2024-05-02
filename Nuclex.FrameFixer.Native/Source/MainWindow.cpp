@@ -175,6 +175,7 @@ namespace Nuclex::Telecide {
           selectedFrame.Type = FrameType::BC;
         }
         this->ui->thumbnailList->update();
+        this->ui->thumbnailList->viewport()->update();
       }
     }
   }
@@ -192,6 +193,7 @@ namespace Nuclex::Telecide {
           selectedFrame.Type = FrameType::CD;
         }
         this->ui->thumbnailList->update();
+        this->ui->thumbnailList->viewport()->update();
       }
     }
   }
@@ -209,6 +211,7 @@ namespace Nuclex::Telecide {
           selectedFrame.Type = FrameType::Progressive;
         }
         this->ui->thumbnailList->update();
+        this->ui->thumbnailList->viewport()->update();
       }
     }
   }

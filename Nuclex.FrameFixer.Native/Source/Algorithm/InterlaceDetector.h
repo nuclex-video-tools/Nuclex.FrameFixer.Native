@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_TELECIDE_H
-#define NUCLEX_TELECIDE_TELECIDE_H
+#ifndef NUCLEX_TELECIDE_INTERLACEDETECTOR_H
+#define NUCLEX_TELECIDE_INTERLACEDETECTOR_H
 
 #include "Nuclex/Telecide/Config.h"
 
@@ -64,8 +64,8 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Dialog that lets the user configure various application settings</summary>
-  class Telecide {
+  /// <summary>Tries to automatically detect whether video frames are interlaced</summary>
+  class InterlaceDetector {
 
     /// <summary>Collects a swipe sample averaging over 3 parallel pixels</summary>
     /// <param name="iterator">
@@ -96,4 +96,4 @@ namespace Nuclex::Telecide {
 
 } // namespace Nuclex::Telecide
 
-#endif // NUCLEX_TELECIDE_TELECIDE_H
+#endif // NUCLEX_TELECIDE_INTERLACEDETECTOR_H
