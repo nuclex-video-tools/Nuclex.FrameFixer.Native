@@ -43,6 +43,7 @@ namespace Nuclex::Telecide {
   // ------------------------------------------------------------------------------------------- //
 
   class FrameThumbnailItemModel;
+  class FrameThumbnailPaintDelegate;
   class Movie;
   class Frame;
 
@@ -87,7 +88,8 @@ namespace Nuclex::Telecide {
       //const std::shared_ptr<Nuclex::Support::Services::ServiceProvider> &instanceFactory
     );
 
-    //protected: void wheelEvent(QWheelEvent *event) override {}
+    /// <summary>Sets up callbacks for the relevant notifications of UI widgets</summary>
+    private: void connectUiSignals();
 
     /// <summary>Loads the currently selected movie's frames</summary>
     private: void ingestMovieFrames();
@@ -97,14 +99,24 @@ namespace Nuclex::Telecide {
     /// </summary>
     private: void browseClicked();
 
+    /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
     private: void markBcFrameClicked();
+    /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
     private: void markCdFrameClicked();
+    /// <summary>Marks the current frame as a non-interlaced frame</param>
     private: void markProgressiveFrameClicked();
 
+    /// <summary>Updates the displayed frame when another thumbnail is selected</summary>
+    /// <param name="selected">List of frames that have been newly selected</param>
+    /// <param name="deselected">List of frames that are no longer selected</param>
     private: void selectedThumbnailChanged(
       const QItemSelection &selected, const QItemSelection &deselected
     );
 
+    private: std::size_t getSelectedFrameIndex() const;
+
+    /// <summary>Displays the preview for the specified frame in the main view</summary>
+    /// <param name="frame">Frame that will be shown in the main view</param>
     private: void displayFrameInView(const Frame &frame);
 
     /// <summary>Quits the application when the user clicks the quit button</summary>
@@ -114,13 +126,12 @@ namespace Nuclex::Telecide {
     private: std::unique_ptr<Ui::MainWindow> ui;
     /// <summary>Item model that manages the thumbnails</summary>
     private: std::unique_ptr<FrameThumbnailItemModel> thumbnailItemModel;
+    /// <summary>Delegate that draws the thumbnails with decoration</summary>
+    private: std::unique_ptr<FrameThumbnailPaintDelegate> thumbnailPaintDelegate;
     /// <summary>Root service container doing the application's work</summary>
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
     /// <summary>The movie whose frames are currently loaded for processing</summary>
     private: std::shared_ptr<Movie> currentMovie;
-    /// <summary>Index of the frame currently being displayed</summary>
-    private: std::size_t selectedFrame;
-
 
   };
 

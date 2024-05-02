@@ -249,9 +249,9 @@ namespace Nuclex::Telecide {
       );
       double centerBottomDelta = std::abs(
         max3(
-          sample.Center.Red - sample.Above.Red,
-          sample.Center.Green - sample.Above.Green,
-          sample.Center.Blue - sample.Above.Blue
+          sample.Center.Red - sample.Below.Red,
+          sample.Center.Green - sample.Below.Green,
+          sample.Center.Blue - sample.Below.Blue
         )
       );
       horizontal = (centerTopDelta + centerBottomDelta) - (topBottomDelta * 2.0);

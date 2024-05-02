@@ -44,7 +44,9 @@ namespace Nuclex::Telecide {
     /// <summary>Third frame overlaid with the fields of the fourth frame</summary>
     CD,
     /// <summary>Frame is the fourth frame in a telecine sequence</summary>
-    D
+    D,
+    /// <summary>Frame is progressive but unknown if A, B, D or standalone</summary>
+    Progressive
 
   };
 

@@ -39,7 +39,7 @@ along with this library
 //#include <AudioFile.h>
 //#include <opusfile.h>
 
-#include "./Telecide.h"
+#include "./Algorithm/Telecide.h"
 
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
 #include <Nuclex/Pixels/ColorModels/RgbPixelIterator.h>

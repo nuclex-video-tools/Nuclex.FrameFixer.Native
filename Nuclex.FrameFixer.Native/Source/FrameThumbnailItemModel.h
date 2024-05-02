@@ -26,7 +26,7 @@ along with this library
 #include <QAbstractItemModel>
 #include <QStringList>
 
-#include <memory> // for std::sahred_ptr
+#include <memory> // for std::shared_ptr
 
 #include <Nuclex/Support/Collections/SequentialSlotCache.h> // for SequentialSlotCache
 

@@ -36,7 +36,9 @@ along with this library
     /// <summary>Initializes a new item model for frame thumbnails</summary>
     /// <param name="parent">Always null</param>
     public: explicit QZoomableGraphicsView(QWidget *parent = nullptr) :
-      QGraphicsView(parent) {}
+      QGraphicsView(parent) {
+      setDragMode(QGraphicsView::DragMode::ScrollHandDrag);
+    }
 
     /// <summary>Zooms the view in or out when the user turns the mouse wheel</summary>
     /// <param name="wheelEvent">Describes how far the mouse wheel was turned</param>

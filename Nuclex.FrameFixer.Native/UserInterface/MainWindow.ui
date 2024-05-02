@@ -41,14 +41,14 @@
     <item row="2" column="3" rowspan="3">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="cdFrameButton">
+       <widget class="QPushButton" name="bcFrameButton">
         <property name="text">
          <string>BC</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="bcFrameButton">
+       <widget class="QPushButton" name="cdFrameButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -81,6 +81,17 @@
        </spacer>
       </item>
       <item>
+       <widget class="QLabel" name="frameStatusLabel">
+        <property name="text">
+         <string>1: Mark B-C
+2: Mark C-D
+3: Mark Prog
+P: Preview
+Space: flood</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="showTelecidedButton">
         <property name="autoFillBackground">
          <bool>false</bool>
@@ -106,7 +117,7 @@
      </widget>
     </item>
     <item row="3" column="0" colspan="3">
-     <widget class="QListView" name="thumbnailsImage">
+     <widget class="QListView" name="thumbnailList">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -138,7 +149,7 @@
      </widget>
     </item>
     <item row="2" column="0" colspan="3">
-     <widget class="QZoomableGraphicsView" name="currentFrameImage"/>
+     <widget class="QZoomableGraphicsView" name="frameInspectionImage"/>
     </item>
    </layout>
   </widget>
