@@ -24,6 +24,11 @@ along with this library
 #include "Movie.h"
 
 #include <QDirIterator>
+#include <QFile>
+#include <QTextStream>
+
+#include <Nuclex/Support/Text/LexicalCast.h>
+#include <Nuclex/Support/Text/LexicalAppend.h>
 
 namespace {
 
@@ -89,7 +94,70 @@ namespace Nuclex::Telecide {
       }
     }
 
+    // This application also saves the states of manually marked frames inside a text file
+    // using the same name as the frame directory. Restore the states is the file exists.
+    std::string stateFilePath = getStateFilePath(path);
+    QFile stateFile(QString::fromStdString(stateFilePath));
+    if(stateFile.open(QIODevice::OpenModeFlag::ReadOnly | QIODevice::OpenModeFlag::Text)) {
+      using Nuclex::Support::Text::lexical_cast;
+
+      QTextStream stateReader(&stateFile);
+      while(!stateReader.atEnd()) {
+        QString line = stateReader.readLine();
+        QStringList tokens = line.split(',', Qt::SplitBehaviorFlags::KeepEmptyParts);
+        
+        std::size_t frameIndex = lexical_cast<std::size_t>(tokens[0].trimmed().toStdString());
+        QString combinessAsString = tokens[1].trimmed();
+        if(!combinessAsString.isEmpty()) {
+          movie->Frames[frameIndex].Combedness = lexical_cast<double>(
+            combinessAsString.toStdString()
+          );
+        }
+
+        QString typeAsString = tokens[2].trimmed();
+        if(!typeAsString.isEmpty()) {
+          if(typeAsString == u8"BC") {
+            movie->Frames[frameIndex].Type = FrameType::BC;
+          } else if(typeAsString == u8"CD") {
+            movie->Frames[frameIndex].Type = FrameType::CD;
+          } else if(typeAsString == u8"PR") {
+            movie->Frames[frameIndex].Type = FrameType::Progressive;
+          }
+        }
+      }
+    }
+
     return movie;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void Movie::SaveState() const {
+    std::string stateFilePath = getStateFilePath(this->FrameDirectory);
+
+    QFile stateFile(QString::fromStdString(stateFilePath));
+    if(stateFile.open(QIODevice::OpenModeFlag::WriteOnly | QIODevice::OpenModeFlag::Text)) {
+      using Nuclex::Support::Text::lexical_cast;
+      using Nuclex::Support::Text::lexical_append;
+
+      for(std::size_t index = 0; index < this->Frames.size(); ++index) {
+        std::string line;
+        lexical_append(line, this->Frames[index].Index);
+        line.append(u8", ");
+        if(this->Frames[index].Combedness.has_value()) {
+          lexical_append(line, this->Frames[index].Combedness.value());
+        }
+        line.append(u8", ");
+        switch(this->Frames[index].Type) {
+          case FrameType::BC: { line.append(u8"BC"); break; }
+          case FrameType::CD: { line.append(u8"CD"); break; }
+          case FrameType::Progressive: { line.append(u8"PR"); break; }
+        }
+        line.append(u8"\n");
+
+        stateFile.write(line.data(), line.length());
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -108,6 +176,21 @@ namespace Nuclex::Telecide {
     }
 
     return path;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::string Movie::getStateFilePath(const std::string &frameDirectoryPath) {
+    std::string::size_type length = frameDirectoryPath.length();
+
+    std::string stateFilePath;
+    if((length >= 1) && (frameDirectoryPath[length - 1] == '/')) {
+      stateFilePath = frameDirectoryPath.substr(0, length - 1) + u8".frames.txt";
+    } else {
+      stateFilePath = frameDirectoryPath + u8".frames.txt";
+    }
+
+    return stateFilePath;
   }
 
   // ------------------------------------------------------------------------------------------- //

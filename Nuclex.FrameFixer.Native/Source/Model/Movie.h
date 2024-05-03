@@ -54,7 +54,19 @@ namespace Nuclex::Telecide {
       )
     );
 
+    /// <summary>Stores the state of the movie in a text file</summary>
+    /// <remarks>
+    ///   The text file is placed next to the frame directory with a specific extension,
+    ///   which is where the <see cref="FromImageFolder" /> method will look for it.
+    /// </remarks>
+    public: void SaveState() const;
+
+    /// <summary>Reconstitutes the full path to the image file for a specific frame</summary>
+    /// <param name="frameIndex">Index of the frame whose path will be returned</param>
+    /// <returns>The full path to the image file storing the requested frame</returns>
     public: std::string GetFramePath(std::size_t frameIndex) const;
+
+    private: static std::string getStateFilePath(const std::string &frameDirectoryPath);
 
   };
 

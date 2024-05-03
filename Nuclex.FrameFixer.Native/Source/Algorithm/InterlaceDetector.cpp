@@ -23,6 +23,8 @@ along with this library
 
 #include "./InterlaceDetector.h"
 
+#include <vector> // for std::vector
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
@@ -230,60 +232,121 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::tuple<double, double> InterlaceDetector::CalculateCombiness(const SwipeSample &sample) {
+  std::tuple<double, double> InterlaceDetector::CalculateCombedness(const SwipeSample &sample) {
     double horizontal;
     {
-      double topBottomDelta = std::abs(
-        max3(
-          sample.Above.Red - sample.Below.Red,
-          sample.Above.Green - sample.Below.Green,
-          sample.Above.Blue - sample.Below.Blue
-        )
+      double topBottomDelta = max3(
+        std::abs(sample.Above.Red - sample.Below.Red),
+        std::abs(sample.Above.Green - sample.Below.Green),
+        std::abs(sample.Above.Blue - sample.Below.Blue)
       );
-      double centerTopDelta = std::abs(
-        max3(
-          sample.Center.Red - sample.Above.Red,
-          sample.Center.Green - sample.Above.Green,
-          sample.Center.Blue - sample.Above.Blue
-        )
+      double centerTopDelta = max3(
+        std::abs(sample.Center.Red - sample.Above.Red),
+        std::abs(sample.Center.Green - sample.Above.Green),
+        std::abs(sample.Center.Blue - sample.Above.Blue)
       );
-      double centerBottomDelta = std::abs(
-        max3(
-          sample.Center.Red - sample.Below.Red,
-          sample.Center.Green - sample.Below.Green,
-          sample.Center.Blue - sample.Below.Blue
-        )
+      double centerBottomDelta = max3(
+        std::abs(sample.Center.Red - sample.Below.Red),
+        std::abs(sample.Center.Green - sample.Below.Green),
+        std::abs(sample.Center.Blue - sample.Below.Blue)
       );
       horizontal = (centerTopDelta + centerBottomDelta) - (topBottomDelta * 2.0);
     }
 
     double vertical;
     {
-      double leftRightDelta = std::abs(
-        max3(
-          sample.Left.Red - sample.Right.Red,
-          sample.Left.Green - sample.Right.Green,
-          sample.Left.Blue - sample.Right.Blue
-        )
+      double leftRightDelta = max3(
+        std::abs(sample.Left.Red - sample.Right.Red),
+        std::abs(sample.Left.Green - sample.Right.Green),
+        std::abs(sample.Left.Blue - sample.Right.Blue)
       );
-      double centerLeftDelta = std::abs(
-        max3(
-          sample.Center.Red - sample.Left.Red,
-          sample.Center.Green - sample.Left.Green,
-          sample.Center.Blue - sample.Left.Blue
-        )
+      double centerLeftDelta = max3(
+        std::abs(sample.Center.Red - sample.Left.Red),
+        std::abs(sample.Center.Green - sample.Left.Green),
+        std::abs(sample.Center.Blue - sample.Left.Blue)
       );
-      double centerRightDelta = std::abs(
-        max3(
-          sample.Center.Red - sample.Right.Red,
-          sample.Center.Green - sample.Right.Green,
-          sample.Center.Blue - sample.Right.Blue
-        )
+      double centerRightDelta = max3(
+        std::abs(sample.Center.Red - sample.Right.Red),
+        std::abs(sample.Center.Green - sample.Right.Green),
+        std::abs(sample.Center.Blue - sample.Right.Blue)
       );
       vertical = (centerLeftDelta + centerRightDelta) - (leftRightDelta * 2.0);
     }
 
     return std::tuple<double, double>(horizontal, vertical);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  double GetInterlaceProbability(const Nuclex::Pixels::Bitmap &bitmap, bool five) {
+    const Nuclex::Pixels::BitmapMemory &memory = bitmap.Access();
+
+    std::vector<double> previousLine(memory.Width);
+    std::vector<double> currentLine(memory.Width);
+
+    Nuclex::Pixels::ColorModels::RgbPixelIterator it(memory);
+
+    // Number of pixels to stay away from the image borders
+    int margin = five ? 2 : 1;
+
+    double totalProbability = 0.0;
+    for(std::size_t y = margin; y < memory.Height - margin - 1; ++y) {
+      if(five) {
+        for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
+          it.MoveTo(x, y);
+
+          Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample5(it);
+          std::tuple<double, double> combedness = (
+            Nuclex::Telecide::InterlaceDetector::CalculateCombedness(sample)
+          );
+
+          double horizontal = std::get<0>(combedness);
+          double vertical = std::get<1>(combedness);
+          currentLine[x] = horizontal - vertical;
+        }
+      } else {
+        for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
+          it.MoveTo(x, y);
+
+          Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample3(it);
+          std::tuple<double, double> combedness = (
+            Nuclex::Telecide::InterlaceDetector::CalculateCombedness(sample)
+          );
+
+          double horizontal = std::get<0>(combedness);
+          double vertical = std::get<1>(combedness);
+          currentLine[x] = horizontal - vertical;
+        }
+        for(std::size_t x = margin + 1; x < memory.Width - margin - 2; ++x) {
+          double value;
+          if(currentLine[x] >= 0) {
+            value = currentLine[x];
+          } else {
+            value = 1.0 / currentLine[x];
+          }
+          if(previousLine[x] >= 0) {
+            value *= previousLine[x];
+          } else {
+            value /= previousLine[x];
+          }
+          if(currentLine[x - 1] >= 0) {
+            value *= currentLine[x - 1];
+          } else {
+            value /= currentLine[x - 1];
+          }
+          if(currentLine[x + 1] >= 0) {
+            value *= currentLine[x + 1];
+          } else {
+            value /= currentLine[x + 1];
+          }
+          totalProbability += value;
+        }
+
+        previousLine = currentLine;
+      }
+    }
+
+    return totalProbability;
   }
 
   // ------------------------------------------------------------------------------------------- //

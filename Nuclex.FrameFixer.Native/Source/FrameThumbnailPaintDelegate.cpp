@@ -64,34 +64,49 @@ namespace Nuclex::Telecide {
 
     if(static_cast<bool>(this->movie)) {
       std::size_t frameIndex = static_cast<std::size_t>(index.row());
-      FrameType frameType = this->movie->Frames[frameIndex].Type;
+      const Frame &frame = this->movie->Frames[frameIndex];
 
       // Red - Yellow - Green - Cyan - Blue - White (PR)
 
       QRect decorationRect(option.rect.bottomLeft(), QSize(20, 20));
       decorationRect.adjust(0, -20, 0, -20);
 
-      if(frameType == FrameType::BC) {
+      if(frame.Type == FrameType::BC) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "BC");
         painter->restore();    
-      } else if(frameType == FrameType::CD) {
+      } else if(frame.Type == FrameType::CD) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkCyan));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "CD");
         painter->restore();    
-      } else if(frameType == FrameType::Progressive) {
+      } else if(frame.Type == FrameType::Progressive) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGray));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "PR");
         painter->restore();    
+      }
+
+      if(frame.Combedness.has_value()) {
+        /*
+        QPainterPath path;
+        path.moveTo(0, combHeight);
+        for (int i = 0; i < numTeeth; ++i) {
+            path.lineTo(i * toothWidth, 0);
+            path.lineTo((i + 1) * toothWidth, 0);
+            path.lineTo((i + 1) * toothWidth, combHeight);
+        }
+        path.closeSubpath();
+
+        painter.drawPath(path);
+        */        
       }
     }
   }

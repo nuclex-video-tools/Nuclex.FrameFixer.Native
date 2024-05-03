@@ -25,6 +25,7 @@ along with this library
 
 #include <QMainWindow> // for QMainWindow
 #include <QItemSelection> // for QItemSelection
+#include <QMutex> // for QMutex
 
 #include <memory> // for std::unique_ptr
 
@@ -119,6 +120,15 @@ namespace Nuclex::Telecide {
     /// <param name="frame">Frame that will be shown in the main view</param>
     private: void displayFrameInView(const Frame &frame);
 
+    private: void stopAnalysisThread();
+    private: void startAnaylsisThread();
+    private: void analyzeMovieFramesInThread();
+    private: static void callAnalyzeMovieFramesInThread(MainWindow *self) {
+      self->analyzeMovieFramesInThread();
+    }
+
+    /// <summary>Saves the status of all frames when the user clicks on save</summary>
+    private: void saveClicked();
     /// <summary>Quits the application when the user clicks the quit button</summary>
     private: void quitClicked();
 
@@ -132,6 +142,10 @@ namespace Nuclex::Telecide {
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
     /// <summary>The movie whose frames are currently loaded for processing</summary>
     private: std::shared_ptr<Movie> currentMovie;
+    /// <summary>Thread that analyzes the combiness of frames</summary>
+    private: std::unique_ptr<QThread> analysisThread;
+    /// <summary>Mutex controlling access to the analysis thread</summary>
+    private: std::unique_ptr<QMutex> analysisThreadMutex;
 
   };
 

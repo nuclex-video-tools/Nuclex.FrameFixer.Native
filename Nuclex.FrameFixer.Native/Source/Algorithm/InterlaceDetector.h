@@ -88,7 +88,9 @@ namespace Nuclex::Telecide {
     /// <summary>Calculates the &quot;combiness&quot; horizontally and vertically</summary>
     /// <param name="sample">Sample of a pixel taken by one of the sampling methods</param>
     /// <returns>A tuple containing the horizontal and the vertical combiness</returns>
-    public: static std::tuple<double, double> CalculateCombiness(const SwipeSample &sample);
+    public: static std::tuple<double, double>  CalculateCombedness(const SwipeSample &sample);
+
+    public: static double GetInterlaceProbability(const Nuclex::Pixels::Bitmap &bitmap);
 
   };
 

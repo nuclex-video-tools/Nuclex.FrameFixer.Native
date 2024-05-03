@@ -25,17 +25,14 @@ along with this library
 #include "ui_MainWindow.h"
 
 #include "./Model/Movie.h"
-
 #include "./FrameThumbnailItemModel.h"
 #include "./FrameThumbnailPaintDelegate.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
-#include <Nuclex/Support/Text/LexicalCast.h>
+#include <QThread>
 
-// Qt Image Viewer example (uses QLabel in QScrollArea)
-// https://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-example.html
-//
+#include <Nuclex/Support/Text/LexicalCast.h>
 
 namespace Nuclex::Telecide {
 
@@ -47,7 +44,9 @@ namespace Nuclex::Telecide {
     thumbnailItemModel(),
     thumbnailPaintDelegate(),
     servicesRoot(),
-    currentMovie() {
+    currentMovie(),
+    analysisThread(),
+    analysisThreadMutex(new QMutex()) {
 
     this->ui->setupUi(this);
 
@@ -116,12 +115,15 @@ namespace Nuclex::Telecide {
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
       this, &MainWindow::selectedThumbnailChanged
     );
-    /*
+
+    connect(
+      this->ui->saveButton, &QPushButton::clicked,
+      this, &MainWindow::saveClicked
+    );
     connect(
       this->ui->quitButton, &QPushButton::clicked,
       this, &MainWindow::quitClicked
     );
-    */
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -132,6 +134,8 @@ namespace Nuclex::Telecide {
 
     this->thumbnailItemModel->SetMovie(this->currentMovie);
     this->thumbnailPaintDelegate->SetMovie(this->currentMovie);
+
+    startAnaylsisThread();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -278,11 +282,44 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::saveClicked() {
+    if(static_cast<bool>(this->currentMovie)) {
+      this->currentMovie->SaveState();
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::quitClicked() {
     close();
 
     // Another option, but I read it's akin to calling exit(0), aka crash and burn.
     //QApplication::quit();
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::analyzeMovieFramesInThread() {
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::stopAnalysisThread() {
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::startAnaylsisThread() {
+    if(static_cast<bool>(this->currentMovie)) {
+      QMutexLocker locker(this->analysisThreadMutex.get());
+      if(!static_cast<bool>(this->analysisThread)) {
+        this->analysisThread.reset(
+          QThread::create(&MainWindow::callAnalyzeMovieFramesInThread, this)
+        );
+        this->analysisThread->start();
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

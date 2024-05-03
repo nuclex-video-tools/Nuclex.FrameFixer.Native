@@ -309,7 +309,7 @@ std::tuple<double, double> calculateCombedness(const Nuclex::Pixels::Bitmap &bit
       it.MoveTo(x, y);
 
       Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample3(it);
-      std::tuple<double, double> combiness = Nuclex::Telecide::InterlaceDetector::CalculateCombiness(
+      std::tuple<double, double> combiness = Nuclex::Telecide::InterlaceDetector::CalculateCombedness(
         sample
       );
 
