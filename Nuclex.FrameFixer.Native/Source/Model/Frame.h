@@ -41,7 +41,8 @@ namespace Nuclex::Telecide {
       Index(std::size_t(-1)),
       Filename(filename),
       Type(FrameType::Unknown),
-      Combedness() {}
+      Combedness(),
+      ProvisionalType(FrameType::Unknown) {}
 
     /// <summary>Absolute index of the frame from the beginning of the movie</summary>
     public: std::size_t Index;
@@ -51,6 +52,11 @@ namespace Nuclex::Telecide {
     public: FrameType Type;
     /// <summary>Amount of combing that was detected in the frame</summary>
     public: std::optional<double> Combedness; 
+    /// <summary>Extrapolation point between previous and this frame</summary>
+    public: std::optional<double> MixFactor; 
+
+    /// <summary>Type according to the telecine pattern</summary>
+    public: FrameType ProvisionalType;
 
   };
 

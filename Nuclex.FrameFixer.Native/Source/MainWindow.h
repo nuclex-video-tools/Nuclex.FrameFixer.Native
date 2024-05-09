@@ -23,6 +23,8 @@ along with this library
 
 #include "Nuclex/Telecide/Config.h"
 
+#include "./Model/FrameType.h"
+
 #include <QMainWindow> // for QMainWindow
 #include <QItemSelection> // for QItemSelection
 #include <QMutex> // for QMutex
@@ -100,12 +102,22 @@ namespace Nuclex::Telecide {
     /// </summary>
     private: void browseClicked();
 
+    /// <summary>Marks the current frame to be discarded</param>
+    private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
     /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
-    private: void markBcFrameClicked();
+    private: void markBcFrameClicked()  { toggleFrameType(FrameType::BC); }
     /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
-    private: void markCdFrameClicked();
+    private: void markCdFrameClicked()  { toggleFrameType(FrameType::CD); }
+    /// <summary>Marks the current frame as a C frame with only its bottom field</param>
+    private: void markBottomCFrameClicked() { toggleFrameType(FrameType::BottomC); }
+    /// <summary>Marks the current frame as a C frame wiht only its top field</param>
+    private: void markTopCFrameClicked() { toggleFrameType(FrameType::TopC); }
     /// <summary>Marks the current frame as a non-interlaced frame</param>
-    private: void markProgressiveFrameClicked();
+    private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
+
+    /// <summary>Toggles the current frame between the specified type and none</summary>
+    /// <param name="frameType">Frame type to apply or remove from the current frame</param>
+    private: void toggleFrameType(FrameType frameType);
 
     /// <summary>Updates the displayed frame when another thumbnail is selected</summary>
     /// <param name="selected">List of frames that have been newly selected</param>

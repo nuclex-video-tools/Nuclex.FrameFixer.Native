@@ -27,12 +27,15 @@ along with this library
 #include "./Model/Movie.h"
 #include "./FrameThumbnailItemModel.h"
 #include "./FrameThumbnailPaintDelegate.h"
+#include "./Algorithm/InterlaceDetector.h"
+#include "./Algorithm/PreviewDeinterlacer.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
 #include <QThread>
 
 #include <Nuclex/Support/Text/LexicalCast.h>
+#include <Nuclex/Pixels/Storage/BitmapSerializer.h>
 
 namespace Nuclex::Telecide {
 
@@ -100,16 +103,28 @@ namespace Nuclex::Telecide {
     );
 
     connect(
-      this->ui->bcFrameButton, &QPushButton::clicked,
+      this->ui->markDiscardButton, &QPushButton::clicked,
+      this, &MainWindow::markDiscardClicked
+    );
+    connect(
+      this->ui->markBcButton, &QPushButton::clicked,
       this, &MainWindow::markBcFrameClicked
     );
     connect(
-      this->ui->cdFrameButton, &QPushButton::clicked,
+      this->ui->markCdButton, &QPushButton::clicked,
       this, &MainWindow::markCdFrameClicked
     );
     connect(
-      this->ui->prFrameButton, &QPushButton::clicked,
-      this, &MainWindow::markProgressiveFrameClicked
+      this->ui->markBottomCButton, &QPushButton::clicked,
+      this, &MainWindow::markBottomCFrameClicked
+    );
+    connect(
+      this->ui->markTopCButton, &QPushButton::clicked,
+      this, &MainWindow::markTopCFrameClicked
+    );
+    connect(
+      this->ui->markProgressiveButton, &QPushButton::clicked,
+      this, &MainWindow::markProgressiveClicked
     );
     connect(
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -168,54 +183,21 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::markBcFrameClicked() {
+  void MainWindow::toggleFrameType(FrameType frameType) {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {
         Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
-        if(selectedFrame.Type == FrameType::BC) {
+        if(selectedFrame.Type == frameType) {
           selectedFrame.Type = FrameType::Unknown;
         } else {
-          selectedFrame.Type = FrameType::BC;
+          selectedFrame.Type = frameType;
         }
+
         this->ui->thumbnailList->update();
         this->ui->thumbnailList->viewport()->update();
-      }
-    }
-  }
 
-  // ------------------------------------------------------------------------------------------- //
-
-  void MainWindow::markCdFrameClicked() {
-    if(static_cast<bool>(this->currentMovie)) {
-      std::size_t selectedFrameIndex = getSelectedFrameIndex();
-      if(selectedFrameIndex != std::size_t(-1)) {
-        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
-        if(selectedFrame.Type == FrameType::CD) {
-          selectedFrame.Type = FrameType::Unknown;
-        } else {
-          selectedFrame.Type = FrameType::CD;
-        }
-        this->ui->thumbnailList->update();
-        this->ui->thumbnailList->viewport()->update();
-      }
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void MainWindow::markProgressiveFrameClicked() {
-    if(static_cast<bool>(this->currentMovie)) {
-      std::size_t selectedFrameIndex = getSelectedFrameIndex();
-      if(selectedFrameIndex != std::size_t(-1)) {
-        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
-        if(selectedFrame.Type == FrameType::Progressive) {
-          selectedFrame.Type = FrameType::Unknown;
-        } else {
-          selectedFrame.Type = FrameType::Progressive;
-        }
-        this->ui->thumbnailList->update();
-        this->ui->thumbnailList->viewport()->update();
+        displayFrameInView(selectedFrame);
       }
     }
   }
@@ -243,11 +225,30 @@ namespace Nuclex::Telecide {
   void MainWindow::displayFrameInView(const Frame &frame) {
     if(static_cast<bool>(this->currentMovie)) {
       std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
-      QPixmap bitmap(QString::fromStdString(imagePath));
+
+      QImage bitmap(QString::fromStdString(imagePath));
+
+      FrameType frameType = frame.Type;
+      if(frameType == FrameType::Unknown) {
+        frameType = frame.ProvisionalType; // this one is calculated
+      }
+      if((frame.Type == FrameType::BC) && (frame.Index >= 1)) {
+        std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+        QImage previousBitmap(QString::fromStdString(previousImagePath));          
+        PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, true);
+      } else if((frame.Type == FrameType::CD) && (frame.Index >= 1)) {
+        std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+        QImage previousBitmap(QString::fromStdString(previousImagePath));          
+        PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, false);
+      } else if((frame.Type == FrameType::BC) || (frame.Type == FrameType::BottomC)) {
+        PreviewDeinterlacer::Deinterlace(nullptr, bitmap, true);
+      } else if((frame.Type == FrameType::CD) || (frame.Type == FrameType::TopC)) {
+        PreviewDeinterlacer::Deinterlace(nullptr, bitmap, false);
+      }
 
       std::unique_ptr<QGraphicsScene> frameScene = std::make_unique<QGraphicsScene>();
       std::unique_ptr<QGraphicsPixmapItem> pixmapItem = (
-        std::make_unique<QGraphicsPixmapItem>(bitmap)
+        std::make_unique<QGraphicsPixmapItem>(QPixmap::fromImage(bitmap))
       );
       frameScene->addItem(pixmapItem.get());
 
@@ -300,7 +301,18 @@ namespace Nuclex::Telecide {
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::analyzeMovieFramesInThread() {
+    Nuclex::Pixels::Storage::BitmapSerializer serializer;
 
+    for(std::size_t index = 0; index < this->currentMovie->Frames.size(); ++index) {
+      Frame &frame = this->currentMovie->Frames[index];
+      if(!frame.Combedness.has_value()) {
+        std::string framePath = this->currentMovie->GetFramePath(index);
+        Nuclex::Pixels::Bitmap frameBitmap = serializer.Load(framePath);
+
+        double combedness = InterlaceDetector::GetInterlaceProbability(frameBitmap);
+        frame.Combedness = combedness;
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -71,7 +71,14 @@ namespace Nuclex::Telecide {
       QRect decorationRect(option.rect.bottomLeft(), QSize(20, 20));
       decorationRect.adjust(0, -20, 0, -20);
 
-      if(frame.Type == FrameType::BC) {
+      if(frame.Type == FrameType::Discard) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::red));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "X");
+        painter->restore();    
+      } else if(frame.Type == FrameType::BC) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
@@ -84,6 +91,20 @@ namespace Nuclex::Telecide {
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "CD");
+        painter->restore();    
+      } else if(frame.Type == FrameType::BottomC) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkGreen));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "C▼");
+        painter->restore();    
+      } else if(frame.Type == FrameType::TopC) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkCyan));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "C▲");
         painter->restore();    
       } else if(frame.Type == FrameType::Progressive) {
         painter->save();

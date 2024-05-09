@@ -33,18 +33,76 @@ namespace Nuclex::Telecide {
   /// <summary>Types of frames appearing in a telecined movie</summary>
   enum class FrameType {
 
-    /// <summary>Frame type has not been detected yet</summary>
-    Unknown,
+    /// <summary>Frame is unusable and should be thrown away</summary>
+    Discard = -1,
+
+    /// <summary>Frame type has not been detected or assigned yet</summary>
+    Unknown = 0,
+
     /// <summary>Frame is the first frame in a telecine sequence</summary>
+    /// <remarks>
+    ///   A simple progressive frame but tagged for where it is in the telecine rhythm
+    /// </remarks>
     A,
     /// <summary>Frame is the second frame in a telecine sequence</summary>
+    /// <remarks>
+    ///   A simple progressive frame but tagged for where it is in the telecine rhythm
+    /// </remarks>
     B,
     /// <summary>Second frame overlaid with the fields of the third frame</summary>
+    /// <remarks>
+    ///   Takes the bottom field (all odd lines) from this frame and the top field
+    ///   (all even lines) from the previous frame, ending up with pure B.
+    /// </remarks>
     BC,
     /// <summary>Third frame overlaid with the fields of the fourth frame</summary>
+    /// <remarks>
+    ///   Takes the top field (all even lines) from this frame and the bottom field
+    ///   (all odd lines) from the previous frame, ending up with pure C.
+    /// </remarks>
     CD,
     /// <summary>Frame is the fourth frame in a telecine sequence</summary>
+    /// <remarks>
+    ///   A simple progressive frame but tagged for where it is in the telecine rhythm
+    /// </remarks>
     D,
+
+    /// <summary>Overlaid fields of the third frame missing its other half</summary>
+    /// <remarks>
+    ///   Only takes the top field (all even lines) and interpolates the missing lines
+    ///   under the assumption that the predecesor frame is missing or unusable.
+    /// </remarks>
+    TopC,
+    /// <summary>Overlaid fields of the fourth frame missing its other half</summary>
+    /// <remarks>
+    ///   Only takes the bottom field (all odd lines) and interpolates the missing lines
+    ///   under the assumption that the predecesor frame is missing or unusable.
+    /// </remarks>
+    BottomC,
+
+#if 0 // This can be in addition to interlacing. D'oh! Will be a separate frame attribute.
+
+    /// <summary>Tries to de-blend the second of two unequally composited frames</summary>
+    /// <remarks>
+    ///   The amount of weird mastering errors on DVDs is staggering. Some producers managed
+    ///   to release DVDs containing frame blended together. This tries to resolve the case
+    ///   where in the previous frame, the contents of the B frame are a bit stronger and
+    ///   where in this frame, the contents of the C frame are a bit stronger.
+    /// </remarks>
+    BlendedMix,
+
+    /// <summary>Tries to de-blend the second of two vertically blended frames</summary>
+    /// <remarks>
+    ///   This curiousity happens when, rather than digitally converting between PAL and NTSC,
+    ///   someone put an NTSC camera in front of a PAL display. The camera collects pictures
+    ///   where the TV has only partially updated new image. Combined with phosphorescence,
+    ///   the result is a vertical transition area, randomly position, where the current
+    ///   frame blends over the previous frame.
+    /// </remarks>
+    VerticalMix,
+
+#endif
+
     /// <summary>Frame is progressive but unknown if A, B, D or standalone</summary>
     Progressive
 

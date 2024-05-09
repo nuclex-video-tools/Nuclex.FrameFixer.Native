@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>606</width>
-    <height>636</height>
+    <height>663</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Settings</string>
+   <string>Telecide GUI</string>
   </property>
   <widget class="QWidget" name="centralLayoutGrid">
    <layout class="QGridLayout" name="gridLayout">
@@ -76,9 +76,39 @@
     <item row="2" column="3" rowspan="3">
      <layout class="QVBoxLayout" name="rightButtonLayout">
       <item>
-       <widget class="QPushButton" name="bcFrameButton">
+       <widget class="QPushButton" name="markDiscardButton">
         <property name="text">
-         <string>BC</string>
+         <string>DIS</string>
+        </property>
+        <property name="shortcut">
+         <string>X</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBcButton">
+        <property name="text">
+         <string>B(TF) C(BF)</string>
+        </property>
+        <property name="shortcut">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markCdButton">
+        <property name="text">
+         <string>C(TF) D(BF)</string>
+        </property>
+        <property name="shortcut">
+         <string>2</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBottomCButton">
+        <property name="text">
+         <string>C(BF)</string>
         </property>
         <property name="shortcut">
          <string>3</string>
@@ -89,7 +119,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="cdFrameButton">
+       <widget class="QPushButton" name="markTopCButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -97,7 +127,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>CD</string>
+         <string>C(TF)</string>
         </property>
         <property name="shortcut">
          <string>4</string>
@@ -105,7 +135,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="prFrameButton">
+       <widget class="QPushButton" name="markProgressiveButton">
         <property name="text">
          <string>PR</string>
         </property>
@@ -130,9 +160,13 @@
       <item>
        <widget class="QLabel" name="frameStatusLabel">
         <property name="text">
-         <string>1: Mark B-C
+         <string>~: Progressive
+1: Mark B-C
 2: Mark C-D
-3: Mark Prog
+3: Mark C(BF)
+4: Mark C(TF)
+X: Discard
+
 P: Preview
 Space: flood</string>
         </property>

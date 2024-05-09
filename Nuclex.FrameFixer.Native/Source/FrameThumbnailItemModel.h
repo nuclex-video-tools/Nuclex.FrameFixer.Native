@@ -76,20 +76,6 @@ namespace Nuclex::Telecide {
       const QModelIndex &index, int role = Qt::DisplayRole
     ) const override;
 
-
-#if 0
-    /// <summary>Retrieves the number of column present in the virtual list</summary>
-    /// <param name="parent">Parent item, only relevant when items form a tree</param>
-    /// <returns>The number of columns in the virtual list</returns>
-    protected: int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    protected: QModelIndex parent(const QModelIndex &child) const override;
-
-    protected: QModelIndex index(
-      int row, int column, const QModelIndex &parent = QModelIndex()
-    ) const override;
-#endif
-
     /// <summary>The movie for which the model provides thumbnails</summary>
     private: std::shared_ptr<Movie> movie;
     /// <summary>Cached thumbnails for the movie's frames</summary>

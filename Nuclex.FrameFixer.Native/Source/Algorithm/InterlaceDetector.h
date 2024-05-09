@@ -90,7 +90,20 @@ namespace Nuclex::Telecide {
     /// <returns>A tuple containing the horizontal and the vertical combiness</returns>
     public: static std::tuple<double, double>  CalculateCombedness(const SwipeSample &sample);
 
-    public: static double GetInterlaceProbability(const Nuclex::Pixels::Bitmap &bitmap);
+    /// <summary>Calculates the probability of a frame being interlaced</summary>
+    /// <param name="bitmap">Bitmap that will be examined</param>
+    /// <param name="five">Whether to use five pixel swipes instead of three pixels</param>
+    /// <returns>The probability that the frame is interlaced</returns>
+    /// <remarks>
+    ///   This gives you an arbitrary number that should ideally be positive for interlaced
+    ///   frames and negative for non-interlaced frames. When frames contain sharp elements
+    ///   (text for example), this may artifically push the number towards positivity.
+    ///   When frames only contain little movement and thus reveal only tiny regions of
+    ///   interlacing patterns, this may be too little and the number may remain negative.
+    /// </remarks>
+    public: static double GetInterlaceProbability(
+      const Nuclex::Pixels::Bitmap &bitmap, bool five = false
+    );
 
   };
 

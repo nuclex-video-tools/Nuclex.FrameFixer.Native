@@ -278,7 +278,9 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  double GetInterlaceProbability(const Nuclex::Pixels::Bitmap &bitmap, bool five) {
+  double InterlaceDetector::GetInterlaceProbability(
+    const Nuclex::Pixels::Bitmap &bitmap, bool five
+  ) {
     const Nuclex::Pixels::BitmapMemory &memory = bitmap.Access();
 
     std::vector<double> previousLine(memory.Width);
@@ -317,33 +319,33 @@ namespace Nuclex::Telecide {
           double vertical = std::get<1>(combedness);
           currentLine[x] = horizontal - vertical;
         }
-        for(std::size_t x = margin + 1; x < memory.Width - margin - 2; ++x) {
-          double value;
-          if(currentLine[x] >= 0) {
-            value = currentLine[x];
-          } else {
-            value = 1.0 / currentLine[x];
-          }
-          if(previousLine[x] >= 0) {
-            value *= previousLine[x];
-          } else {
-            value /= previousLine[x];
-          }
-          if(currentLine[x - 1] >= 0) {
-            value *= currentLine[x - 1];
-          } else {
-            value /= currentLine[x - 1];
-          }
-          if(currentLine[x + 1] >= 0) {
-            value *= currentLine[x + 1];
-          } else {
-            value /= currentLine[x + 1];
-          }
-          totalProbability += value;
+
+      }
+
+      for(std::size_t x = margin + 1; x < memory.Width - margin - 2; ++x) {
+        double value = currentLine[x];
+        if((value >= 0) && (previousLine[x] >= 0)) {
+          value += previousLine[x];
+        } else if((value < 0) && (previousLine[x] < 0)) {
+          value += previousLine[x];
         }
 
-        previousLine = currentLine;
+        if((value >= 0) && (currentLine[x - 1] >= 0)) {
+          value += currentLine[x - 1];
+        } else if((value < 0) && (currentLine[x - 1] < 0)) {
+          value += currentLine[x - 1];
+        }
+
+        if((value >= 0) && (currentLine[x + 1] >= 0)) {
+          value += currentLine[x + 1];
+        } else if((value < 0) && (currentLine[x + 1] < 0)) {
+          value += currentLine[x + 1];
+        }
+
+        totalProbability += value;
       }
+
+      previousLine = currentLine;
     }
 
     return totalProbability;
