@@ -115,6 +115,8 @@ namespace Nuclex::Telecide {
           }
         }
 
+        // Because *this* image is also an image that was summed in the total
+        ++otherImageCount;
         {
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
           int componentIndex = 0;

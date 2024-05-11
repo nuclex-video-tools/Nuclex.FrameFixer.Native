@@ -29,6 +29,7 @@ along with this library
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./Algorithm/InterlaceDetector.h"
 #include "./Algorithm/PreviewDeinterlacer.h"
+#include "./Algorithm/Averager.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
@@ -36,6 +37,34 @@ along with this library
 
 #include <Nuclex/Support/Text/LexicalCast.h>
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
+
+namespace {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void SaveImage(const QImage &image, const std::string &directory, std::size_t frameIndex) {
+    std::string path = directory;
+
+    std::string::size_type length = directory.length();
+    if((length >= 1) && (directory[length - 1] != '/')) {
+      path = directory + u8"/";
+    } else {
+      path = directory;
+    }
+
+    std::string filename = Nuclex::Support::Text::lexical_cast<std::string>(frameIndex);
+    for(std::size_t index = filename.length(); index < 8; ++index) {
+      path.push_back(u8'0');
+    }
+    path.append(filename);
+    path.append(u8".png");
+
+    image.save(QString::fromStdString(path), u8"PNG");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // anonymous namespace
 
 namespace Nuclex::Telecide {
 
@@ -297,17 +326,64 @@ namespace Nuclex::Telecide {
 
   void MainWindow::exportClicked() {
     if(static_cast<bool>(this->currentMovie)) {
-      std::unique_ptr<QImage> previousFrame;
+      std::string::size_type length = this->currentMovie->FrameDirectory.length();
 
+      std::string exportPath;
+      if((length >= 1) && (this->currentMovie->FrameDirectory[length - 1] == '/')) {
+        exportPath = this->currentMovie->FrameDirectory.substr(0, length - 1) + u8".export/";
+      } else {
+        exportPath = this->currentMovie->FrameDirectory + u8".export/";
+      }
 
       std::size_t frameCount = this->currentMovie->Frames.size();
       if(frameCount >= 1200) {
         frameCount = 1200;
       }
+
+      std::vector<QImage> framesToAverage;
+      QImage previousFrame;
+
+      std::size_t outputIndex = 1;
       for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+        std::string imagePath = this->currentMovie->GetFramePath(frameIndex);
+        QImage frame(QString::fromStdString(imagePath));
 
+        FrameType frameType = this->currentMovie->Frames[frameIndex].Type;
+        if(frameType == FrameType::Unknown) {
+          frameType = this->currentMovie->Frames[frameIndex].ProvisionalType;
+        }
+        if(frameType == FrameType::Average) {
+          framesToAverage.push_back(std::move(frame));
+        } else {
+          if(framesToAverage.size() >= 1) {
+            Averager::Average(previousFrame, framesToAverage);
+            SaveImage(previousFrame, exportPath, outputIndex++);
+            for(std::size_t index = 0; index < framesToAverage.size(); ++index) {
+              SaveImage(previousFrame, exportPath, outputIndex++);
+            }
+            framesToAverage.clear();
+          }
 
+          // TODO: Not checking previousFrame here. Who cares?
+          if(frameType == FrameType::BC) {
+            PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
+          } else if(frameType == FrameType::CD) {
+            PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
+          } else if(frameType == FrameType::BottomC) {
+            PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
+          } else if(frameType == FrameType::TopC) {
+            PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
+          } else if(frameType == FrameType::Duplicate) {
+            SaveImage(frame, exportPath, outputIndex++); // extra (duplication)
+          }
 
+          if(frameType != FrameType::Discard) {
+            if(this->currentMovie->Frames[frameIndex + 1].Type != FrameType::Average) {
+              SaveImage(frame, exportPath, outputIndex++);
+            }
+          }
+          frame.swap(previousFrame);
+        }
       }
     }
   }
