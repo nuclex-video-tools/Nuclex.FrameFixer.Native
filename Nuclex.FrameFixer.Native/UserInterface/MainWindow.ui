@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>606</width>
-    <height>663</height>
+    <width>703</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,6 +86,52 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="markProgressiveButton">
+        <property name="text">
+         <string>PR</string>
+        </property>
+        <property name="shortcut">
+         <string>`</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markAverageButton">
+        <property name="text">
+         <string>AVG</string>
+        </property>
+        <property name="shortcut">
+         <string>A</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markDuplicateButton">
+        <property name="text">
+         <string>DUP</string>
+        </property>
+        <property name="shortcut">
+         <string>D</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QPushButton" name="markBcButton">
         <property name="text">
          <string>B(TF) C(BF)</string>
@@ -135,16 +181,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markProgressiveButton">
-        <property name="text">
-         <string>PR</string>
-        </property>
-        <property name="shortcut">
-         <string>`</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="rightButtonSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -165,6 +201,8 @@
 2: Mark C-D
 3: Mark C(BF)
 4: Mark C(TF)
+A: Average
+D: Duplicate
 X: Discard
 
 P: Preview
@@ -201,6 +239,13 @@ Space: flood</string>
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exportButton">
+        <property name="text">
+         <string>Export...</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="saveButton">

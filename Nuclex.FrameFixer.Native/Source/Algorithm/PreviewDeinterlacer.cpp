@@ -53,17 +53,20 @@ namespace Nuclex::Telecide {
           QRgba64 *pixelsBelow = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex + 1));
 
           for(std::size_t x = 0; x < image.width(); ++x) {
-            quint16 red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
-            quint16 green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
-            quint16 blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);
-            quint16 alpha = qAlpha(pixelsAbove[x]) + qAlpha(pixelsBelow[x]);
+            quint32 red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
+            quint32 green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
+            quint32 blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);
+            quint32 alpha = qAlpha(pixelsAbove[x]) + qAlpha(pixelsBelow[x]);
 
             red /= 2;
             green /= 2;
             blue /= 2;
             alpha /= 2;
 
-            pixels[x] = QRgba64::fromRgba(red, green, blue, alpha);
+            pixels[x] = QRgba64::fromRgba(
+              static_cast<quint16>(red), static_cast<quint16>(green),
+              static_cast<quint16>(blue), static_cast<quint16>(alpha)
+            );
           }
         } else {
           QRgb *pixelsAbove = reinterpret_cast<QRgb *>(image.scanLine(lineIndex - 1));
@@ -71,12 +74,17 @@ namespace Nuclex::Telecide {
           QRgb *pixelsBelow = reinterpret_cast<QRgb *>(image.scanLine(lineIndex + 1));
 
           for(std::size_t x = 0; x < image.width(); ++x) {
-            int red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
-            int green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
-            int blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);
-            //int alpha = qAlpha(pixelsAbove[x]) + qAlpha(pixelsBelow[x]);
+            quint16 red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
+            quint16 green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
+            quint16 blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);
 
-            pixels[x] = qRgb(red / 2, green / 2, blue / 2);
+            red /= 2;
+            green /= 2;
+            blue /= 2;
+
+            pixels[x] = qRgb(
+              static_cast<int>(red), static_cast<int>(green), static_cast<int>(blue)
+            );
           }
         }
       } else { // With a prior image, use the fields from that image if needed

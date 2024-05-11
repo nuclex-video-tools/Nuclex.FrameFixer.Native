@@ -128,6 +128,10 @@ namespace Nuclex::Telecide {
             movie->Frames[frameIndex].Type = FrameType::BottomC;
           } else if(typeAsString == u8"Progressive") {
             movie->Frames[frameIndex].Type = FrameType::Progressive;
+          } else if(typeAsString == u8"Average") {
+            movie->Frames[frameIndex].Type = FrameType::Average;
+          } else if(typeAsString == u8"Duplicate") {
+            movie->Frames[frameIndex].Type = FrameType::Duplicate;
           }
         }
       }
@@ -161,6 +165,8 @@ namespace Nuclex::Telecide {
           case FrameType::TopC: { line.append(u8"TopC"); break; }
           case FrameType::BottomC: { line.append(u8"BottomC"); break; }
           case FrameType::Progressive: { line.append(u8"Progressive"); break; }
+          case FrameType::Average: { line.append(u8"Average"); break; }
+          case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }
           default: { break; } // Others are not manually assignable and not saved
         }
         line.append(u8"\n");

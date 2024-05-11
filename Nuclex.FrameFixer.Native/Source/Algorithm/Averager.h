@@ -18,33 +18,31 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
-#define NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_TELECIDE_AVERAGER_H
+#define NUCLEX_TELECIDE_AVERAGER_H
 
 #include "Nuclex/Telecide/Config.h"
 
+#include <vector> // for std::vector
 #include <QImage>
 
 namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
-  class PreviewDeinterlacer {
+  /// <summary>Averages images of the same size</summary>
+  class Averager {
 
-    /// <summary>Cheaply deinterlaces the specified image</summary>
-    /// <param name="previousImage">
-    ///   Image that came before the current one. If provided, the missing rows will be
-    ///   taken from this image. Otherwise, the missing rows are interpolated.
-    /// </param>
-    /// <param name="image">Image that will be deinterlaced</param>
-    /// <param name="topField">
-    ///   If true, the top field (even rows) will be filled in,
-    ///   otherwise, the bottom field (odd rows) will be filled in
-    /// </param>
-    public: static void Deinterlace(
-      QImage *previousImage, QImage &image, bool topField = true
-    );
+    /// <summary>Composites another image onto an image at 50% opacity</summary>
+    /// <param name="image">Image onto which the second image will be composited</param>
+    /// <param name="otherImage">Image that will be composited onto the first image</param>
+    public: static void Average(QImage &image, const QImage &otherImage);
+
+    /// <summary>Composites multiple images onto an image</summary>
+    /// <param name="image">Image onto which the other images will be composited</param>
+    /// <param name="otherImages">Images that will be composited onto the first image</param>
+    public: static void Average(QImage &image, const std::vector<QImage> &otherImages);
+
 
   };
 
@@ -52,4 +50,4 @@ namespace Nuclex::Telecide {
 
 } // namespace Nuclex::Telecide
 
-#endif // NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_TELECIDE_AVERAGER_H

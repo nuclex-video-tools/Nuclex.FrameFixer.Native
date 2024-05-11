@@ -66,6 +66,19 @@ namespace Nuclex::Telecide {
       std::size_t frameIndex = static_cast<std::size_t>(index.row());
       const Frame &frame = this->movie->Frames[frameIndex];
 
+      if(frame.Index % 5 == 0) {
+        painter->save();
+        painter->setPen(QPen(Qt::white));
+        painter->drawLine(option.rect.topLeft(), option.rect.bottomLeft());
+        painter->restore();    
+      } else if(frame.Index % 5 == 4) {
+        painter->save();
+        painter->setPen(QPen(Qt::white));
+        painter->drawLine(option.rect.topRight(), option.rect.bottomRight());
+        painter->restore();    
+      }
+
+
       // Red - Yellow - Green - Cyan - Blue - White (PR)
 
       QRect decorationRect(option.rect.bottomLeft(), QSize(20, 20));
@@ -87,7 +100,7 @@ namespace Nuclex::Telecide {
         painter->restore();    
       } else if(frame.Type == FrameType::CD) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkCyan));
+        painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "CD");
@@ -101,7 +114,7 @@ namespace Nuclex::Telecide {
         painter->restore();    
       } else if(frame.Type == FrameType::TopC) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkCyan));
+        painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "C▲");
@@ -112,6 +125,24 @@ namespace Nuclex::Telecide {
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "PR");
+        painter->restore();    
+      } else if(frame.Type == FrameType::Average) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkMagenta));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "A");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
+        painter->restore();    
+      } else if(frame.Type == FrameType::Duplicate) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkYellow));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "I  I");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
       }
 

@@ -98,9 +98,14 @@ namespace Nuclex::Telecide {
     private: void ingestMovieFrames();
 
     /// <summary>
-    ///   Let's the user browse for the frames folder when the button is clicked
+    ///   Lets the user browse for the frames folder when the button is clicked
     /// </summary>
     private: void browseClicked();
+
+    /// <summary>
+    ///   Detelecines the entire movie using the currently assigned frame types
+    /// </summary>
+    private: void exportClicked();
 
     /// <summary>Marks the current frame to be discarded</param>
     private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
@@ -114,6 +119,10 @@ namespace Nuclex::Telecide {
     private: void markTopCFrameClicked() { toggleFrameType(FrameType::TopC); }
     /// <summary>Marks the current frame as a non-interlaced frame</param>
     private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
+    /// <summary>Marks the current frame for averaging</param>
+    private: void markAverageClicked() { toggleFrameType(FrameType::Average); }
+    /// <summary>Marks the current frame for duplication</param>
+    private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
 
     /// <summary>Toggles the current frame between the specified type and none</summary>
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>

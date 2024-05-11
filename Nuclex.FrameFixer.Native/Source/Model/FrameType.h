@@ -80,6 +80,21 @@ namespace Nuclex::Telecide {
     /// </remarks>
     BottomC,
 
+    /// <summary>Frame is repeating the contents of the prior frame</summary>
+    /// <remarks>
+    ///   Can be set if the frame identical to the previous frame (disregarding compression
+    ///   artifacts introduced during encoding). Both frames will be kept, but will be
+    ///   averaged with each other. If more than one frame is tagged with this,
+    ///   all successive frames will be involved in the averaging calculation.
+    /// </remarks>
+    Average,
+
+    /// <summary>Duplicate this frame</summary>
+    /// <remarks>
+    ///   Does exactly as it says on the tin. The frame will be repeated once on export.
+    /// </remarks>
+    Duplicate,
+
 #if 0 // This can be in addition to interlacing. D'oh! Will be a separate frame attribute.
 
     /// <summary>Tries to de-blend the second of two unequally composited frames</summary>

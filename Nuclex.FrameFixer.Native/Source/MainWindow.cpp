@@ -127,10 +127,22 @@ namespace Nuclex::Telecide {
       this, &MainWindow::markProgressiveClicked
     );
     connect(
+      this->ui->markAverageButton, &QPushButton::clicked,
+      this, &MainWindow::markAverageClicked
+    );
+    connect(
+      this->ui->markDuplicateButton, &QPushButton::clicked,
+      this, &MainWindow::markDuplicateClicked
+    );
+    connect(
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
       this, &MainWindow::selectedThumbnailChanged
     );
 
+    connect(
+      this->ui->exportButton, &QPushButton::clicked,
+      this, &MainWindow::exportClicked
+    );
     connect(
       this->ui->saveButton, &QPushButton::clicked,
       this, &MainWindow::saveClicked
@@ -150,7 +162,7 @@ namespace Nuclex::Telecide {
     this->thumbnailItemModel->SetMovie(this->currentMovie);
     this->thumbnailPaintDelegate->SetMovie(this->currentMovie);
 
-    startAnaylsisThread();
+    //startAnaylsisThread();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -279,6 +291,25 @@ namespace Nuclex::Telecide {
     }
 
     return std::size_t(-1);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::exportClicked() {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::unique_ptr<QImage> previousFrame;
+
+
+      std::size_t frameCount = this->currentMovie->Frames.size();
+      if(frameCount >= 1200) {
+        frameCount = 1200;
+      }
+      for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+
+
+
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
