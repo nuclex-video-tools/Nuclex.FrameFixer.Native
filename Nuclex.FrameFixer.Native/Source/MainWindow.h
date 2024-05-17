@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_CRIUGUI_MAINWINDOW_H
-#define NUCLEX_CRIUGUI_MAINWINDOW_H
+#ifndef NUCLEX_TELECIDE_MAINWINDOW_H
+#define NUCLEX_TELECIDE_MAINWINDOW_H
 
 #include "Nuclex/Telecide/Config.h"
 
@@ -123,6 +123,11 @@ namespace Nuclex::Telecide {
     private: void markAverageClicked() { toggleFrameType(FrameType::Average); }
     /// <summary>Marks the current frame for duplication</param>
     private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
+    /// <summary>Marks the current frame for triplication</param>
+    private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
+
+    /// <summary>Flood-fills the provisional frame types for previewing</param>
+    private: void floodClicked();
 
     /// <summary>Toggles the current frame between the specified type and none</summary>
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
@@ -140,6 +145,8 @@ namespace Nuclex::Telecide {
     /// <summary>Displays the preview for the specified frame in the main view</summary>
     /// <param name="frame">Frame that will be shown in the main view</param>
     private: void displayFrameInView(const Frame &frame);
+
+    private: void exportDetelecinedFrames(std::size_t startFrame, std::size_t endFrame);
 
     private: void stopAnalysisThread();
     private: void startAnaylsisThread();

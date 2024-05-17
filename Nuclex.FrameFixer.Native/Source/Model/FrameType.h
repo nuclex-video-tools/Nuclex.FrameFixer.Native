@@ -95,6 +95,12 @@ namespace Nuclex::Telecide {
     /// </remarks>
     Duplicate,
 
+    /// <summary>Triplicate this frame</summary>
+    /// <remarks>
+    ///   Does exactly as it says on the tin. The frame will be repeated twice on export.
+    /// </remarks>
+    Triplicate,
+
 #if 0 // This can be in addition to interlacing. D'oh! Will be a separate frame attribute.
 
     /// <summary>Tries to de-blend the second of two unequally composited frames</summary>

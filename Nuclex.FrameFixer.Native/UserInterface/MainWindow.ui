@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>703</width>
-    <height>720</height>
+    <width>724</width>
+    <height>756</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -112,6 +112,16 @@
         </property>
         <property name="shortcut">
          <string>D</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markTriplicateButton">
+        <property name="text">
+         <string>TRIP</string>
+        </property>
+        <property name="shortcut">
+         <string>S</string>
         </property>
        </widget>
       </item>
@@ -239,6 +249,16 @@ Space: flood</string>
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="floodButton">
+        <property name="text">
+         <string>Flood</string>
+        </property>
+        <property name="shortcut">
+         <string>Space</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="exportButton">

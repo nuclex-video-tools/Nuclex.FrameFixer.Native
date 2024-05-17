@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_CRIUGUI_SOURCE 1
+#define NUCLEX_TELECIDE_SOURCE 1
 
 #include "./MainWindow.h"
 #include "ui_MainWindow.h"
@@ -164,6 +164,10 @@ namespace Nuclex::Telecide {
       this, &MainWindow::markDuplicateClicked
     );
     connect(
+      this->ui->markTriplicateButton, &QPushButton::clicked,
+      this, &MainWindow::markTriplicateClicked
+    );
+    connect(
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
       this, &MainWindow::selectedThumbnailChanged
     );
@@ -171,6 +175,10 @@ namespace Nuclex::Telecide {
     connect(
       this->ui->exportButton, &QPushButton::clicked,
       this, &MainWindow::exportClicked
+    );
+    connect(
+      this->ui->floodButton, &QPushButton::clicked,
+      this, &MainWindow::floodClicked
     );
     connect(
       this->ui->saveButton, &QPushButton::clicked,
@@ -191,7 +199,20 @@ namespace Nuclex::Telecide {
     this->thumbnailItemModel->SetMovie(this->currentMovie);
     this->thumbnailPaintDelegate->SetMovie(this->currentMovie);
 
-    //startAnaylsisThread();
+    std::size_t lastTaggedFrameIndex = std::size_t(-1);
+
+    std::size_t frameCount = this->currentMovie->Frames.size();
+    for(std::size_t index = 0; index < frameCount; ++index) {
+      if(this->currentMovie->Frames[index].Type != FrameType::Unknown) {
+        lastTaggedFrameIndex = index;
+      }
+    }
+
+    if(lastTaggedFrameIndex != std::size_t(-1)) {
+      this->ui->thumbnailList->scrollTo(
+        this->thumbnailItemModel->index(static_cast<int>(lastTaggedFrameIndex))
+      );
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -205,7 +226,7 @@ namespace Nuclex::Telecide {
     selectDirectoryDialog->setFileMode(QFileDialog::FileMode::Directory);
     selectDirectoryDialog->setOption(QFileDialog::Option::ShowDirsOnly);
     selectDirectoryDialog->setWindowTitle(
-      QString(u8"Select directory to use for saved snapshots")
+      QString(u8"Select directory containing movie frames")
     );
 
     // Display the dialog, the user can select a directory or hit cancel
@@ -219,6 +240,49 @@ namespace Nuclex::Telecide {
         this->ui->frameDirectoryText->setText(selectedFiles[0]);
         ingestMovieFrames();
       }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::floodClicked() {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t lastMatchingIndex = 0;
+
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex == std::size_t(-1)) {
+        return;
+      }
+
+      std::size_t emittedFrameCount = 0;
+      for(std::size_t index = 0; index <= selectedFrameIndex; ++index) {
+        FrameType frameType = this->currentMovie->Frames[index].Type;
+        if(frameType == FrameType::Triplicate) {
+          emittedFrameCount += 3;
+        } else if(frameType == FrameType::Duplicate) {
+          emittedFrameCount += 2;
+        } else if(frameType != FrameType::Discard) {
+          ++emittedFrameCount;
+        }
+
+        if(emittedFrameCount == ((index + 2) * 4 / 5)) {
+          lastMatchingIndex = index;
+        }
+      }
+
+      std::string status(u8"Frame: ");
+      status += Nuclex::Support::Text::lexical_cast<std::string>(selectedFrameIndex);
+      status += u8"\n";
+      status += u8"Expected: ";
+      status += Nuclex::Support::Text::lexical_cast<std::string>((selectedFrameIndex + 2) * 4 / 5);
+      status += u8"\n";
+      status += u8"Emitted: ";
+      status += Nuclex::Support::Text::lexical_cast<std::string>(emittedFrameCount);
+      status += u8"\n";
+      status += u8"Sync: ";
+      status += Nuclex::Support::Text::lexical_cast<std::string>(lastMatchingIndex);
+      status += u8"\n";
+      this->ui->frameStatusLabel->setText(QString::fromStdString(status));      
     }
   }
 
@@ -326,64 +390,92 @@ namespace Nuclex::Telecide {
 
   void MainWindow::exportClicked() {
     if(static_cast<bool>(this->currentMovie)) {
-      std::string::size_type length = this->currentMovie->FrameDirectory.length();
+      std::size_t endIndex = getSelectedFrameIndex();
+      exportDetelecinedFrames(7450, endIndex);
+    }
+  }
 
-      std::string exportPath;
-      if((length >= 1) && (this->currentMovie->FrameDirectory[length - 1] == '/')) {
-        exportPath = this->currentMovie->FrameDirectory.substr(0, length - 1) + u8".export/";
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::exportDetelecinedFrames(std::size_t startFrame, std::size_t endFrame) {
+    std::string::size_type length = this->currentMovie->FrameDirectory.length();
+
+    std::string exportPath;
+    if((length >= 1) && (this->currentMovie->FrameDirectory[length - 1] == '/')) {
+      exportPath = this->currentMovie->FrameDirectory.substr(0, length - 1) + u8".export/";
+    } else {
+      exportPath = this->currentMovie->FrameDirectory + u8".export/";
+    }
+
+    std::vector<QImage> framesToAverage;
+    QImage previousFrame, frame;
+
+    std::size_t outputIndex = 1;
+    for(std::size_t frameIndex = 0; frameIndex <= endFrame; ++frameIndex) {
+      std::string imagePath = this->currentMovie->GetFramePath(frameIndex);
+
+      // Only begin to load images as we get near the frames to be exported.
+      if(frame.isNull() || (frameIndex + 10 >= startFrame)) {
+        frame.load(QString::fromStdString(imagePath));
+      }
+
+      FrameType frameType = this->currentMovie->Frames[frameIndex].Type;
+      if(frameType == FrameType::Unknown) {
+        frameType = this->currentMovie->Frames[frameIndex].ProvisionalType;
+      }
+      if(frameType == FrameType::Average) {
+        framesToAverage.push_back(std::move(frame));
       } else {
-        exportPath = this->currentMovie->FrameDirectory + u8".export/";
-      }
+        if(framesToAverage.size() >= 1) {
+          Averager::Average(previousFrame, framesToAverage);
+          if(frameIndex >= startFrame) {
+            SaveImage(previousFrame, exportPath, outputIndex);
+          }
+          ++outputIndex;
 
-      std::size_t frameCount = this->currentMovie->Frames.size();
-      if(frameCount >= 1200) {
-        frameCount = 1200;
-      }
-
-      std::vector<QImage> framesToAverage;
-      QImage previousFrame;
-
-      std::size_t outputIndex = 1;
-      for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-        std::string imagePath = this->currentMovie->GetFramePath(frameIndex);
-        QImage frame(QString::fromStdString(imagePath));
-
-        FrameType frameType = this->currentMovie->Frames[frameIndex].Type;
-        if(frameType == FrameType::Unknown) {
-          frameType = this->currentMovie->Frames[frameIndex].ProvisionalType;
-        }
-        if(frameType == FrameType::Average) {
-          framesToAverage.push_back(std::move(frame));
-        } else {
-          if(framesToAverage.size() >= 1) {
-            Averager::Average(previousFrame, framesToAverage);
-            SaveImage(previousFrame, exportPath, outputIndex++);
-            for(std::size_t index = 0; index < framesToAverage.size(); ++index) {
-              SaveImage(previousFrame, exportPath, outputIndex++);
+          for(std::size_t index = 0; index < framesToAverage.size(); ++index) {
+            if(frameIndex >= startFrame) {
+              SaveImage(previousFrame, exportPath, outputIndex);
             }
-            framesToAverage.clear();
+            ++outputIndex;
           }
-
-          // TODO: Not checking previousFrame here. Who cares?
-          if(frameType == FrameType::BC) {
-            PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
-          } else if(frameType == FrameType::CD) {
-            PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
-          } else if(frameType == FrameType::BottomC) {
-            PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
-          } else if(frameType == FrameType::TopC) {
-            PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
-          } else if(frameType == FrameType::Duplicate) {
-            SaveImage(frame, exportPath, outputIndex++); // extra (duplication)
-          }
-
-          if(frameType != FrameType::Discard) {
-            if(this->currentMovie->Frames[frameIndex + 1].Type != FrameType::Average) {
-              SaveImage(frame, exportPath, outputIndex++);
-            }
-          }
-          frame.swap(previousFrame);
+          framesToAverage.clear();
         }
+
+        // TODO: Not checking previousFrame here. Who cares?
+        if(frameType == FrameType::BC) {
+          PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
+        } else if(frameType == FrameType::CD) {
+          PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
+        } else if(frameType == FrameType::BottomC) {
+          PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
+        } else if(frameType == FrameType::TopC) {
+          PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
+        } else if(frameType == FrameType::Duplicate) {
+          if(frameIndex >= startFrame) {
+            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
+          }
+          ++outputIndex;
+        } else if(frameType == FrameType::Triplicate) {
+          if(frameIndex >= startFrame) {
+            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
+          }
+          ++outputIndex;
+          if(frameIndex >= startFrame) {
+            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
+          }
+          ++outputIndex;
+        }
+
+        if(frameType != FrameType::Discard) {
+          if(this->currentMovie->Frames[frameIndex + 1].Type != FrameType::Average) {
+            if(frameIndex >= startFrame) {
+              SaveImage(frame, exportPath, outputIndex);
+            }
+            ++outputIndex;
+          }
+        }
+        frame.swap(previousFrame);
       }
     }
   }

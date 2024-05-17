@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_CRIUGUI_SOURCE 1
+#define NUCLEX_TELECIDE_SOURCE 1
 
 #include "Nuclex/Telecide/Config.h"
 

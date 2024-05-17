@@ -29,6 +29,13 @@ option(
 	OFF
 )
 
+option(
+	ENABLE_YADIF
+	"Whether to support YADIF (a relatively good deinterlacer supported by \
+	various media players and ffmpeg. Otherwise, simple interpolation is used"
+	ON
+)
+
 # -------------------------------------------------------------------------------------------------
 
 # Qt: automatically run the "Meta-Object Compiler" which reads C++ header files and
@@ -113,6 +120,12 @@ if(BUILD_DOCS)
 	find_package(Doxygen)
 endif()
 
+# Add OpenCV if Yadif is enabled. The Yadif implemented used here is an OpenCV port
+# to avoid pulling in complex depencies from AviSynth, AVSynth, VapourSynth or ffmpeg.
+if(ENABLE_YADIF)
+	find_package(OpenCV REQUIRED)
+endif()
+
 # -------------------------------------------------------------------------------------------------
 
 # Project structure
@@ -166,11 +179,12 @@ function(add_third_party_libraries target_name)
 
 	target_link_libraries(
 		${target_name}
-        PUBLIC NuclexSupportNative
-        PUBLIC NuclexPlatformNative
-        PUBLIC NuclexPixelsNative
-		PRIVATE Qt5::Widgets
-        PRIVATE Threads::Threads
+      PUBLIC NuclexSupportNative
+      PUBLIC NuclexPlatformNative
+      PUBLIC NuclexPixelsNative
+      PRIVATE Qt5::Widgets
+			PRIVATE ${OpenCV_LIBS}
+      PRIVATE Threads::Threads
     )
 
 	# On Unix systems, the application and unit test executable should look for
