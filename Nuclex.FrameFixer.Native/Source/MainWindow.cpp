@@ -22,6 +22,7 @@ along with this library
 #define NUCLEX_TELECIDE_SOURCE 1
 
 #include "./MainWindow.h"
+#include "./ExportDialog.h"
 #include "ui_MainWindow.h"
 
 #include "./Model/Movie.h"
@@ -199,6 +200,17 @@ namespace Nuclex::Telecide {
     this->thumbnailItemModel->SetMovie(this->currentMovie);
     this->thumbnailPaintDelegate->SetMovie(this->currentMovie);
 
+    std::size_t lastTaggedFrameIndex = getLastTaggedFrameIndex();
+    if(lastTaggedFrameIndex != std::size_t(-1)) {
+      this->ui->thumbnailList->scrollTo(
+        this->thumbnailItemModel->index(static_cast<int>(lastTaggedFrameIndex))
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::size_t MainWindow::getLastTaggedFrameIndex() const {
     std::size_t lastTaggedFrameIndex = std::size_t(-1);
 
     std::size_t frameCount = this->currentMovie->Frames.size();
@@ -208,11 +220,7 @@ namespace Nuclex::Telecide {
       }
     }
 
-    if(lastTaggedFrameIndex != std::size_t(-1)) {
-      this->ui->thumbnailList->scrollTo(
-        this->thumbnailItemModel->index(static_cast<int>(lastTaggedFrameIndex))
-      );
-    }
+    return lastTaggedFrameIndex;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -390,21 +398,58 @@ namespace Nuclex::Telecide {
 
   void MainWindow::exportClicked() {
     if(static_cast<bool>(this->currentMovie)) {
-      std::size_t endIndex = getSelectedFrameIndex();
-      exportDetelecinedFrames(7450, endIndex);
+      std::unique_ptr<ExportDialog> exportDialog = (
+        std::make_unique<ExportDialog>(this)
+      );
+
+      // Stuff that I should be able to remove if I add a proper model class
+      // that will manage the data shoveling properly.
+      {
+        std::string::size_type length = this->currentMovie->FrameDirectory.length();
+
+        std::string exportPath;
+        if((length >= 1) && (this->currentMovie->FrameDirectory[length - 1] == '/')) {
+          exportPath = this->currentMovie->FrameDirectory.substr(0, length - 1) + u8".export/";
+        } else {
+          exportPath = this->currentMovie->FrameDirectory + u8".export/";
+        }
+        exportDialog->SetInitialExportDirectory(QString::fromStdString(exportPath));
+
+        exportDialog->SetMaximumFrameCount(this->currentMovie->Frames.size());
+
+        std::size_t lastTaggedFrameIndex = getLastTaggedFrameIndex();
+        if(lastTaggedFrameIndex != std::size_t(-1)) {
+          exportDialog->SetInitialframeCount(lastTaggedFrameIndex);
+        } else {
+          exportDialog->SetInitialframeCount(this->currentMovie->Frames.size());
+        }
+      }
+
+      //if(static_cast<bool>(this->servicesRoot)) {
+      //  exportDialog->BindToServicesRoot(this->servicesRoot);
+      //}
+
+      int result = exportDialog->exec();
+      if(result == QDialog::DialogCode::Accepted) {
+        exportDetelecinedFrames(
+          exportDialog->GetExportDirectory(),
+          exportDialog->GetStartFrame(),
+          exportDialog->GetEndFrame()
+        );
+      }
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::exportDetelecinedFrames(std::size_t startFrame, std::size_t endFrame) {
-    std::string::size_type length = this->currentMovie->FrameDirectory.length();
+  void MainWindow::exportDetelecinedFrames(
+    const std::string &directory, std::size_t startFrame, std::size_t endFrame
+  ) {
+    std::string::size_type length = directory.length();
 
-    std::string exportPath;
-    if((length >= 1) && (this->currentMovie->FrameDirectory[length - 1] == '/')) {
-      exportPath = this->currentMovie->FrameDirectory.substr(0, length - 1) + u8".export/";
-    } else {
-      exportPath = this->currentMovie->FrameDirectory + u8".export/";
+    std::string exportPath(directory);
+    if((length >= 1) && (directory[length - 1] != '/')) {
+      exportPath.push_back('/');
     }
 
     std::vector<QImage> framesToAverage;

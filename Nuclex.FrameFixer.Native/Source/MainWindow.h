@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuGui
+Nuclex Telecide
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -142,11 +142,15 @@ namespace Nuclex::Telecide {
 
     private: std::size_t getSelectedFrameIndex() const;
 
+    private: std::size_t getLastTaggedFrameIndex() const;
+
     /// <summary>Displays the preview for the specified frame in the main view</summary>
     /// <param name="frame">Frame that will be shown in the main view</param>
     private: void displayFrameInView(const Frame &frame);
 
-    private: void exportDetelecinedFrames(std::size_t startFrame, std::size_t endFrame);
+    private: void exportDetelecinedFrames(
+      const std::string &directory, std::size_t startFrame, std::size_t endFrame
+    );
 
     private: void stopAnalysisThread();
     private: void startAnaylsisThread();
