@@ -221,12 +221,12 @@ Space: flood</string>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="showTelecidedButton">
+       <widget class="QCheckBox" name="yadifOption">
         <property name="autoFillBackground">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Preview</string>
+         <string>Yadif</string>
         </property>
         <property name="checked">
          <bool>true</bool>

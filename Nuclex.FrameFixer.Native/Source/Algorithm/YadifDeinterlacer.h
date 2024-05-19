@@ -43,7 +43,8 @@ namespace Nuclex::Telecide {
     ///   otherwise, the bottom field (odd rows) will be filled in
     /// </param>
     public: static void Deinterlace(
-      QImage *previousImage, QImage &image, bool topField = true
+      const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
+      QImage &targetImage, bool topField = true
     );
 
   };

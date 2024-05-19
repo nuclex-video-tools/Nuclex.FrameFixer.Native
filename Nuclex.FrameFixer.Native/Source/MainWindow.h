@@ -133,6 +133,10 @@ namespace Nuclex::Telecide {
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
     private: void toggleFrameType(FrameType frameType);
 
+    /// <summary>Updates the preview image when the Yadif option is toggled</summary>
+    /// <param name="checked">Whether the yadif option is on or off</param>
+    private: void yadifOptionToggled(bool checked);
+
     /// <summary>Updates the displayed frame when another thumbnail is selected</summary>
     /// <param name="selected">List of frames that have been newly selected</param>
     /// <param name="deselected">List of frames that are no longer selected</param>

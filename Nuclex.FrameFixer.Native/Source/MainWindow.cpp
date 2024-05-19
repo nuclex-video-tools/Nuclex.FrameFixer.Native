@@ -30,6 +30,7 @@ along with this library
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./Algorithm/InterlaceDetector.h"
 #include "./Algorithm/PreviewDeinterlacer.h"
+#include "./Algorithm/YadifDeinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <QFileDialog>
@@ -189,6 +190,10 @@ namespace Nuclex::Telecide {
       this->ui->quitButton, &QPushButton::clicked,
       this, &MainWindow::quitClicked
     );
+    connect(
+      this->ui->yadifOption, &QCheckBox::toggled,
+      this, &MainWindow::yadifOptionToggled
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -317,6 +322,18 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::yadifOptionToggled(bool checked) {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex != std::size_t(-1)) {
+        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
+        displayFrameInView(selectedFrame);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::selectedThumbnailChanged(
     const QItemSelection &selected, const QItemSelection &deselected
   ) {
@@ -346,13 +363,33 @@ namespace Nuclex::Telecide {
         frameType = frame.ProvisionalType; // this one is calculated
       }
       if((frame.Type == FrameType::BC) && (frame.Index >= 1)) {
-        std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-        QImage previousBitmap(QString::fromStdString(previousImagePath));          
-        PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, true);
+        if(this->ui->yadifOption->isChecked()) {
+          QImage currentBitmap = bitmap.copy();
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+          QImage nextBitmap(QString::fromStdString(nextImagePath));
+          bitmap.fill(Qt::GlobalColor::gray);
+          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+        } else {
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, true);
+        }
       } else if((frame.Type == FrameType::CD) && (frame.Index >= 1)) {
-        std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-        QImage previousBitmap(QString::fromStdString(previousImagePath));          
-        PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, false);
+        if(this->ui->yadifOption->isChecked()) {
+          QImage currentBitmap = bitmap.copy();
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+          QImage nextBitmap(QString::fromStdString(nextImagePath));
+          bitmap.fill(Qt::GlobalColor::gray);
+          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+        } else {
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, false);
+        }
       } else if((frame.Type == FrameType::BC) || (frame.Type == FrameType::BottomC)) {
         PreviewDeinterlacer::Deinterlace(nullptr, bitmap, true);
       } else if((frame.Type == FrameType::CD) || (frame.Type == FrameType::TopC)) {

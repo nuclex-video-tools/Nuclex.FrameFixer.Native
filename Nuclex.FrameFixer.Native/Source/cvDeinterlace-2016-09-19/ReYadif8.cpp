@@ -100,17 +100,18 @@ void calc_spatialScore(
 
 // TODO: Gobal variables. Goodbye thread safety?
 int spatialScoreValue_MaxWidth = 0;
-std::unique_ptr<std::int16_t[]> spatialDifN2; // -2
-std::unique_ptr<std::int16_t[]> spatialDifN1; // -1
-std::unique_ptr<std::int16_t[]> spatialDif0;  //  0
-std::unique_ptr<std::int16_t[]> spatialDifP1; //  1
-std::unique_ptr<std::int16_t[]> spatialDifP2; //  2
 
-std::unique_ptr<std::int16_t[]> spatialScoreN2; // -2
-std::unique_ptr<std::int16_t[]> spatialScoreN1; // -1
-std::unique_ptr<std::int16_t[]> spatialScore0;  //  0
-std::unique_ptr<std::int16_t[]> spatialScoreP1; //  1
-std::unique_ptr<std::int16_t[]> spatialScoreP2; //  2
+std::unique_ptr<std::int16_t[]> spatial16DifN2; // -2
+std::unique_ptr<std::int16_t[]> spatial16DifN1; // -1
+std::unique_ptr<std::int16_t[]> spatial16Dif0;  //  0
+std::unique_ptr<std::int16_t[]> spatial16DifP1; //  1
+std::unique_ptr<std::int16_t[]> spatial16DifP2; //  2
+
+std::unique_ptr<std::int16_t[]> spatial16ScoreN2; // -2
+std::unique_ptr<std::int16_t[]> spatial16ScoreN1; // -1
+std::unique_ptr<std::int16_t[]> spatial16Score0;  //  0
+std::unique_ptr<std::int16_t[]> spatial16ScoreP1; //  1
+std::unique_ptr<std::int16_t[]> spatial16ScoreP2; //  2
 
 /// <summary>Deinterlaces a single scan line with the Yadif algorithm</summary>
 /// <param name="mode">
@@ -138,50 +139,161 @@ void ReYadif1Row(
 
   if(w > spatialScoreValue_MaxWidth) {
     spatialScoreValue_MaxWidth = w;
-    spatialDifN2.reset(new std::int16_t[w]);
-    spatialDifN1.reset(new std::int16_t[w]);
-    spatialDif0.reset(new std::int16_t[w]);
-    spatialDifP1.reset(new std::int16_t[w]);
-    spatialDifP2.reset(new std::int16_t[w]);
-    spatialScoreN2.reset(new std::int16_t[w]);
-    spatialScoreN1.reset(new std::int16_t[w]);
-    spatialScore0.reset(new std::int16_t[w]);
-    spatialScoreP1.reset(new std::int16_t[w]);
-    spatialScoreP2.reset(new std::int16_t[w]);
+    spatial16DifN2.reset(new std::int16_t[w]);
+    spatial16DifN1.reset(new std::int16_t[w]);
+    spatial16Dif0.reset(new std::int16_t[w]);
+    spatial16DifP1.reset(new std::int16_t[w]);
+    spatial16DifP2.reset(new std::int16_t[w]);
+    spatial16ScoreN2.reset(new std::int16_t[w]);
+    spatial16ScoreN1.reset(new std::int16_t[w]);
+    spatial16Score0.reset(new std::int16_t[w]);
+    spatial16ScoreP1.reset(new std::int16_t[w]);
+    spatial16ScoreP2.reset(new std::int16_t[w]);
   }
 
   // pre-calculate spatial score, can be optimize by SIMD
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifN2.get(), w, -2);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifN1.get(), w, -1);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDif0.get(),  w,  0);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifP1.get(), w, +1);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifP2.get(), w, +2);
-  calc_spatialScore(spatialDifN2.get(), spatialScoreN2.get(), w);
-  calc_spatialScore(spatialDifN1.get(), spatialScoreN1.get(), w);
-  calc_spatialScore(spatialDif0.get(),  spatialScore0.get(),  w);
-  calc_spatialScore(spatialDifP1.get(), spatialScoreP1.get(), w);
-  calc_spatialScore(spatialDifP2.get(), spatialScoreP2.get(), w);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifN2.get(), w, -2);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifN1.get(), w, -1);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16Dif0.get(),  w,  0);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifP1.get(), w, +1);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifP2.get(), w, +2);
+  calc_spatialScore(spatial16DifN2.get(), spatial16ScoreN2.get(), w);
+  calc_spatialScore(spatial16DifN1.get(), spatial16ScoreN1.get(), w);
+  calc_spatialScore(spatial16Dif0.get(),  spatial16Score0.get(),  w);
+  calc_spatialScore(spatial16DifP1.get(), spatial16ScoreP1.get(), w);
+  calc_spatialScore(spatial16DifP2.get(), spatial16ScoreP2.get(), w);
 
   // CHECK: Off by 1? Shouldn't this start at 2?
   for(int x = 3; x < w-3; x++) {
-    int minScore = spatialScore0.get()[x];
+    int minScore = spatial16Score0.get()[x];
     int spatial_pred = (cur[-step1 + 0] + cur[+step1 + 0]) / 2;
 
-    if(minScore > spatialScoreN1.get()[x]) {
-      minScore = spatialScoreN1.get()[x];
+    if(minScore > spatial16ScoreN1.get()[x]) {
+      minScore = spatial16ScoreN1.get()[x];
       spatial_pred = (cur[-step1 + -1] + cur[+step1 + -1]) / 2;
 
-      if(minScore > spatialScoreN2.get()[x]) {
-        minScore = spatialScoreN2.get()[x];
+      if(minScore > spatial16ScoreN2.get()[x]) {
+        minScore = spatial16ScoreN2.get()[x];
         spatial_pred = (cur[-step1 + -2] + cur[+step1 + -2]) / 2;
       }
     }
 
-    if(minScore > spatialScoreP1.get()[x]) {
-      minScore = spatialScoreP1.get()[x];
+    if(minScore > spatial16ScoreP1.get()[x]) {
+      minScore = spatial16ScoreP1.get()[x];
       spatial_pred = (cur[-step1 + 1] + cur[+step1 + 1]) / 2;
-      if(minScore > spatialScoreP2.get()[x]) {
-        minScore = spatialScoreP2.get()[x];
+      if(minScore > spatial16ScoreP2.get()[x]) {
+        minScore = spatial16ScoreP2.get()[x];
+        spatial_pred = (cur[-step1 + 2] + cur[+step1 + 2]) / 2;
+      }
+    }
+
+    int c = cur[-step1];
+    int d = (prev2[0] + next2[0]) / 2;
+    int e = cur[+step1];
+    int temporal_diff0 = ABS(prev2[0] - next2[0]) / 2;
+    int temporal_diff1 = (ABS(prev[-step1] - cur[-step1]) + ABS(prev[+step1] - cur[+step1])) / 2;
+    int temporal_diff2 = (ABS(next[-step1] - cur[-step1]) + ABS(next[+step1] - cur[+step1])) / 2;
+    int diff = MAX3(temporal_diff0, temporal_diff1, temporal_diff2);
+
+    if(mode < 2) {
+      int b = (prev2[-2 * step1] + next2[-2 * step1]) >> 1;
+      int f = (prev2[+2 * step1] + next2[+2 * step1]) >> 1;
+#if 0
+      int a = cur[-3 * step1];
+      int g = cur[+3 * step1];
+      int max = MAX3(d - e, d - c, MIN3(MAX(b - c, f - e), MAX(b - c, b - a), MAX(f - g, f - e)));
+      int min = MIN3(d - e, d - c, MAX3(MIN(b - c, f - e), MIN(b - c, b - a), MIN(f - g, f - e)));
+#else
+      int max = MAX3(d - e, d - c, MIN(b - c, f - e));
+      int min = MIN3(d - e, d - c, MAX(b - c, f - e));
+#endif
+
+      diff = MAX3(diff, min, -max);
+    }
+    if(spatial_pred > d + diff) {
+      spatial_pred = d + diff;
+    } else if (spatial_pred < d - diff) {
+      spatial_pred = d - diff;
+    }
+
+    *dst = spatial_pred;
+
+    ++dst;
+    ++cur;
+    ++prev;
+    ++next;
+    ++prev2;
+    ++next2;
+  }
+}
+
+std::unique_ptr<std::int32_t[]> spatial32DifN2; // -2
+std::unique_ptr<std::int32_t[]> spatial32DifN1; // -1
+std::unique_ptr<std::int32_t[]> spatial32Dif0;  //  0
+std::unique_ptr<std::int32_t[]> spatial32DifP1; //  1
+std::unique_ptr<std::int32_t[]> spatial32DifP2; //  2
+
+std::unique_ptr<std::int32_t[]> spatial32ScoreN2; // -2
+std::unique_ptr<std::int32_t[]> spatial32ScoreN1; // -1
+std::unique_ptr<std::int32_t[]> spatial32Score0;  //  0
+std::unique_ptr<std::int32_t[]> spatial32ScoreP1; //  1
+std::unique_ptr<std::int32_t[]> spatial32ScoreP2; //  2
+
+void ReYadif1Row(
+  int mode,
+  std::uint16_t *dst,
+  const std::uint16_t *prev, const std::uint16_t *cur, const std::uint16_t *next,
+  int w, int step1, int parity
+) {
+  const std::uint16_t *prev2 = parity ? prev : cur;
+  const std::uint16_t *next2 = parity ? cur : next;
+
+  if(w > spatialScoreValue_MaxWidth) {
+    spatialScoreValue_MaxWidth = w;
+    spatial32DifN2.reset(new std::int32_t[w]);
+    spatial32DifN1.reset(new std::int32_t[w]);
+    spatial32Dif0.reset(new std::int32_t[w]);
+    spatial32DifP1.reset(new std::int32_t[w]);
+    spatial32DifP2.reset(new std::int32_t[w]);
+    spatial32ScoreN2.reset(new std::int32_t[w]);
+    spatial32ScoreN1.reset(new std::int32_t[w]);
+    spatial32Score0.reset(new std::int32_t[w]);
+    spatial32ScoreP1.reset(new std::int32_t[w]);
+    spatial32ScoreP2.reset(new std::int32_t[w]);
+  }
+
+  // pre-calculate spatial score, can be optimize by SIMD
+  calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32DifN2.get(), w, -2);
+  calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32DifN1.get(), w, -1);
+  calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32Dif0.get(),  w,  0);
+  calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32DifP1.get(), w, +1);
+  calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32DifP2.get(), w, +2);
+  calc_spatialScore(spatial32DifN2.get(), spatial32ScoreN2.get(), w);
+  calc_spatialScore(spatial32DifN1.get(), spatial32ScoreN1.get(), w);
+  calc_spatialScore(spatial32Dif0.get(),  spatial32Score0.get(),  w);
+  calc_spatialScore(spatial32DifP1.get(), spatial32ScoreP1.get(), w);
+  calc_spatialScore(spatial32DifP2.get(), spatial32ScoreP2.get(), w);
+
+  // CHECK: Off by 1? Shouldn't this start at 2?
+  for(int x = 3; x < w-3; x++) {
+    int minScore = spatial32Score0.get()[x];
+    int spatial_pred = (cur[-step1 + 0] + cur[+step1 + 0]) / 2;
+
+    if(minScore > spatial32ScoreN1.get()[x]) {
+      minScore = spatial32ScoreN1.get()[x];
+      spatial_pred = (cur[-step1 + -1] + cur[+step1 + -1]) / 2;
+
+      if(minScore > spatial32ScoreN2.get()[x]) {
+        minScore = spatial32ScoreN2.get()[x];
+        spatial_pred = (cur[-step1 + -2] + cur[+step1 + -2]) / 2;
+      }
+    }
+
+    if(minScore > spatial32ScoreP1.get()[x]) {
+      minScore = spatial32ScoreP1.get()[x];
+      spatial_pred = (cur[-step1 + 1] + cur[+step1 + 1]) / 2;
+      if(minScore > spatial32ScoreP2.get()[x]) {
+        minScore = spatial32ScoreP2.get()[x];
         spatial_pred = (cur[-step1 + 2] + cur[+step1 + 2]) / 2;
       }
     }
