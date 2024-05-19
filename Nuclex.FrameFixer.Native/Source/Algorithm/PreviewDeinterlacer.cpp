@@ -41,12 +41,12 @@ namespace Nuclex::Telecide {
     QImage *previousImage, QImage &image, bool topField /* = true */
   ) {
     std::size_t lineCount = image.height();
-    std::size_t lineIndex = topField ? 2 : 1;
 
-    while(lineIndex < lineCount - 1) {
+    // Without a prior frame, interpolate the missing lines
+    if(previousImage == nullptr) {
+      std::size_t lineIndex = topField ? 2 : 1;
+      while(lineIndex < lineCount - 1) {
 
-      // Without a prior frame, interpolate the missing lines
-      if(previousImage == nullptr) {
         if(image.bytesPerLine() >= image.width() * 8) {
           QRgba64 *pixelsAbove = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex - 1));
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
@@ -68,7 +68,7 @@ namespace Nuclex::Telecide {
               static_cast<quint16>(blue), static_cast<quint16>(alpha)
             );
           }
-        } else {
+        } else { // 16 bits per color channel / 8 bits per color channel 
           QRgb *pixelsAbove = reinterpret_cast<QRgb *>(image.scanLine(lineIndex - 1));
           QRgb *pixels = reinterpret_cast<QRgb *>(image.scanLine(lineIndex));
           QRgb *pixelsBelow = reinterpret_cast<QRgb *>(image.scanLine(lineIndex + 1));
@@ -86,15 +86,23 @@ namespace Nuclex::Telecide {
               static_cast<int>(red), static_cast<int>(green), static_cast<int>(blue)
             );
           }
-        }
-      } else { // With a prior image, use the fields from that image if needed
+        } // if 8 bits per color channel
+
+        lineIndex += 2;
+      } // while
+
+    } else { // with a prior frame / without prior frame
+
+      std::size_t lineIndex = topField ? 0 : 1;
+      while(lineIndex < lineCount - 1) {
         std::uint8_t *previousImageLine = previousImage->scanLine(lineIndex);
         std::uint8_t *currentImageLine = image.scanLine(lineIndex);
         std::copy_n(previousImageLine, image.bytesPerLine(), currentImageLine);
-      }
 
-      lineIndex += 2;
-    }
+        lineIndex += 2;
+      } // while
+
+    } // if no prior frame provided
   }
 
   // ------------------------------------------------------------------------------------------- //

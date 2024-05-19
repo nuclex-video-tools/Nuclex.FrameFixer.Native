@@ -25,7 +25,7 @@ typedef void proc_filter_t(
   uint8_t* dstp, const int width, const int cpitch, const int ppitch,
   const int npitch, const int fm_ppitch, const int fm_npitch,
   const int epitch2, const int dpitch2, const int count
-);
+);  
 
 typedef void interpolate_t(
   uint8_t* dstp, const uint8_t* srcp, int stride, int width

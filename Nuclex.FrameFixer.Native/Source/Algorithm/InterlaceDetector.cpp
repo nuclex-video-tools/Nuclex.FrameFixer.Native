@@ -92,10 +92,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  //Telecide::Telecide() {}
-
-  // ------------------------------------------------------------------------------------------- //
-
   SwipeSample InterlaceDetector::Sample3(
     Nuclex::Pixels::ColorModels::RgbPixelIterator &iterator
   ) {

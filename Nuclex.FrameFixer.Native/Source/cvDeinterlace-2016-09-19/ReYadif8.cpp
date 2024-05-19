@@ -1,6 +1,7 @@
 #include <vector>
 #include <memory>
 #include <cstring>
+#include <cstdint>
 
 #define MIN(a,b) ((a) > (b) ? (b) : (a))
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
@@ -9,19 +10,36 @@
 #define MIN3(a,b,c) MIN(MIN(a,b),c)
 #define MAX3(a,b,c) MAX(MAX(a,b),c)
 
-typedef unsigned char u8;
-typedef short s16;
-
 // it suppose calc_spatialDif and calc_spatialScore will be optimize
 // by compiler that use SIMD instruction
 void calc_spatialDif(
-  unsigned char *cur_prev,    
-  unsigned char *cur_next,
-  s16 *dst,
+  const std::uint8_t *cur_prev,    
+  const std::uint8_t *cur_next,
+  std::int16_t *dst,
   int width,
   int shift
 ) {
-  s16 b = ABS(shift);
+  std::int16_t b = ABS(shift);
+  cur_prev += shift;
+  cur_next -= shift;
+  dst += b;
+
+  for(int x = b; x < width - b; ++x) {
+    *dst = ABS((*cur_prev) - (*cur_next));
+    ++dst;
+    ++cur_prev; 
+    ++cur_next;
+  }
+}
+
+void calc_spatialDif(
+  const std::uint16_t *cur_prev,    
+  const std::uint16_t *cur_next,
+  std::int32_t *dst,
+  int width,
+  int shift
+) {
+  std::int32_t b = ABS(shift);
   cur_prev += shift;
   cur_next -= shift;
   dst += b;
@@ -39,11 +57,32 @@ void calc_spatialDif(
 // dif+2     2 3 4 5 6 7
 // score   s s s s s s s s
 void calc_spatialScore(
-  s16 *dif,
-  s16 *score,
+  std::int16_t *dif,
+  std::int16_t *score,
   int width
 ) {
-  // CHECK: Doesn't integer promotion leave dif1 as s16 and dif2, dif3 as int?
+  // CHECK: Doesn't integer promotion leave dif1 as std::int16_t and dif2, dif3 as int?
+  auto dif1 = dif;
+  auto dif2 = dif + 1;
+  auto dif3 = dif + 2;
+  score += 1;
+    
+  for(int i = 1; i < width - 1; ++i) {
+    *score = ((*dif1) + (*dif2) + (*dif3));
+
+    ++score;
+    ++dif1;
+    ++dif2;
+    ++dif3;
+  }
+}
+
+void calc_spatialScore(
+  std::int32_t *dif,
+  std::int32_t *score,
+  int width
+) {
+  // CHECK: Doesn't integer promotion leave dif1 as std::int32_t and dif2, dif3 as int?
   auto dif1 = dif;
   auto dif2 = dif + 1;
   auto dif3 = dif + 2;
@@ -61,17 +100,17 @@ void calc_spatialScore(
 
 // TODO: Gobal variables. Goodbye thread safety?
 int spatialScoreValue_MaxWidth = 0;
-std::unique_ptr<s16[]> spatialDifN2; // -2
-std::unique_ptr<s16[]> spatialDifN1; // -1
-std::unique_ptr<s16[]> spatialDif0;  //  0
-std::unique_ptr<s16[]> spatialDifP1; //  1
-std::unique_ptr<s16[]> spatialDifP2; //  2
+std::unique_ptr<std::int16_t[]> spatialDifN2; // -2
+std::unique_ptr<std::int16_t[]> spatialDifN1; // -1
+std::unique_ptr<std::int16_t[]> spatialDif0;  //  0
+std::unique_ptr<std::int16_t[]> spatialDifP1; //  1
+std::unique_ptr<std::int16_t[]> spatialDifP2; //  2
 
-std::unique_ptr<s16[]> spatialScoreN2; // -2
-std::unique_ptr<s16[]> spatialScoreN1; // -1
-std::unique_ptr<s16[]> spatialScore0;  //  0
-std::unique_ptr<s16[]> spatialScoreP1; //  1
-std::unique_ptr<s16[]> spatialScoreP2; //  2
+std::unique_ptr<std::int16_t[]> spatialScoreN2; // -2
+std::unique_ptr<std::int16_t[]> spatialScoreN1; // -1
+std::unique_ptr<std::int16_t[]> spatialScore0;  //  0
+std::unique_ptr<std::int16_t[]> spatialScoreP1; //  1
+std::unique_ptr<std::int16_t[]> spatialScoreP2; //  2
 
 /// <summary>Deinterlaces a single scan line with the Yadif algorithm</summary>
 /// <param name="mode">
@@ -90,33 +129,33 @@ std::unique_ptr<s16[]> spatialScoreP2; //  2
 /// <param name="parity">Whether this is an even or an odd scanline</param>
 void ReYadif1Row(
   int mode,
-  u8 *dst,
-  const u8 *prev, const u8 *cur, const u8 *next,
+  std::uint8_t *dst,
+  const std::uint8_t *prev, const std::uint8_t *cur, const std::uint8_t *next,
   int w, int step1, int parity
 ) {
-  const u8 *prev2 = parity ? prev : cur;
-  const u8 *next2 = parity ? cur : next;
+  const std::uint8_t *prev2 = parity ? prev : cur;
+  const std::uint8_t *next2 = parity ? cur : next;
 
   if(w > spatialScoreValue_MaxWidth) {
     spatialScoreValue_MaxWidth = w;
-    spatialDifN2.reset(new s16[w]);
-    spatialDifN1.reset(new s16[w]);
-    spatialDif0.reset(new s16[w]);
-    spatialDifP1.reset(new s16[w]);
-    spatialDifP2.reset(new s16[w]);
-    spatialScoreN2.reset(new s16[w]);
-    spatialScoreN1.reset(new s16[w]);
-    spatialScore0.reset(new s16[w]);
-    spatialScoreP1.reset(new s16[w]);
-    spatialScoreP2.reset(new s16[w]);
+    spatialDifN2.reset(new std::int16_t[w]);
+    spatialDifN1.reset(new std::int16_t[w]);
+    spatialDif0.reset(new std::int16_t[w]);
+    spatialDifP1.reset(new std::int16_t[w]);
+    spatialDifP2.reset(new std::int16_t[w]);
+    spatialScoreN2.reset(new std::int16_t[w]);
+    spatialScoreN1.reset(new std::int16_t[w]);
+    spatialScore0.reset(new std::int16_t[w]);
+    spatialScoreP1.reset(new std::int16_t[w]);
+    spatialScoreP2.reset(new std::int16_t[w]);
   }
 
   // pre-calculate spatial score, can be optimize by SIMD
-  calc_spatialDif((u8*)cur - step1, (u8*)cur + step1, spatialDifN2.get(), w, -2);
-  calc_spatialDif((u8*)cur - step1, (u8*)cur + step1, spatialDifN1.get(), w, -1);
-  calc_spatialDif((u8*)cur - step1, (u8*)cur + step1, spatialDif0.get(),  w,  0);
-  calc_spatialDif((u8*)cur - step1, (u8*)cur + step1, spatialDifP1.get(), w, +1);
-  calc_spatialDif((u8*)cur - step1, (u8*)cur + step1, spatialDifP2.get(), w, +2);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifN2.get(), w, -2);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifN1.get(), w, -1);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDif0.get(),  w,  0);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifP1.get(), w, +1);
+  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatialDifP2.get(), w, +2);
   calc_spatialScore(spatialDifN2.get(), spatialScoreN2.get(), w);
   calc_spatialScore(spatialDifN1.get(), spatialScoreN1.get(), w);
   calc_spatialScore(spatialDif0.get(),  spatialScore0.get(),  w);
@@ -195,7 +234,7 @@ void ReYadif1Row(
 /// <remarks>
 ///   Interpolates based on bytes, so only 8 bit pixel formats will work.
 /// </remarks>
-static void interpolate(u8 *dst, const u8 *src1, const u8 *src2, int width) {    
+static void interpolate(std::uint8_t *dst, const std::uint8_t *src1, const std::uint8_t *src2, int width) {    
   for(int i = 0; i < width; ++i) {
     *dst = ((*src1) + (*src2)) / 2;
     ++dst;
@@ -206,8 +245,8 @@ static void interpolate(u8 *dst, const u8 *src1, const u8 *src2, int width) {
 
 void ReYadif1Channel(
   int mode,
-  u8 *dst,
-  const u8 *prev0, const u8 *cur0, const u8 *next0, int step1,
+  std::uint8_t *dst,
+  const std::uint8_t *prev0, const std::uint8_t *cur0, const std::uint8_t *next0, int step1,
   int w, int h,
   int parity, int tff
 ) {
