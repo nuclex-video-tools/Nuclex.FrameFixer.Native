@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuEncoder
+Nuclex Telecide
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -18,19 +18,19 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_YADIFDEINTERLACER_H
-#define NUCLEX_TELECIDE_YADIFDEINTERLACER_H
+#ifndef NUCLEX_TELECIDE_ALGORITHM_YADIFMOD2DEINTERLACER_H
+#define NUCLEX_TELECIDE_ALGORITHM_YADIFMOD2DEINTERLACER_H
 
 #include "Nuclex/Telecide/Config.h"
 
 #include <QImage>
 
-namespace Nuclex::Telecide {
+namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summaryDeinterlacer that integrates the Yadif algorithm</summary>
-  class YadifDeinterlacer {
+  class YadifMod2Deinterlacer {
 
     /// <summary>Cheaply deinterlaces the specified image</summary>
     /// <param name="previousImage">
@@ -51,6 +51,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::Telecide::Algorithm
 
-#endif // NUCLEX_TELECIDE_YADIFDEINTERLACER_H
+#endif // NUCLEX_TELECIDE_ALGORITHM_YADIFMOD2DEINTERLACER_H

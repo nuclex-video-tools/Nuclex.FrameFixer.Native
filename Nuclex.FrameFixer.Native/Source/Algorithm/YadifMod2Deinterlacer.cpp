@@ -21,29 +21,11 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_TELECIDE_SOURCE 1
 
-#include "./YadifDeinterlacer.h"
+#include "./YadifMod2Deinterlacer.h"
 
 #include "../yadifmod2-0.2.8/common.h"
 
 #include <vector> // for std::vector
-
-// If set, the ReYadif implementation from the cvDeinterlace repository is used
-// Otherwise, YadifMod2 from AviSynth is used.
-#define CVDEINTERLACE_REYADIF 1
-
-// Declared ni ReYadif8.cpp
-void ReYadif1Row(
-  int mode,
-  std::uint8_t *dst,
-  const std::uint8_t *prev, const std::uint8_t *cur, const std::uint8_t *next,
-  int w, int step1, int parity
-);
-void ReYadif1Row(
-  int mode,
-  std::uint16_t *dst,
-  const std::uint16_t *prev, const std::uint16_t *cur, const std::uint16_t *next,
-  int w, int step1, int parity
-);
 
 namespace {
 
@@ -53,72 +35,14 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::Telecide {
+namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void YadifDeinterlacer::Deinterlace(
+  void YadifMod2Deinterlacer::Deinterlace(
     const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
     QImage &targetImage, bool topField /* = true */
   ) {
-#if defined(CVDEINTERLACE_REYADIF)
-
-    // Without a prior frame, interpolate the missing lines
-    std::size_t lineCount = currentImage.height();
-    for(std::size_t lineIndex = 1; lineIndex < lineCount - 1; ++lineIndex) {
-      if(currentImage.bytesPerLine() >= currentImage.width() * 8) {
-        std::uint16_t *targetPixels = reinterpret_cast<std::uint16_t *>(
-          targetImage.scanLine(lineIndex)
-        );
-        const std::uint16_t *previousPixels = reinterpret_cast<const std::uint16_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-        const std::uint16_t *currentPixels = reinterpret_cast<const std::uint16_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-        const std::uint16_t *nextPixels = reinterpret_cast<const std::uint16_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-
-        ::ReYadif1Row(
-          0,
-          targetPixels,
-          previousPixels,
-          currentPixels,
-          nextPixels,
-          currentImage.width() * 4,
-          sizeof(QRgba64),
-          (lineIndex & 1) ^ (topField ? 0 : 1)
-        );
-      } else { // 16 bits per color channel / 8 bits per color channel 
-        std::uint8_t *targetPixels = reinterpret_cast<std::uint8_t *>(
-          targetImage.scanLine(lineIndex)
-        );
-        const std::uint8_t *previousPixels = reinterpret_cast<const std::uint8_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-        const std::uint8_t *currentPixels = reinterpret_cast<const std::uint8_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-        const std::uint8_t *nextPixels = reinterpret_cast<const std::uint8_t *>(
-          previousImage.scanLine(lineIndex)
-        );
-
-        ::ReYadif1Row(
-          0,
-          targetPixels,
-          previousPixels,
-          currentPixels,
-          nextPixels,
-          currentImage.width() * 4,
-          sizeof(std::uint8_t),
-          (lineIndex & 1) ^ (topField ? 0 : 1)
-        );
-      } // if 8 bits per color channel
-    } // while
-
-#else // defined(CVDEINTERLACE_REYADIF) / !defined(CVDEINTERLACE_REYADIF)
-
     ::proc_filter_t *yadifDeinterlaceProc = ::get_main_proc(
       16, true, false, arch_t::NO_SIMD
     );
@@ -192,10 +116,8 @@ namespace Nuclex::Telecide {
     } else { // 16 bits per color channel / 8 bits per color channel 
       throw u8"8 bit not connected yet.";
     } // if 8 bits per color channel
-
-#endif // !defined(CVDEINTERLACE_REYADIF)
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::Telecide::Algorithm
