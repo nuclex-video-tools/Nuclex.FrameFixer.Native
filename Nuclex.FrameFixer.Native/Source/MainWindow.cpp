@@ -387,6 +387,7 @@ namespace Nuclex::Telecide {
           case FrameType::BottomFieldFirst: { mode = Algorithm::DeinterlaceMode::BottomFieldFirst; break; }
           case FrameType::TopFieldOnly: { mode = Algorithm::DeinterlaceMode::TopFieldOnly; break; }
           case FrameType::BottomFieldOnly: { mode = Algorithm::DeinterlaceMode::BottomFieldOnly; break; }
+          default: { break; }
         }
         if(this->deinterlacer->NeedsPriorFrame()) {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
@@ -443,6 +444,8 @@ namespace Nuclex::Telecide {
       this->deinterlacer.reset(new Algorithm::PreviewDeinterlacer());
     } else if(selectedIndex == 1) {
       this->deinterlacer.reset(new Algorithm::ReYadifDeinterlacer());
+    } else if(selectedIndex == 3) {
+      this->deinterlacer.reset(new Algorithm::NNedi3Deinterlacer());
     }
 
     this->deinterlacer->WarmUp();

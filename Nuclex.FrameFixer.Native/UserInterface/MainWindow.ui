@@ -144,7 +144,7 @@
       <item>
        <widget class="QPushButton" name="markBcButton">
         <property name="text">
-         <string>B(TF) C(BF)</string>
+         <string>TF -&gt; BF</string>
         </property>
         <property name="shortcut">
          <string>1</string>
@@ -154,7 +154,7 @@
       <item>
        <widget class="QPushButton" name="markCdButton">
         <property name="text">
-         <string>C(TF) D(BF)</string>
+         <string>BF -&gt; TF</string>
         </property>
         <property name="shortcut">
          <string>2</string>
@@ -164,7 +164,7 @@
       <item>
        <widget class="QPushButton" name="markBottomCButton">
         <property name="text">
-         <string>C(BF)</string>
+         <string>TF</string>
         </property>
         <property name="shortcut">
          <string>3</string>
@@ -183,7 +183,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>C(TF)</string>
+         <string>BF</string>
         </property>
         <property name="shortcut">
          <string>4</string>

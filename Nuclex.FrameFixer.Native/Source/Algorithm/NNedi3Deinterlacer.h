@@ -36,24 +36,66 @@ namespace Nuclex::Telecide::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Deinterlacer that uses ffmpeg's NNedi3 filter to deinterlace</summary>
-  class NNedi3Deinterlacer {
+  class NNedi3Deinterlacer : public Deinterlacer {
 
-    /// <summary>Cheaply deinterlaces the specified image</summary>
-    /// <param name="previousImage">
-    ///   Image that came before the current one. If provided, the missing rows will be
-    ///   taken from this image. Otherwise, the missing rows are interpolated.
-    /// </param>
-    /// <param name="image">Image that will be deinterlaced</param>
-    /// <param name="topField">
-    ///   If true, the top field (even rows) will be filled in,
-    ///   otherwise, the bottom field (odd rows) will be filled in
-    /// </param>
-    public: static void Deinterlace(
-      const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
-      QImage &targetImage, bool topField = true
-    );
+    public: virtual ~NNedi3Deinterlacer() = default;
 
-    private: static std::shared_ptr<::AVFilterGraph> nnediFilterGraph;
+    /// <summary>Called before the deinterlacer is used by the application</summary>
+    public: void WarmUp() override;
+
+    /// <summary>Called when the deinterlacer is deselect for the time being</summary>
+    public: void CoolDown() override;
+
+    /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
+    /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
+    public: bool NeedsPriorFrame() const override { return true; }
+
+    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
+    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
+    public: bool NeedsNextFrame() const override { return true; }
+
+    /// <summary>Assigns the prior frame to the deinterlacer</summary>
+    /// <param name="priorFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the prior frame is available anyway),
+    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
+    public: void SetPriorFrame(const QImage &priorFrame) override;
+
+    /// <summary>Assigns the next frame to the deinterlacer</summary>
+    /// <param name="nextFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the next frame is available anyway),
+    ///   using the <see cref="NeedsNextFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
+    public: void SetNextFrame(const QImage &nextFrame) override;
+
+    /// <summary>Deinterlaces the specified frame</summary>
+    /// <param name="target">Frame that will be deinterlaced</param>
+    /// <param name="mode">
+    ///   How to deinterlace the frame (indicates if the top field is first or if
+    ///   the bottom field is first, or if special measures need to be taken)
+    /// </param>
+    public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
+
+    /// <summary>NNedi3 filter graph using the top field</summary>
+    private: std::shared_ptr<::AVFilterGraph> topFieldNnediFilterGraph;
+    /// <summary>NNedi3 filter graph using the bottom field</summary>
+    private: std::shared_ptr<::AVFilterGraph> bottomFieldNnediFilterGraph;
+    /// <summary>Width of the filter graphs that have been created</summary>
+    private: std::size_t filterGraphWidth;
+    /// <summary>Height of the filter graphs that have been created</summary>
+    private: std::size_t filterGraphHeight;
+
+    private: void ensureTopFieldFilterGraphCreated(std::size_t width, std::size_t height);
+    private: void ensureBottomFieldFilterGraphCreated(std::size_t width, std::size_t height);
+
+    /// <summary>The frame preceding the current one</summary>
+    private: QImage priorFrame;
+    /// <summary>The frame following the current one</summary>
+    private: QImage nextFrame;
 
 
   };

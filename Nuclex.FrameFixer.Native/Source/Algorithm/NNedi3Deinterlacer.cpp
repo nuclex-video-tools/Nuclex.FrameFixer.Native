@@ -22,6 +22,8 @@ along with this library
 #define NUCLEX_TELECIDE_SOURCE 1
 
 #include "./NNedi3Deinterlacer.h"
+#include "./PreviewDeinterlacer.h"
+#include <Nuclex/Support/Text/LexicalAppend.h>
 
 #include <vector> // for std::vector
 #include <stdexcept> // for std::bad_alloc
@@ -29,6 +31,10 @@ along with this library
 
 extern "C" {
   #include <libavfilter/avfilter.h>
+  #include <libavutil/opt.h>
+  #include <libavfilter/avfilter.h>
+  #include <libavfilter/buffersrc.h>
+  #include <libavfilter/buffersink.h>
 }
 
 namespace {
@@ -126,14 +132,20 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<::AVFilterGraph> setupNnediFilterGraph() {
+  std::shared_ptr<::AVFilterGraph> setupNnediFilterGraph(
+    const std::string &videoSize, const std::string &pixelFormat, bool topField = true
+  ) {
     std::shared_ptr<::AVFilterGraph> filterGraph = newAvFilterGraph();
 
-    // AV_PIX_FMT_BGR48LE == 58;
+    std::string arguments(u8"video_size=", 11);
+    arguments.append(videoSize);
+    arguments.append(u8":pix_fmt=", 9);
+    arguments.append(pixelFormat);
+    arguments.append(":time_base=1/25:pixel_aspect=1/1");
     ::AVFilterContext *inputFilterContext = newAvFilterContext(
       ::avfilter_get_by_name(u8"buffer"),
       u8"in",
-      u8"video_size=720x480:pix_fmt=58:time_base=1/25:pixel_aspect=1/1",
+      arguments.c_str(),
       nullptr,
       filterGraph
     );
@@ -153,6 +165,12 @@ namespace {
       nullptr,
       filterGraph
     );
+
+    if(topField) {
+      ::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
+    } else {
+      ::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
+    }
 
     linkAvFilterContexts(inputFilterContext, nnediFilterContext);
     linkAvFilterContexts(nnediFilterContext, outputFilterContext);
@@ -181,48 +199,226 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // anonymous namespace
+  void lockAvFrameBuffer(const std::shared_ptr<::AVFrame> &frame) {
+    int result = ::av_frame_get_buffer(frame.get(), 0);
+    if(result != 0) {
+      char buffer[1024];
+      int errorStringResult = ::av_strerror(result, buffer, sizeof(buffer));
 
-namespace Nuclex::Telecide {
+      std::string message(u8"Could not obtain memory buffer for AV frame: ", 30);
+      if(errorStringResult == 0) {
+        message.append(buffer);
+      } else {
+        message.append(u8"unknown error", 13);
+      }
 
-  // ------------------------------------------------------------------------------------------- //
-
-  std::shared_ptr<::AVFilterGraph> NNedi3Deinterlacer::nnediFilterGraph;
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void NNedi3Deinterlacer::Deinterlace(
-    const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
-    QImage &targetImage, bool topField /* = true */
-  ) {
-    if(nnediFilterGraph == nullptr) {
-      nnediFilterGraph = setupNnediFilterGraph();
+      throw std::runtime_error(message);
     }
-
-    std::shared_ptr<::AVFrame> inputFrame = newAvFrame();
-    inputFrame->format = AV_PIX_FMT_BGR48LE;
-    inputFrame->width = currentImage.width();
-    inputFrame->height = currentImage.height();
-
-    int result = ::av_frame_get_buffer(inputFrame.get(), 0);
-
-
-    
-
-/*
-    ::avfilter_graph_config(graph, 0);
-
-Finally you can send frames to the filter via
-
-av_buffersrc_write_frame(source, frame);
-
-And get the result with
-
- av_buffersink_get_frame(sink, frame);
-
-*/
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+  void writeFrameIntoFilterGraph(
+    const std::shared_ptr<::AVFilterGraph> &filterGraph,
+    const std::shared_ptr<::AVFrame> &frame
+  ) {
+    AVFilterContext *bufferFilterContext = ::avfilter_graph_get_filter(
+      filterGraph.get(), u8"in"
+    );
+    if(bufferFilterContext == nullptr) {
+      throw std::runtime_error(u8"Could not fetch 'in' filter from filter graph");
+    }
+
+    int result = ::av_buffersrc_write_frame(bufferFilterContext, frame.get());
+    if(result != 0) {
+      char buffer[1024];
+      int errorStringResult = ::av_strerror(result, buffer, sizeof(buffer));
+
+      std::string message(u8"Could not store AV frame in buffer AV filter context: ", 54);
+      if(errorStringResult == 0) {
+        message.append(buffer);
+      } else {
+        message.append(u8"unknown error", 13);
+      }
+
+      throw std::runtime_error(message);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<::AVFrame> readFrameFromFilterGraph(
+    const std::shared_ptr<::AVFilterGraph> &filterGraph
+  ) {
+    AVFilterContext *buffersinkFilterContext = ::avfilter_graph_get_filter(
+      filterGraph.get(), u8"out"
+    );
+    if(buffersinkFilterContext == nullptr) {
+      throw std::runtime_error(u8"Could not fetch 'out' filter from filter graph");
+    }
+
+    std::shared_ptr<::AVFrame> frame = newAvFrame();
+
+    int result = ::av_buffersink_get_frame(buffersinkFilterContext, frame.get());
+    if(result != 0) {
+      char buffer[1024];
+      int errorStringResult = ::av_strerror(result, buffer, sizeof(buffer));
+
+      std::string message(u8"Could not extract AV frame from buffersink AV filter context: ", 62);
+      if(errorStringResult == 0) {
+        message.append(buffer);
+      } else {
+        message.append(u8"unknown error", 13);
+      }
+
+      throw std::runtime_error(message);
+    }
+
+    return frame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // anonymous namespace
+
+namespace Nuclex::Telecide::Algorithm {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  //std::shared_ptr<::AVFilterGraph> NNedi3Deinterlacer::nnediFilterGraph;
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::WarmUp() {
+    this->filterGraphWidth = std::size_t(-1);
+    this->filterGraphHeight = std::size_t(-1);
+
+    //if(this->topFieldNnediFilterGraph == nullptr) {
+    //  nnediFilterGraph = setupNnediFilterGraph();
+    //}
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::CoolDown() {
+    this->topFieldNnediFilterGraph.reset();
+    this->bottomFieldNnediFilterGraph.reset();
+
+    this->filterGraphWidth = std::size_t(-1);
+    this->filterGraphHeight = std::size_t(-1);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::SetPriorFrame(const QImage &priorFrame) {
+    this->priorFrame = priorFrame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::SetNextFrame(const QImage &nextFrame) {
+    this->nextFrame = nextFrame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+    if((mode == DeinterlaceMode::TopFieldOnly) || (mode == DeinterlaceMode::BottomFieldOnly)) {
+      PreviewDeinterlacer::Deinterlace(
+        nullptr, target, (mode == DeinterlaceMode::TopFieldOnly)
+      );
+    } else if(mode != DeinterlaceMode::Dont) {
+      std::size_t width = target.width();
+      std::size_t height = target.height();
+
+      std::shared_ptr<::AVFrame> inputFrame = newAvFrame();
+      inputFrame->format = AV_PIX_FMT_BGR48LE;
+      inputFrame->width = width;
+      inputFrame->height = height;
+
+      lockAvFrameBuffer(inputFrame);
+
+      // TODO: work by scanline to be at least a little faster than this.
+      for(int y = 0; y < height; ++y) {
+        for(int x = 0; x < width; ++x) {
+          QRgb pixel = target.pixel(x, y);
+          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3] = qRed(pixel);
+          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3 + 1] = qGreen(pixel);
+          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3 + 2] = qBlue(pixel);
+        }
+      }
+
+      std::shared_ptr<::AVFrame> frame;
+      if(mode == DeinterlaceMode::TopFieldFirst) {
+        ensureTopFieldFilterGraphCreated(width, height);
+        writeFrameIntoFilterGraph(this->topFieldNnediFilterGraph, inputFrame);
+        frame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
+      } else {
+        ensureBottomFieldFilterGraphCreated(width, height);
+        writeFrameIntoFilterGraph(this->bottomFieldNnediFilterGraph, inputFrame);
+        frame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
+      }
+
+
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::ensureTopFieldFilterGraphCreated(
+    std::size_t width, std::size_t height
+  ) {
+    bool needRebuild = (
+      (this->filterGraphWidth != width) ||
+      (this->filterGraphHeight != height)
+    );
+    if(needRebuild) {
+      CoolDown();
+    }
+
+    if(!static_cast<bool>(this->topFieldNnediFilterGraph)) {
+      using Nuclex::Support::Text::lexical_append;
+
+      std::string videoSize;
+      lexical_append(videoSize, width);
+      videoSize.push_back(u8'x');
+      lexical_append(videoSize, height);
+
+      // AV_PIX_FMT_BGR48LE == 58;
+      this->topFieldNnediFilterGraph = setupNnediFilterGraph(
+        videoSize, u8"58", true
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::ensureBottomFieldFilterGraphCreated(
+    std::size_t width, std::size_t height
+  ) {
+    bool needRebuild = (
+      (this->filterGraphWidth != width) ||
+      (this->filterGraphHeight != height)
+    );
+    if(needRebuild) {
+      CoolDown();
+    }
+
+    if(!static_cast<bool>(this->bottomFieldNnediFilterGraph)) {
+      using Nuclex::Support::Text::lexical_append;
+
+      std::string videoSize;
+      lexical_append(videoSize, width);
+      videoSize.push_back(u8'x');
+      lexical_append(videoSize, height);
+      
+      // AV_PIX_FMT_BGR48LE == 58;
+      this->bottomFieldNnediFilterGraph = setupNnediFilterGraph(
+        videoSize, u8"58", false
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // namespace Nuclex::Telecide::Algorithm
