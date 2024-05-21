@@ -221,12 +221,12 @@ Space: flood</string>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="yadifOption">
+       <widget class="QCheckBox" name="previewOption">
         <property name="autoFillBackground">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Yadif</string>
+         <string>Preview</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -237,6 +237,19 @@ Space: flood</string>
     </item>
     <item row="9" column="0" colspan="4">
      <layout class="QHBoxLayout" name="bottomButtonLayout">
+      <item>
+       <widget class="QComboBox" name="deinterlacerCombo">
+        <property name="minimumSize">
+         <size>
+          <width>320</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="currentText">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
@@ -251,9 +264,9 @@ Space: flood</string>
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="floodButton">
+       <widget class="QPushButton" name="showStatisticsButton">
         <property name="text">
-         <string>Flood</string>
+         <string>Statistics</string>
         </property>
         <property name="shortcut">
          <string>Space</string>

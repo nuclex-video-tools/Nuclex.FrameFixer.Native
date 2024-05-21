@@ -127,7 +127,7 @@ namespace Nuclex::Telecide {
     private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
-    private: void floodClicked();
+    private: void showStatisticsClicked();
 
     /// <summary>Toggles the current frame between the specified type and none</summary>
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
@@ -135,7 +135,7 @@ namespace Nuclex::Telecide {
 
     /// <summary>Updates the preview image when the Yadif option is toggled</summary>
     /// <param name="checked">Whether the yadif option is on or off</param>
-    private: void yadifOptionToggled(bool checked);
+    private: void previewOptionToggled(bool checked);
 
     /// <summary>Updates the displayed frame when another thumbnail is selected</summary>
     /// <param name="selected">List of frames that have been newly selected</param>
@@ -143,6 +143,8 @@ namespace Nuclex::Telecide {
     private: void selectedThumbnailChanged(
       const QItemSelection &selected, const QItemSelection &deselected
     );
+
+    private: void selectedDeinterlacerChanged(int selectedIndex);
 
     private: std::size_t getSelectedFrameIndex() const;
 

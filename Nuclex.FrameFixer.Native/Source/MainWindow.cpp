@@ -29,14 +29,17 @@ along with this library
 #include "./FrameThumbnailItemModel.h"
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./Algorithm/InterlaceDetector.h"
+
 #include "./Algorithm/PreviewDeinterlacer.h"
 #include "./Algorithm/YadifDeinterlacer.h"
 #include "./Algorithm/NNedi3Deinterlacer.h"
+#include "./Algorithm/AnimeDeinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
 #include <QThread>
+#include <QComboBox>
 
 #include <Nuclex/Support/Text/LexicalCast.h>
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
@@ -107,6 +110,14 @@ namespace Nuclex::Telecide {
     this->thumbnailPaintDelegate.reset(new FrameThumbnailPaintDelegate());
     this->ui->thumbnailList->setItemDelegate(this->thumbnailPaintDelegate.get());
 
+    std::unique_ptr<QStringList> deinterlacers = std::make_unique<QStringList>();
+    deinterlacers->push_back(u8"Copy / interpolate missing fields");
+    deinterlacers->push_back(u8"Yadif (from cvDeinterlace)");
+    deinterlacers->push_back(u8"YadifMod2 (from AviSynth)");
+    deinterlacers->push_back(u8"NNedi3 (from ffmpeg)");
+    deinterlacers->push_back(u8"Anime deinterlacer (custom)");
+    this->ui->deinterlacerCombo->addItems(*deinterlacers.get());
+
     connectUiSignals();
   }
 
@@ -174,14 +185,19 @@ namespace Nuclex::Telecide {
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
       this, &MainWindow::selectedThumbnailChanged
     );
+    connect(
+      this->ui->deinterlacerCombo,
+       static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+      this, &MainWindow::selectedDeinterlacerChanged
+    );
 
     connect(
       this->ui->exportButton, &QPushButton::clicked,
       this, &MainWindow::exportClicked
     );
     connect(
-      this->ui->floodButton, &QPushButton::clicked,
-      this, &MainWindow::floodClicked
+      this->ui->showStatisticsButton, &QPushButton::clicked,
+      this, &MainWindow::showStatisticsClicked
     );
     connect(
       this->ui->saveButton, &QPushButton::clicked,
@@ -192,8 +208,8 @@ namespace Nuclex::Telecide {
       this, &MainWindow::quitClicked
     );
     connect(
-      this->ui->yadifOption, &QCheckBox::toggled,
-      this, &MainWindow::yadifOptionToggled
+      this->ui->previewOption, &QCheckBox::toggled,
+      this, &MainWindow::previewOptionToggled
     );
   }
 
@@ -259,7 +275,7 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::floodClicked() {
+  void MainWindow::showStatisticsClicked() {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t lastMatchingIndex = 0;
 
@@ -323,7 +339,7 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::yadifOptionToggled(bool checked) {
+  void MainWindow::previewOptionToggled(bool checked) {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {
@@ -359,39 +375,52 @@ namespace Nuclex::Telecide {
 
       QImage bitmap(QString::fromStdString(imagePath));
 
+      int deinterlacerIndex = this->ui->deinterlacerCombo->currentIndex();
+
       FrameType frameType = frame.Type;
       if(frameType == FrameType::Unknown) {
         frameType = frame.ProvisionalType; // this one is calculated
       }
       if((frame.Type == FrameType::BC) && (frame.Index >= 1)) {
-        if(this->ui->yadifOption->isChecked()) {
-          QImage currentBitmap = bitmap.copy();
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-          QImage nextBitmap(QString::fromStdString(nextImagePath));
-          //bitmap.fill(Qt::GlobalColor::gray);
-          //YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
-          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
-        } else {
+        if(deinterlacerIndex == 0) {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));
           PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, true);
-        }
-      } else if((frame.Type == FrameType::CD) && (frame.Index >= 1)) {
-        if(this->ui->yadifOption->isChecked()) {
+        } else if(deinterlacerIndex == 1) {
           QImage currentBitmap = bitmap.copy();
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));
           std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
           QImage nextBitmap(QString::fromStdString(nextImagePath));
-          //bitmap.fill(Qt::GlobalColor::gray);
-          //YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
-          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
-        } else {
+          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+        } else if(deinterlacerIndex == 3) {
+          QImage currentBitmap = bitmap.copy();
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+          QImage nextBitmap(QString::fromStdString(nextImagePath));
+          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+        }
+      } else if((frame.Type == FrameType::CD) && (frame.Index >= 1)) {
+        if(deinterlacerIndex == 0) {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));
           PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, false);
+        } else if(deinterlacerIndex == 1) {
+          QImage currentBitmap = bitmap.copy();
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+          QImage nextBitmap(QString::fromStdString(nextImagePath));
+          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+        } else if(deinterlacerIndex == 3) {
+          QImage currentBitmap = bitmap.copy();
+          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
+          QImage previousBitmap(QString::fromStdString(previousImagePath));
+          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+          QImage nextBitmap(QString::fromStdString(nextImagePath));
+          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
         }
       } else if((frame.Type == FrameType::BC) || (frame.Type == FrameType::BottomC)) {
         PreviewDeinterlacer::Deinterlace(nullptr, bitmap, true);
@@ -415,6 +444,19 @@ namespace Nuclex::Telecide {
       status += u8"File: ";
       status += frame.Filename;
       this->ui->frameStatusLabel->setText(QString::fromStdString(status));
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::selectedDeinterlacerChanged(int selectedIndex) {
+    (void)selectedIndex;
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex != std::size_t(-1)) {
+        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
+        displayFrameInView(selectedFrame);
+      }
     }
   }
 
