@@ -31,7 +31,7 @@ along with this library
 #include "./Algorithm/InterlaceDetector.h"
 
 #include "./Algorithm/PreviewDeinterlacer.h"
-#include "./Algorithm/YadifDeinterlacer.h"
+#include "./Algorithm/ReYadifDeinterlacer.h"
 #include "./Algorithm/NNedi3Deinterlacer.h"
 #include "./Algorithm/AnimeDeinterlacer.h"
 #include "./Algorithm/Averager.h"
@@ -383,10 +383,10 @@ namespace Nuclex::Telecide {
       {
         Algorithm::DeinterlaceMode mode = Algorithm::DeinterlaceMode::Dont;
         switch(frameType) {
-          case FrameType::BC: { mode = Algorithm::DeinterlaceMode::TopFieldFirst; break; }
-          case FrameType::CD: { mode = Algorithm::DeinterlaceMode::BottomFieldFirst; break; }
-          case FrameType::TopC: { mode = Algorithm::DeinterlaceMode::TopFieldOnly; break; }
-          case FrameType::BottomC: { mode = Algorithm::DeinterlaceMode::BottomFieldOnly; break; }
+          case FrameType::TopFieldFirst: { mode = Algorithm::DeinterlaceMode::TopFieldFirst; break; }
+          case FrameType::BottomFieldFirst: { mode = Algorithm::DeinterlaceMode::BottomFieldFirst; break; }
+          case FrameType::TopFieldOnly: { mode = Algorithm::DeinterlaceMode::TopFieldOnly; break; }
+          case FrameType::BottomFieldOnly: { mode = Algorithm::DeinterlaceMode::BottomFieldOnly; break; }
         }
         if(this->deinterlacer->NeedsPriorFrame()) {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
@@ -442,7 +442,7 @@ namespace Nuclex::Telecide {
     if(selectedIndex == 0) {
       this->deinterlacer.reset(new Algorithm::PreviewDeinterlacer());
     } else if(selectedIndex == 1) {
-      //this->deinterlacer.reset(new Algorithm::YadifDeinterlacer());
+      this->deinterlacer.reset(new Algorithm::ReYadifDeinterlacer());
     }
 
     this->deinterlacer->WarmUp();
@@ -566,13 +566,13 @@ namespace Nuclex::Telecide {
         }
 
         // TODO: Not checking previousFrame here. Who cares?
-        if(frameType == FrameType::BC) {
+        if(frameType == FrameType::TopFieldFirst) {
           Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
-        } else if(frameType == FrameType::CD) {
+        } else if(frameType == FrameType::BottomFieldFirst) {
           Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
-        } else if(frameType == FrameType::BottomC) {
+        } else if(frameType == FrameType::BottomFieldOnly) {
           Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
-        } else if(frameType == FrameType::TopC) {
+        } else if(frameType == FrameType::TopFieldOnly) {
           Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
         } else if(frameType == FrameType::Duplicate) {
           if(frameIndex >= startFrame) {

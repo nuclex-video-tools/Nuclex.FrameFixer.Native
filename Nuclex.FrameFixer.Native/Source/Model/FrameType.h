@@ -54,13 +54,13 @@ namespace Nuclex::Telecide {
     ///   Takes the bottom field (all odd lines) from this frame and the top field
     ///   (all even lines) from the previous frame, ending up with pure B.
     /// </remarks>
-    BC,
+    TopFieldFirst,
     /// <summary>Third frame overlaid with the fields of the fourth frame</summary>
     /// <remarks>
     ///   Takes the top field (all even lines) from this frame and the bottom field
     ///   (all odd lines) from the previous frame, ending up with pure C.
     /// </remarks>
-    CD,
+    BottomFieldFirst,
     /// <summary>Frame is the fourth frame in a telecine sequence</summary>
     /// <remarks>
     ///   A simple progressive frame but tagged for where it is in the telecine rhythm
@@ -72,13 +72,13 @@ namespace Nuclex::Telecide {
     ///   Only takes the top field (all even lines) and interpolates the missing lines
     ///   under the assumption that the predecesor frame is missing or unusable.
     /// </remarks>
-    TopC,
+    TopFieldOnly,
     /// <summary>Overlaid fields of the fourth frame missing its other half</summary>
     /// <remarks>
     ///   Only takes the bottom field (all odd lines) and interpolates the missing lines
     ///   under the assumption that the predecesor frame is missing or unusable.
     /// </remarks>
-    BottomC,
+    BottomFieldOnly,
 
     /// <summary>Frame is repeating the contents of the prior frame</summary>
     /// <remarks>

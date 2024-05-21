@@ -119,13 +119,13 @@ namespace Nuclex::Telecide {
           if(typeAsString == u8"Discard") {
             movie->Frames[frameIndex].Type = FrameType::Discard;
           } else if((typeAsString == u8"BC") || (typeAsString == u8"TopFieldFirst")) {
-            movie->Frames[frameIndex].Type = FrameType::BC;
+            movie->Frames[frameIndex].Type = FrameType::TopFieldFirst;
           } else if((typeAsString == u8"CD") || (typeAsString == u8"BottomFieldFirst")) {
-            movie->Frames[frameIndex].Type = FrameType::CD;
+            movie->Frames[frameIndex].Type = FrameType::BottomFieldFirst;
           } else if((typeAsString == u8"TopC") || (typeAsString == u8"TopFieldOnly")) {
-            movie->Frames[frameIndex].Type = FrameType::TopC;
+            movie->Frames[frameIndex].Type = FrameType::TopFieldOnly;
           } else if((typeAsString == u8"BottomC") || (typeAsString == u8"BottomFieldOnly")) {
-            movie->Frames[frameIndex].Type = FrameType::BottomC;
+            movie->Frames[frameIndex].Type = FrameType::BottomFieldOnly;
           } else if(typeAsString == u8"Progressive") {
             movie->Frames[frameIndex].Type = FrameType::Progressive;
           } else if(typeAsString == u8"Average") {
@@ -162,10 +162,10 @@ namespace Nuclex::Telecide {
         line.append(u8", ");
         switch(this->Frames[index].Type) {
           case FrameType::Discard: { line.append(u8"Discard"); break; }
-          case FrameType::BC: { line.append(u8"TopFieldFirst"); break; }
-          case FrameType::CD: { line.append(u8"BottomFieldFirst"); break; }
-          case FrameType::TopC: { line.append(u8"TopFieldOnly"); break; }
-          case FrameType::BottomC: { line.append(u8"BottomFieldOnly"); break; }
+          case FrameType::TopFieldFirst: { line.append(u8"TopFieldFirst"); break; }
+          case FrameType::BottomFieldFirst: { line.append(u8"BottomFieldFirst"); break; }
+          case FrameType::TopFieldOnly: { line.append(u8"TopFieldOnly"); break; }
+          case FrameType::BottomFieldOnly: { line.append(u8"BottomFieldOnly"); break; }
           case FrameType::Progressive: { line.append(u8"Progressive"); break; }
           case FrameType::Average: { line.append(u8"Average"); break; }
           case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }

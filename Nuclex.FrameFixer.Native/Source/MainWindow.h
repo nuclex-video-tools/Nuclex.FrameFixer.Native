@@ -111,13 +111,13 @@ namespace Nuclex::Telecide {
     /// <summary>Marks the current frame to be discarded</param>
     private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
     /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
-    private: void markBcFrameClicked()  { toggleFrameType(FrameType::BC); }
+    private: void markBcFrameClicked()  { toggleFrameType(FrameType::TopFieldFirst); }
     /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
-    private: void markCdFrameClicked()  { toggleFrameType(FrameType::CD); }
+    private: void markCdFrameClicked()  { toggleFrameType(FrameType::BottomFieldFirst); }
     /// <summary>Marks the current frame as a C frame with only its bottom field</param>
-    private: void markBottomCFrameClicked() { toggleFrameType(FrameType::BottomC); }
+    private: void markBottomCFrameClicked() { toggleFrameType(FrameType::BottomFieldOnly); }
     /// <summary>Marks the current frame as a C frame wiht only its top field</param>
-    private: void markTopCFrameClicked() { toggleFrameType(FrameType::TopC); }
+    private: void markTopCFrameClicked() { toggleFrameType(FrameType::TopFieldOnly); }
     /// <summary>Marks the current frame as a non-interlaced frame</param>
     private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
     /// <summary>Marks the current frame for averaging</param>

@@ -18,10 +18,11 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H
-#define NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H
+#ifndef NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H
+#define NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H
 
 #include "Nuclex/Telecide/Config.h"
+#include "./Deinterlacer.h"
 
 #include <QImage> // for QImage
 #include <memory> // for std::shared_ptr
@@ -30,7 +31,7 @@ extern "C" {
   struct AVFilterGraph;
 }
 
-namespace Nuclex::Telecide {
+namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -59,6 +60,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::Telecide::Algorithm
 
-#endif // NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H
+#endif // NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H

@@ -25,6 +25,14 @@ along with this library
 
 #include <vector> // for std::vector
 
+// PyTorch
+// Three nodes to help you compute optical flow between pairs of images
+// https://github.com/seanlynch/comfyui-optical-flow
+
+// Real-time Action Recognition with Enhanced Motion Vector CNNs
+// "For extracting Motion Vector image"
+// https://github.com/zbwglory/MV-release
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //

@@ -91,28 +91,28 @@ namespace Nuclex::Telecide {
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "X");
         painter->restore();    
-      } else if(frame.Type == FrameType::BC) {
+      } else if(frame.Type == FrameType::TopFieldFirst) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "BC");
         painter->restore();    
-      } else if(frame.Type == FrameType::CD) {
+      } else if(frame.Type == FrameType::BottomFieldFirst) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "CD");
         painter->restore();    
-      } else if(frame.Type == FrameType::BottomC) {
+      } else if(frame.Type == FrameType::BottomFieldOnly) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "C▼");
         painter->restore();    
-      } else if(frame.Type == FrameType::TopC) {
+      } else if(frame.Type == FrameType::TopFieldOnly) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
