@@ -151,20 +151,20 @@ namespace Nuclex::Telecide {
       this, &MainWindow::markDiscardClicked
     );
     connect(
-      this->ui->markBcButton, &QPushButton::clicked,
-      this, &MainWindow::markBcFrameClicked
+      this->ui->markTopFieldFirstButton, &QPushButton::clicked,
+      this, &MainWindow::markTopFieldFirstClicked
     );
     connect(
-      this->ui->markCdButton, &QPushButton::clicked,
-      this, &MainWindow::markCdFrameClicked
+      this->ui->markBottomFieldFirstButton, &QPushButton::clicked,
+      this, &MainWindow::markBottomFieldFirstClicked
     );
     connect(
-      this->ui->markBottomCButton, &QPushButton::clicked,
-      this, &MainWindow::markBottomCFrameClicked
+      this->ui->markBottomFieldOnlyButton, &QPushButton::clicked,
+      this, &MainWindow::markBottomFieldOnlyClicked
     );
     connect(
-      this->ui->markTopCButton, &QPushButton::clicked,
-      this, &MainWindow::markTopCFrameClicked
+      this->ui->markTopFieldOnlyButton, &QPushButton::clicked,
+      this, &MainWindow::markTopFieldOnlyClicked
     );
     connect(
       this->ui->markProgressiveButton, &QPushButton::clicked,
@@ -193,6 +193,15 @@ namespace Nuclex::Telecide {
     );
 
     connect(
+      this->ui->swapFieldsOption, &QCheckBox::toggled,
+      this, &MainWindow::swapFieldsOptionToggled
+    );
+    connect(
+      this->ui->previewOption, &QCheckBox::toggled,
+      this, &MainWindow::previewOptionToggled
+    );
+
+    connect(
       this->ui->exportButton, &QPushButton::clicked,
       this, &MainWindow::exportClicked
     );
@@ -207,10 +216,6 @@ namespace Nuclex::Telecide {
     connect(
       this->ui->quitButton, &QPushButton::clicked,
       this, &MainWindow::quitClicked
-    );
-    connect(
-      this->ui->previewOption, &QCheckBox::toggled,
-      this, &MainWindow::previewOptionToggled
     );
   }
 
@@ -340,6 +345,18 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::swapFieldsOptionToggled(bool checked) {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex != std::size_t(-1)) {
+        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
+        displayFrameInView(selectedFrame);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::previewOptionToggled(bool checked) {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
@@ -375,6 +392,19 @@ namespace Nuclex::Telecide {
       FrameType frameType = frame.Type;
       if(frameType == FrameType::Unknown) {
         frameType = frame.ProvisionalType; // this one is calculated
+      }
+
+      if(this->ui->swapFieldsOption->isChecked()) {
+        switch(frameType) {
+          case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
+          case FrameType::BottomFieldFirst: { frameType = FrameType::TopFieldFirst; break; }
+          case FrameType::TopFieldOnly: { frameType = FrameType::BottomFieldOnly; break; }
+          case FrameType::BottomFieldOnly: { frameType = FrameType::TopFieldOnly; break; }
+          default: { break; }
+        }
+      }
+      if(!this->ui->previewOption->isChecked()) {
+        frameType = FrameType::Progressive;
       }
 
       // Load the frame and deinterlace it

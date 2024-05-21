@@ -111,13 +111,13 @@ namespace Nuclex::Telecide {
     /// <summary>Marks the current frame to be discarded</param>
     private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
     /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
-    private: void markBcFrameClicked()  { toggleFrameType(FrameType::TopFieldFirst); }
+    private: void markTopFieldFirstClicked()  { toggleFrameType(FrameType::TopFieldFirst); }
     /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
-    private: void markCdFrameClicked()  { toggleFrameType(FrameType::BottomFieldFirst); }
-    /// <summary>Marks the current frame as a C frame with only its bottom field</param>
-    private: void markBottomCFrameClicked() { toggleFrameType(FrameType::BottomFieldOnly); }
+    private: void markBottomFieldFirstClicked()  { toggleFrameType(FrameType::BottomFieldFirst); }
     /// <summary>Marks the current frame as a C frame wiht only its top field</param>
-    private: void markTopCFrameClicked() { toggleFrameType(FrameType::TopFieldOnly); }
+    private: void markTopFieldOnlyClicked() { toggleFrameType(FrameType::TopFieldOnly); }
+    /// <summary>Marks the current frame as a C frame with only its bottom field</param>
+    private: void markBottomFieldOnlyClicked() { toggleFrameType(FrameType::BottomFieldOnly); }
     /// <summary>Marks the current frame as a non-interlaced frame</param>
     private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
     /// <summary>Marks the current frame for averaging</param>
@@ -134,9 +134,13 @@ namespace Nuclex::Telecide {
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
     private: void toggleFrameType(FrameType frameType);
 
-    /// <summary>Updates the preview image when the Yadif option is toggled</summary>
-    /// <param name="checked">Whether the yadif option is on or off</param>
+    /// <summary>Updates the preview image when the preview option is toggled</summary>
+    /// <param name="checked">Whether the preview option is on or off</param>
     private: void previewOptionToggled(bool checked);
+
+    /// <summary>Updates the preview image when the swap fields option is toggled</summary>
+    /// <param name="checked">Whether the swap fields option is on or off</param>
+    private: void swapFieldsOptionToggled(bool checked);
 
     /// <summary>Updates the displayed frame when another thumbnail is selected</summary>
     /// <param name="selected">List of frames that have been newly selected</param>

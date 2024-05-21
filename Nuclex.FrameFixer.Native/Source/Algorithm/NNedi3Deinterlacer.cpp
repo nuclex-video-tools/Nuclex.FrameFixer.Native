@@ -167,9 +167,9 @@ namespace {
     );
 
     if(topField) {
-      ::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
+      //::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
     } else {
-      ::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
+      //::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
     }
 
     linkAvFilterContexts(inputFilterContext, nnediFilterContext);
@@ -285,17 +285,9 @@ namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  //std::shared_ptr<::AVFilterGraph> NNedi3Deinterlacer::nnediFilterGraph;
-
-  // ------------------------------------------------------------------------------------------- //
-
   void NNedi3Deinterlacer::WarmUp() {
     this->filterGraphWidth = std::size_t(-1);
     this->filterGraphHeight = std::size_t(-1);
-
-    //if(this->topFieldNnediFilterGraph == nullptr) {
-    //  nnediFilterGraph = setupNnediFilterGraph();
-    //}
   }
 
   // ------------------------------------------------------------------------------------------- //

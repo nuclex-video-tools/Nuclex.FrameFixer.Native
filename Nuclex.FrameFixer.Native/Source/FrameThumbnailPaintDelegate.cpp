@@ -96,28 +96,28 @@ namespace Nuclex::Telecide {
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
-        painter->drawText(decorationRect, Qt::AlignCenter, "BC");
+        painter->drawText(decorationRect, Qt::AlignCenter, "TB");
         painter->restore();    
       } else if(frame.Type == FrameType::BottomFieldFirst) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
-        painter->drawText(decorationRect, Qt::AlignCenter, "CD");
+        painter->drawText(decorationRect, Qt::AlignCenter, "BT");
         painter->restore();    
-      } else if(frame.Type == FrameType::BottomFieldOnly) {
+      } else if(frame.Type == FrameType::TopFieldOnly) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
-        painter->drawText(decorationRect, Qt::AlignCenter, "C▼");
+        painter->drawText(decorationRect, Qt::AlignCenter, "T▲");
         painter->restore();    
-      } else if(frame.Type == FrameType::TopFieldOnly) {
+      } else if(frame.Type == FrameType::BottomFieldOnly) {
         painter->save();
         painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
-        painter->drawText(decorationRect, Qt::AlignCenter, "C▲");
+        painter->drawText(decorationRect, Qt::AlignCenter, "B▼");
         painter->restore();    
       } else if(frame.Type == FrameType::Progressive) {
         painter->save();

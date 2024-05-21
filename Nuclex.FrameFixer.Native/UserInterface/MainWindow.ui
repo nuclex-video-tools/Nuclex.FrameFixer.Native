@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>724</width>
-    <height>756</height>
+    <width>759</width>
+    <height>783</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -142,7 +142,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="markBcButton">
+       <widget class="QPushButton" name="markTopFieldFirstButton">
         <property name="text">
          <string>TF -&gt; BF</string>
         </property>
@@ -152,7 +152,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markCdButton">
+       <widget class="QPushButton" name="markBottomFieldFirstButton">
         <property name="text">
          <string>BF -&gt; TF</string>
         </property>
@@ -162,7 +162,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markBottomCButton">
+       <widget class="QPushButton" name="markTopFieldOnlyButton">
         <property name="text">
          <string>TF</string>
         </property>
@@ -175,7 +175,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markTopCButton">
+       <widget class="QPushButton" name="markBottomFieldOnlyButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -207,16 +207,23 @@
        <widget class="QLabel" name="frameStatusLabel">
         <property name="text">
          <string>~: Progressive
-1: Mark B-C
-2: Mark C-D
-3: Mark C(BF)
-4: Mark C(TF)
+1: Top-&gt;Bottom
+2: Bottom-&gt;Top
+3: Top Only
+4: Bottom Only
 A: Average
 D: Duplicate
 X: Discard
 
 P: Preview
-Space: flood</string>
+Space: Statistics</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="swapFieldsOption">
+        <property name="text">
+         <string>Swap Fields</string>
         </property>
        </widget>
       </item>
@@ -227,6 +234,9 @@ Space: flood</string>
         </property>
         <property name="text">
          <string>Preview</string>
+        </property>
+        <property name="shortcut">
+         <string>P</string>
         </property>
         <property name="checked">
          <bool>true</bool>
