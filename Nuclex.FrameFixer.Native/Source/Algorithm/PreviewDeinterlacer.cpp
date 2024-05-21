@@ -33,7 +33,35 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::Telecide {
+namespace Nuclex::Telecide::Algorithm {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void PreviewDeinterlacer::SetPriorFrame(const QImage &priorFrame) {
+    this->priorFrame = priorFrame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void PreviewDeinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+    if(mode == DeinterlaceMode::TopFieldFirst)  {
+      if(this->priorFrame.isNull()) {
+        Deinterlace(nullptr, target, true);
+      } else {
+        Deinterlace(&this->priorFrame, target, true);
+      }
+    } else if(mode == DeinterlaceMode::BottomFieldFirst) {
+      if(this->priorFrame.isNull()) {
+        Deinterlace(nullptr, target, false);
+      } else {
+        Deinterlace(&this->priorFrame, target, false);
+      }
+    } else if(mode == DeinterlaceMode::TopFieldOnly) {
+      Deinterlace(nullptr, target, true);
+    } else if(mode == DeinterlaceMode::BottomFieldOnly) {
+      Deinterlace(nullptr, target, false);
+    }
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -107,4 +135,4 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::Telecide::Algorithm

@@ -18,19 +18,42 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
-#define NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_TELECIDE_ALGORITHM_PREVIEWDEINTERLACER_H
+#define NUCLEX_TELECIDE_ALGORITHM_PREVIEWDEINTERLACER_H
 
 #include "Nuclex/Telecide/Config.h"
+#include "./Deinterlacer.h"
 
-#include <QImage>
-
-namespace Nuclex::Telecide {
+namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
-  class PreviewDeinterlacer {
+  class PreviewDeinterlacer : public Deinterlacer {
+
+    /// <summary>Frees all resources used by the instance</summary>
+    public: virtual ~PreviewDeinterlacer() = default;
+
+    /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
+    /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
+    public: bool NeedsPriorFrame() const override { return true; }
+
+    /// <summary>Assigns the prior frame to the deinterlacer</summary>
+    /// <param name="priorFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the prior frame is available anyway),
+    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
+    public: void SetPriorFrame(const QImage &priorFrame) override;
+
+    /// <summary>Deinterlaces the specified frame</summary>
+    /// <param name="target">Frame that will be deinterlaced</param>
+    /// <param name="mode">
+    ///   How to deinterlace the frame (indicates if the top field is first or if
+    ///   the bottom field is first, or if special measures need to be taken)
+    /// </param>
+    public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
     /// <summary>Cheaply deinterlaces the specified image</summary>
     /// <param name="previousImage">
@@ -46,10 +69,13 @@ namespace Nuclex::Telecide {
       QImage *previousImage, QImage &image, bool topField = true
     );
 
+    /// <summary>The frame preceding the current one</summary>
+    private: QImage priorFrame;
+
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::Telecide::Algorithm
 
-#endif // NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_TELECIDE_ALGORITHM_PREVIEWDEINTERLACER_H

@@ -117,6 +117,7 @@ namespace Nuclex::Telecide {
     deinterlacers->push_back(u8"NNedi3 (from ffmpeg)");
     deinterlacers->push_back(u8"Anime deinterlacer (custom)");
     this->ui->deinterlacerCombo->addItems(*deinterlacers.get());
+    selectedDeinterlacerChanged(0); // Make sure deinterlace instance is set up
 
     connectUiSignals();
   }
@@ -371,86 +372,81 @@ namespace Nuclex::Telecide {
 
   void MainWindow::displayFrameInView(const Frame &frame) {
     if(static_cast<bool>(this->currentMovie)) {
-      std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
-
-      QImage bitmap(QString::fromStdString(imagePath));
-
-      int deinterlacerIndex = this->ui->deinterlacerCombo->currentIndex();
-
       FrameType frameType = frame.Type;
       if(frameType == FrameType::Unknown) {
         frameType = frame.ProvisionalType; // this one is calculated
       }
-      if((frame.Type == FrameType::BC) && (frame.Index >= 1)) {
-        if(deinterlacerIndex == 0) {
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, true);
-        } else if(deinterlacerIndex == 1) {
-          QImage currentBitmap = bitmap.copy();
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-          QImage nextBitmap(QString::fromStdString(nextImagePath));
-          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
-        } else if(deinterlacerIndex == 3) {
-          QImage currentBitmap = bitmap.copy();
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-          QImage nextBitmap(QString::fromStdString(nextImagePath));
-          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+
+      // Load the frame and deinterlace it
+      std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
+      QImage bitmap(QString::fromStdString(imagePath));
+      {
+        Algorithm::DeinterlaceMode mode = Algorithm::DeinterlaceMode::Dont;
+        switch(frameType) {
+          case FrameType::BC: { mode = Algorithm::DeinterlaceMode::TopFieldFirst; break; }
+          case FrameType::CD: { mode = Algorithm::DeinterlaceMode::BottomFieldFirst; break; }
+          case FrameType::TopC: { mode = Algorithm::DeinterlaceMode::TopFieldOnly; break; }
+          case FrameType::BottomC: { mode = Algorithm::DeinterlaceMode::BottomFieldOnly; break; }
         }
-      } else if((frame.Type == FrameType::CD) && (frame.Index >= 1)) {
-        if(deinterlacerIndex == 0) {
+        if(this->deinterlacer->NeedsPriorFrame()) {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));
-          PreviewDeinterlacer::Deinterlace(&previousBitmap, bitmap, false);
-        } else if(deinterlacerIndex == 1) {
-          QImage currentBitmap = bitmap.copy();
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-          QImage nextBitmap(QString::fromStdString(nextImagePath));
-          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
-        } else if(deinterlacerIndex == 3) {
-          QImage currentBitmap = bitmap.copy();
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-          QImage nextBitmap(QString::fromStdString(nextImagePath));
-          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
-          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+          this->deinterlacer->SetPriorFrame(previousBitmap);
+
+          if(this->deinterlacer->NeedsNextFrame()) {
+            std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
+            QImage nextBitmap(QString::fromStdString(nextImagePath));
+            this->deinterlacer->SetNextFrame(nextBitmap);
+
+            this->deinterlacer->Deinterlace(bitmap, mode);
+          } else {
+            this->deinterlacer->Deinterlace(bitmap, mode);
+          }
+        } else {
+          this->deinterlacer->Deinterlace(bitmap, mode);
         }
-      } else if((frame.Type == FrameType::BC) || (frame.Type == FrameType::BottomC)) {
-        PreviewDeinterlacer::Deinterlace(nullptr, bitmap, true);
-      } else if((frame.Type == FrameType::CD) || (frame.Type == FrameType::TopC)) {
-        PreviewDeinterlacer::Deinterlace(nullptr, bitmap, false);
       }
 
-      std::unique_ptr<QGraphicsScene> frameScene = std::make_unique<QGraphicsScene>();
-      std::unique_ptr<QGraphicsPixmapItem> pixmapItem = (
-        std::make_unique<QGraphicsPixmapItem>(QPixmap::fromImage(bitmap))
-      );
-      frameScene->addItem(pixmapItem.get());
+      // Display the frame in Qt's graphics view
+      {
+        std::unique_ptr<QGraphicsScene> frameScene = std::make_unique<QGraphicsScene>();
+        std::unique_ptr<QGraphicsPixmapItem> pixmapItem = (
+          std::make_unique<QGraphicsPixmapItem>(QPixmap::fromImage(bitmap))
+        );
+        frameScene->addItem(pixmapItem.get());
 
-      this->ui->frameInspectionImage->setScene(frameScene.get());
-      frameScene.release();
-      pixmapItem.release();
+        this->ui->frameInspectionImage->setScene(frameScene.get());
+        frameScene.release();
+        pixmapItem.release();
+      }
 
-      std::string status(u8"Frame: ");
-      status += Nuclex::Support::Text::lexical_cast<std::string>(frame.Index);
-      status += u8"\n";
-      status += u8"File: ";
-      status += frame.Filename;
-      this->ui->frameStatusLabel->setText(QString::fromStdString(status));
+      // Update the frame index and path displayed in the status corner
+      {
+        std::string status(u8"Frame: ");
+        status += Nuclex::Support::Text::lexical_cast<std::string>(frame.Index);
+        status += u8"\n";
+        status += u8"File: ";
+        status += frame.Filename;
+        this->ui->frameStatusLabel->setText(QString::fromStdString(status));
+      }
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::selectedDeinterlacerChanged(int selectedIndex) {
-    (void)selectedIndex;
+    if(static_cast<bool>(this->deinterlacer)) {
+      this->deinterlacer->CoolDown();
+    }
+
+    if(selectedIndex == 0) {
+      this->deinterlacer.reset(new Algorithm::PreviewDeinterlacer());
+    } else if(selectedIndex == 1) {
+      //this->deinterlacer.reset(new Algorithm::YadifDeinterlacer());
+    }
+
+    this->deinterlacer->WarmUp();
+
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {
@@ -571,13 +567,13 @@ namespace Nuclex::Telecide {
 
         // TODO: Not checking previousFrame here. Who cares?
         if(frameType == FrameType::BC) {
-          PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
+          Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
         } else if(frameType == FrameType::CD) {
-          PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
+          Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
         } else if(frameType == FrameType::BottomC) {
-          PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
+          Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
         } else if(frameType == FrameType::TopC) {
-          PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
+          Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
         } else if(frameType == FrameType::Duplicate) {
           if(frameIndex >= startFrame) {
             SaveImage(frame, exportPath, outputIndex); // extra (duplication)

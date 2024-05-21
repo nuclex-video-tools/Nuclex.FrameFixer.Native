@@ -24,6 +24,7 @@ along with this library
 #include "Nuclex/Telecide/Config.h"
 
 #include "./Model/FrameType.h"
+#include "./Algorithm/Deinterlacer.h"
 
 #include <QMainWindow> // for QMainWindow
 #include <QItemSelection> // for QItemSelection
@@ -184,6 +185,8 @@ namespace Nuclex::Telecide {
     private: std::unique_ptr<QThread> analysisThread;
     /// <summary>Mutex controlling access to the analysis thread</summary>
     private: std::unique_ptr<QMutex> analysisThreadMutex;
+    /// <summary>The currently selected deinterlacer</summary>
+    private: std::unique_ptr<Algorithm::Deinterlacer> deinterlacer;
 
   };
 
