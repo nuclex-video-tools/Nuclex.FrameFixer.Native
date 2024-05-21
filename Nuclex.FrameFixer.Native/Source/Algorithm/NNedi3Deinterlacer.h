@@ -18,19 +18,24 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
-#define NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H
+#define NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H
 
 #include "Nuclex/Telecide/Config.h"
 
-#include <QImage>
+#include <QImage> // for QImage
+#include <memory> // for std::shared_ptr
+
+extern "C" {
+  struct AVFilterGraph;
+}
 
 namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
-  class PreviewDeinterlacer {
+  /// <summary>Deinterlacer that uses ffmpeg's NNedi3 filter to deinterlace</summary>
+  class NNedi3Deinterlacer {
 
     /// <summary>Cheaply deinterlaces the specified image</summary>
     /// <param name="previousImage">
@@ -43,8 +48,12 @@ namespace Nuclex::Telecide {
     ///   otherwise, the bottom field (odd rows) will be filled in
     /// </param>
     public: static void Deinterlace(
-      QImage *previousImage, QImage &image, bool topField = true
+      const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
+      QImage &targetImage, bool topField = true
     );
+
+    private: static std::shared_ptr<::AVFilterGraph> nnediFilterGraph;
+
 
   };
 
@@ -52,4 +61,4 @@ namespace Nuclex::Telecide {
 
 } // namespace Nuclex::Telecide
 
-#endif // NUCLEX_TELECIDE_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_TELECIDE_NNEDI3DEINTERLACER_H

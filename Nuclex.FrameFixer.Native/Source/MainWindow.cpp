@@ -31,6 +31,7 @@ along with this library
 #include "./Algorithm/InterlaceDetector.h"
 #include "./Algorithm/PreviewDeinterlacer.h"
 #include "./Algorithm/YadifDeinterlacer.h"
+#include "./Algorithm/NNedi3Deinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <QFileDialog>
@@ -369,8 +370,9 @@ namespace Nuclex::Telecide {
           QImage previousBitmap(QString::fromStdString(previousImagePath));
           std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
           QImage nextBitmap(QString::fromStdString(nextImagePath));
-          bitmap.fill(Qt::GlobalColor::gray);
-          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+          //bitmap.fill(Qt::GlobalColor::gray);
+          //YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
+          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, true);
         } else {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));
@@ -383,8 +385,9 @@ namespace Nuclex::Telecide {
           QImage previousBitmap(QString::fromStdString(previousImagePath));
           std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
           QImage nextBitmap(QString::fromStdString(nextImagePath));
-          bitmap.fill(Qt::GlobalColor::gray);
-          YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+          //bitmap.fill(Qt::GlobalColor::gray);
+          //YadifDeinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
+          NNedi3Deinterlacer::Deinterlace(previousBitmap, currentBitmap, nextBitmap, bitmap, false);
         } else {
           std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
           QImage previousBitmap(QString::fromStdString(previousImagePath));

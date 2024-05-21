@@ -70,6 +70,18 @@ find_package(Threads REQUIRED)
 # we're using for all UI stuff
 find_package(Qt5 COMPONENTS REQUIRED Widgets)
 
+find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h)
+find_library(AVCODEC_LIBRARY avcodec)
+
+find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h)
+find_library(AVFORMAT_LIBRARY avformat)
+
+find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h)
+find_library(AVUTIL_LIBRARY avutil)
+
+find_path(AVFILTER_INCLUDE_DIR libavfilter/avfilter.h)
+find_library(AVFILTER_LIBRARY avfilter)
+
 # Add Nuclex.Support.Native as a sub-project, we link it for utility methods.
 if(NOT (TARGET NuclexSupportNative))
 	add_subdirectory(
@@ -179,13 +191,25 @@ function(add_third_party_libraries target_name)
 
 	target_link_libraries(
 		${target_name}
-      PUBLIC NuclexSupportNative
-      PUBLIC NuclexPlatformNative
-      PUBLIC NuclexPixelsNative
-      PRIVATE Qt5::Widgets
-			PRIVATE ${OpenCV_LIBS}
-      PRIVATE Threads::Threads
-    )
+    PUBLIC NuclexSupportNative
+    PUBLIC NuclexPlatformNative
+    PUBLIC NuclexPixelsNative
+    PRIVATE Qt5::Widgets
+    PRIVATE ${OpenCV_LIBS}
+    PRIVATE ${AVCODEC_LIBRARY} 
+    PRIVATE ${AVFORMAT_LIBRARY} 
+    PRIVATE ${AVUTIL_LIBRARY} 
+    PRIVATE ${AVFILTER_LIBRARY}
+		PRIVATE Threads::Threads
+  )
+
+  target_include_directories(
+		${target_name}
+    PRIVATE ${AVCODEC_INCLUDE_DIR} 
+    PRIVATE ${AVFORMAT_INCLUDE_DIR} 
+    PRIVATE ${AVUTIL_INCLUDE_DIR} 
+    PRIVATE ${AVFILTER_INCLUDE_DIR}
+  )
 
 	# On Unix systems, the application and unit test executable should look for
 	# dependencies in its own directory first.

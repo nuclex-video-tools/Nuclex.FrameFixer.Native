@@ -18,36 +18,31 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_AVERAGER_H
-#define NUCLEX_TELECIDE_AVERAGER_H
+// If the application is compiled as a DLL, this ensures symbols are exported
+#define NUCLEX_TELECIDE_SOURCE 1
 
-#include "Nuclex/Telecide/Config.h"
+#include "./AnimeDeinterlacer.h"
 
 #include <vector> // for std::vector
-#include <QImage>
+
+namespace {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // anonymous namespace
 
 namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Averages images of the same size</summary>
-  class Averager {
-
-    /// <summary>Composites another image onto an image at 50% opacity</summary>
-    /// <param name="image">Image onto which the second image will be composited</param>
-    /// <param name="otherImage">Image that will be composited onto the first image</param>
-    public: static void Average(QImage &image, const QImage &otherImage);
-
-    /// <summary>Composites multiple images onto an image</summary>
-    /// <param name="image">Image onto which the other images will be composited</param>
-    /// <param name="otherImages">Images that will be composited onto the first image</param>
-    public: static void Average(QImage &image, const std::vector<QImage> &otherImages);
-
-
-  };
+  void AnimeDeinterlacer::Deinterlace(
+    const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
+    QImage &targetImage, bool topField /* = true */
+  ) {
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
 } // namespace Nuclex::Telecide
-
-#endif // NUCLEX_TELECIDE_AVERAGER_H
