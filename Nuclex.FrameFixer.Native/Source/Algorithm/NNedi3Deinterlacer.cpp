@@ -108,8 +108,8 @@ namespace {
   ::AVFilterContext *newAvFilterContext(
     const std::shared_ptr<::AVFilterGraph> &filterGraph,
     const ::AVFilter *filter,
-    const char *name = nullptr,
-    const char *arguments = nullptr,
+    const std::string &name = std::string(),
+    const std::string &arguments = std::string(),
     void *opaque = nullptr
   ) {
     ::AVFilterContext *filterContext = nullptr;
@@ -117,8 +117,8 @@ namespace {
     int result = ::avfilter_graph_create_filter(
       &filterContext,
       filter,
-      name,
-      arguments,
+      name.empty() ? nullptr : name.c_str(),
+      arguments.empty() ? nullptr : arguments.c_str(),
       opaque,
       filterGraph.get()
     );
@@ -191,43 +191,58 @@ namespace {
   ) {
     std::shared_ptr<::AVFilterGraph> filterGraph = newAvFilterGraph();
 
-    std::string arguments(u8"video_size=", 11);
-    Nuclex::Support::Text::lexical_append(arguments, frameWidth);
-    arguments.push_back(u8'x');
-    Nuclex::Support::Text::lexical_append(arguments, frameHeight);
-    arguments.append(u8":pix_fmt=", 9);
-    Nuclex::Support::Text::lexical_append(arguments, pixelFormat);
-    arguments.append(":time_base=1/25:pixel_aspect=1/1", 32);
+    // Parameters that will be passed to the "buffer" filter context which
+    // will make out input frame available to the NNedi filter.
+    std::string inputBufferArguments(u8"video_size=", 11);
+    Nuclex::Support::Text::lexical_append(inputBufferArguments, frameWidth);
+    inputBufferArguments.push_back(u8'x');
+    Nuclex::Support::Text::lexical_append(inputBufferArguments, frameHeight);
+    inputBufferArguments.append(u8":pix_fmt=", 9);
+    Nuclex::Support::Text::lexical_append(inputBufferArguments, pixelFormat);
+    inputBufferArguments.append(u8":time_base=30000/1001", 21);
+    inputBufferArguments.append(u8":pixel_aspect=16/9", 18);
 
+    // Parameters for the NNedi filter. We'll try to configure it for maximum
+    // quality and force it to process only the field the user desired.
+    std::string nnediArguments(u8"weights='/home/cygon/nnedi3_weights.bin'", 40);
+    nnediArguments.append(":deint=all", 10);
+    nnediArguments.append(":qual=slow", 10);
+    nnediArguments.append(":pscrn=none", 11);
+    nnediArguments.append(":nsize=s48x6", 12);
+    nnediArguments.append(":nns=n256", 9);
+    if(topField) {
+      nnediArguments.append(":field=t", 8);
+      //::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
+    } else {
+      nnediArguments.append(":field=b", 8);
+      //::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
+    }
+
+    // Create the filter contexts that will be linked together
     ::AVFilterContext *inputFilterContext = newAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"buffer"),
       u8"in",
-      arguments.c_str() //u8"size=720x480:pix_fmt=0"
+      inputBufferArguments
     );
-
     ::AVFilterContext *nnediFilterContext = newAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"nnedi"),
-      "nnedi-deinterlace",
-      u8"weights='/tmp/nnedi3_weights.bin':nsize=s48x6:nns=n256"
+      u8"deinterlace",
+      nnediArguments
     );
-    if(topField) {
-      //::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
-    } else {
-      //::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
-    }
-
-    linkAvFilterContexts(inputFilterContext, nnediFilterContext);
-
     ::AVFilterContext *outputFilterContext = newAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"buffersink"),
       u8"out"
     );
 
+    // Now build a pipeline using the three filter contexts by connection
+    // their output pads to the input pads of the filter contexts following them
+    linkAvFilterContexts(inputFilterContext, nnediFilterContext);
     linkAvFilterContexts(nnediFilterContext, outputFilterContext);
 
+    // Unclear what this does. I assume it verifies and pre-loads resources.
     configureAvFilterGraph(filterGraph);
 
     return filterGraph;
@@ -292,24 +307,28 @@ namespace {
 
       lockAvFrameBuffer(frame);
 
+      std::uint8_t *frameData = frame->data[0];
       for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
         std::copy_n(
           image.scanLine(lineIndex), // Will be QRgba64 (64 bit interleaved) pixels
           image.bytesPerLine(),
-          frame->data[0]
+          frameData
         );
+        frameData += frame->linesize[0];
       }
     } else {
       frame->format = AV_PIX_FMT_RGBA; // AV_PIX_FMT_ABGR;
 
       lockAvFrameBuffer(frame);
 
+      std::uint8_t *frameData = frame->data[0];
       for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
         std::copy_n(
           image.scanLine(lineIndex), // Will be QRgb (32 bit interleaved) pixels
           image.bytesPerLine(),
-          frame->data[0]
+          frameData
         );
+        frameData += frame->linesize[0];
       }
     }
 
@@ -370,6 +389,9 @@ namespace {
     std::shared_ptr<::AVFrame> frame = newAvFrame();
     {
       int result = ::av_buffersink_get_frame(buffersinkFilterContext, frame.get());
+      if(result == -11) {
+        return std::shared_ptr<::AVFrame>();
+      }
       if(result != 0) {
         throwExceptionForAvError(
           result,
@@ -379,6 +401,83 @@ namespace {
     }
 
     return frame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Creates a new AV frame</summary>
+  /// <param name="image">QImage of which an AV frame will be constructed</param>
+  /// <returns>A new AV frame with the same dimensions and contents as the QImage</returns>
+  void copyAvFrameToQImage(const std::shared_ptr<::AVFrame> &frame, QImage &image) {
+    bool dimensionsMatch = (
+      (frame->width == image.width()) &&
+      (frame->height == image.height())
+    );
+    if(!dimensionsMatch) {
+      throw std::runtime_error(u8"Processed AV frame has different dimensions from QImage");
+    }
+
+    // TODO: Cheap and insufficient decision between 16 bits per color channel
+    //       and 8 bits per color channel. I only have the former kind of images
+    //       currently, but this should compare the actual pixel formats!
+    if(image.bytesPerLine() >= image.width() * 8) {
+      if(frame->data[0] == nullptr) {
+        lockAvFrameBuffer(frame);
+      }
+      if(frame->format == AV_PIX_FMT_GBRAP16LE) { // planar output (NNedi does this)
+        const std::uint8_t *greenChannel = frame->data[0];
+        const std::uint8_t *blueChannel = frame->data[1];
+        const std::uint8_t *redChannel = frame->data[2];
+        const std::uint8_t *alphaChannel = frame->data[3];
+
+        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+          QRgba64 *targetScanline = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
+          for(std::size_t pixelIndex = 0; pixelIndex < frame->width; ++pixelIndex) {
+            targetScanline[pixelIndex] = QRgba64::fromRgba64(
+              reinterpret_cast<const quint16 *>(redChannel)[pixelIndex],
+              reinterpret_cast<const quint16 *>(greenChannel)[pixelIndex],
+              reinterpret_cast<const quint16 *>(blueChannel)[pixelIndex],
+              reinterpret_cast<const quint16 *>(alphaChannel)[pixelIndex]
+            );
+          }
+
+          targetScanline += image.bytesPerLine();
+          greenChannel += frame->linesize[0];
+          blueChannel += frame->linesize[1];
+          redChannel += frame->linesize[2];
+          alphaChannel += frame->linesize[3];
+        }
+      } else if(frame->format == AV_PIX_FMT_RGBA64LE) { // AV_PIX_FMT_BGR48LE
+        const std::uint8_t *frameData = frame->data[0];
+        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+          std::copy_n(
+            frameData,
+            frame->linesize[0],
+            image.scanLine(lineIndex) // Will be QRgba64 (64 bit interleaved) pixels
+          );
+          frameData += frame->linesize[0];
+        }
+      } else {
+        throw std::runtime_error(u8"Processed AV frame has different pixel format from QImage");
+      }
+    } else {
+      if(frame->format != AV_PIX_FMT_RGBA) { // AV_PIX_FMT_ABGR;
+        throw std::runtime_error(u8"Processed AV frame has different pixel format from QImage");
+      }
+      if(frame->data[0] == nullptr) {
+        lockAvFrameBuffer(frame);
+      }
+
+      const std::uint8_t *frameData = frame->data[0];
+      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::copy_n(
+          frameData,
+          frame->linesize[0],
+          image.scanLine(lineIndex) // Will be QRgb (32 bit interleaved) pixels
+        );
+        frameData += frame->linesize[0];
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -398,8 +497,7 @@ namespace Nuclex::Telecide::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   void NNedi3Deinterlacer::WarmUp() {
-    this->filterGraphWidth = std::size_t(-1);
-    this->filterGraphHeight = std::size_t(-1);
+    // TODO: Check for and download nnedi3_weights.bin if needed?
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -414,43 +512,54 @@ namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::SetPriorFrame(const QImage &priorFrame) {
-    this->priorFrame = priorFrame;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void NNedi3Deinterlacer::SetNextFrame(const QImage &nextFrame) {
-    this->nextFrame = nextFrame;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
   void NNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
     if((mode == DeinterlaceMode::TopFieldOnly) || (mode == DeinterlaceMode::BottomFieldOnly)) {
       PreviewDeinterlacer::Deinterlace(
         nullptr, target, (mode == DeinterlaceMode::TopFieldOnly)
       );
     } else if(mode != DeinterlaceMode::Dont) {
-      std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
-      inputFrame->interlaced_frame = 1;
-
       std::shared_ptr<::AVFrame> outputFrame;
+
+      // Step 1: Create am AV frame and copy the pixels from the QImage into it
+      // -and-
+      // Step 2: Run the frame through our filter graph with the NNedi filter in it
+      // -and-
+      // Step 3: Grab the AV frame back out from the pipeline's final "buffersink"
       if(mode == DeinterlaceMode::TopFieldFirst) {
-        inputFrame->top_field_first = true;
-
         ensureTopFieldFilterGraphCreated(target.width(), target.height());
-        writeFrameIntoFilterGraph(this->topFieldNnediFilterGraph, inputFrame);
-        outputFrame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
-      } else {
-        inputFrame->top_field_first = false;
+        std::size_t attempts = 0;
+        do {
+          std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
+          inputFrame->interlaced_frame = 1;
+          inputFrame->top_field_first = true;
 
+          writeFrameIntoFilterGraph(this->topFieldNnediFilterGraph, inputFrame);
+          outputFrame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
+
+          ++attempts;
+          if(attempts >= 10) {
+            throw std::runtime_error(u8"libav filter graph with NNedi doesn't produce frames");
+          }
+        } while(!static_cast<bool>(outputFrame));
+      } else {
         ensureBottomFieldFilterGraphCreated(target.width(), target.height());
-        writeFrameIntoFilterGraph(this->bottomFieldNnediFilterGraph, inputFrame);
-        outputFrame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
+        std::size_t attempts = 0;
+        do {
+          std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
+          inputFrame->interlaced_frame = 1;
+          inputFrame->top_field_first = false;
+
+          writeFrameIntoFilterGraph(this->bottomFieldNnediFilterGraph, inputFrame);
+          outputFrame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
+
+          ++attempts;
+          if(attempts >= 10) {
+            throw std::runtime_error(u8"libav filter graph with NNedi doesn't produce frames");
+          }
+        } while(!static_cast<bool>(outputFrame));
       }
 
-
+      copyAvFrameToQImage(outputFrame, target);
     }
   }
 

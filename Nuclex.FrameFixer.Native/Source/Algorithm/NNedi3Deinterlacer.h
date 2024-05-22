@@ -47,32 +47,6 @@ namespace Nuclex::Telecide::Algorithm {
     /// <summary>Called when the deinterlacer is deselect for the time being</summary>
     public: void CoolDown() override;
 
-    /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
-    /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
-    public: bool NeedsPriorFrame() const override { return true; }
-
-    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
-    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
-    public: bool NeedsNextFrame() const override { return true; }
-
-    /// <summary>Assigns the prior frame to the deinterlacer</summary>
-    /// <param name="priorFrame">QImage containing the previous frame</param>
-    /// <remarks>
-    ///   This can either always be called (if the prior frame is available anyway),
-    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
-    ///   depending on the actual deinterlacer implementation.
-    /// </remarks>
-    public: void SetPriorFrame(const QImage &priorFrame) override;
-
-    /// <summary>Assigns the next frame to the deinterlacer</summary>
-    /// <param name="nextFrame">QImage containing the previous frame</param>
-    /// <remarks>
-    ///   This can either always be called (if the next frame is available anyway),
-    ///   using the <see cref="NeedsNextFrame" /> method, can potentially be omitted
-    ///   depending on the actual deinterlacer implementation.
-    /// </remarks>
-    public: void SetNextFrame(const QImage &nextFrame) override;
-
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
     /// <param name="mode">
@@ -97,7 +71,6 @@ namespace Nuclex::Telecide::Algorithm {
     private: QImage priorFrame;
     /// <summary>The frame following the current one</summary>
     private: QImage nextFrame;
-
 
   };
 
