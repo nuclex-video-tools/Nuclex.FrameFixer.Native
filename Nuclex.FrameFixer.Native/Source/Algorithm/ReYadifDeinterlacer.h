@@ -65,21 +65,6 @@ namespace Nuclex::Telecide::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
-    /// <summary>Cheaply deinterlaces the specified image</summary>
-    /// <param name="previousImage">
-    ///   Image that came before the current one. If provided, the missing rows will be
-    ///   taken from this image. Otherwise, the missing rows are interpolated.
-    /// </param>
-    /// <param name="image">Image that will be deinterlaced</param>
-    /// <param name="topField">
-    ///   If true, the top field (even rows) will be filled in,
-    ///   otherwise, the bottom field (odd rows) will be filled in
-    /// </param>
-    public: static void Deinterlace(
-      const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
-      QImage &targetImage, bool topField = true
-    );
-
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
     /// <summary>The frame following the current one</summary>

@@ -152,11 +152,11 @@ void ReYadif1Row(
   }
 
   // pre-calculate spatial score, can be optimize by SIMD
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifN2.get(), w, -2);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifN1.get(), w, -1);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16Dif0.get(),  w,  0);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifP1.get(), w, +1);
-  calc_spatialDif((std::uint8_t*)cur - step1, (std::uint8_t*)cur + step1, spatial16DifP2.get(), w, +2);
+  calc_spatialDif((std::uint8_t *)cur - step1, (std::uint8_t *)cur + step1, spatial16DifN2.get(), w, -2);
+  calc_spatialDif((std::uint8_t *)cur - step1, (std::uint8_t *)cur + step1, spatial16DifN1.get(), w, -1);
+  calc_spatialDif((std::uint8_t *)cur - step1, (std::uint8_t *)cur + step1, spatial16Dif0.get(),  w,  0);
+  calc_spatialDif((std::uint8_t *)cur - step1, (std::uint8_t *)cur + step1, spatial16DifP1.get(), w, +1);
+  calc_spatialDif((std::uint8_t *)cur - step1, (std::uint8_t *)cur + step1, spatial16DifP2.get(), w, +2);
   calc_spatialScore(spatial16DifN2.get(), spatial16ScoreN2.get(), w);
   calc_spatialScore(spatial16DifN1.get(), spatial16ScoreN1.get(), w);
   calc_spatialScore(spatial16Dif0.get(),  spatial16Score0.get(),  w);
@@ -261,6 +261,9 @@ void ReYadif1Row(
     spatial32ScoreP1.reset(new std::int32_t[w]);
     spatial32ScoreP2.reset(new std::int32_t[w]);
   }
+
+  // CHECK: calc_spatialDif steps in uint16s, so the -2, -1, 0, +1, +2 will
+  //        only dig around different color channels rather than neighboring pixels.
 
   // pre-calculate spatial score, can be optimize by SIMD
   calc_spatialDif((std::uint16_t *)cur - step1, (std::uint16_t *)cur + step1, spatial32DifN2.get(), w, -2);

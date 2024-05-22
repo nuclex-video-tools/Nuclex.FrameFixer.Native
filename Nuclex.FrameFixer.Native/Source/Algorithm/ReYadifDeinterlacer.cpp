@@ -136,12 +136,4 @@ namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ReYadifDeinterlacer::Deinterlace(
-    const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
-    QImage &targetImage, bool topField /* = true */
-  ) {
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
 } // namespace Nuclex::Telecide::Algorithm
