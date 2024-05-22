@@ -38,6 +38,7 @@ namespace Nuclex::Telecide::Algorithm {
   /// <summary>Deinterlacer that uses ffmpeg's NNedi3 filter to deinterlace</summary>
   class NNedi3Deinterlacer : public Deinterlacer {
 
+    public: NNedi3Deinterlacer();
     public: virtual ~NNedi3Deinterlacer() = default;
 
     /// <summary>Called before the deinterlacer is used by the application</summary>
@@ -80,6 +81,9 @@ namespace Nuclex::Telecide::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
+    private: void ensureTopFieldFilterGraphCreated(std::size_t width, std::size_t height);
+    private: void ensureBottomFieldFilterGraphCreated(std::size_t width, std::size_t height);
+
     /// <summary>NNedi3 filter graph using the top field</summary>
     private: std::shared_ptr<::AVFilterGraph> topFieldNnediFilterGraph;
     /// <summary>NNedi3 filter graph using the bottom field</summary>
@@ -88,9 +92,6 @@ namespace Nuclex::Telecide::Algorithm {
     private: std::size_t filterGraphWidth;
     /// <summary>Height of the filter graphs that have been created</summary>
     private: std::size_t filterGraphHeight;
-
-    private: void ensureTopFieldFilterGraphCreated(std::size_t width, std::size_t height);
-    private: void ensureBottomFieldFilterGraphCreated(std::size_t width, std::size_t height);
 
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;

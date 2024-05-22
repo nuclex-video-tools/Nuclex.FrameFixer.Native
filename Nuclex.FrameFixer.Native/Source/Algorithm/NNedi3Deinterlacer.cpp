@@ -186,7 +186,7 @@ namespace {
   std::shared_ptr<::AVFilterGraph> setupNnediFilterGraph(
     std::size_t frameWidth,
     std::size_t frameHeight,
-    const std::string &pixelFormat,
+    std::size_t pixelFormat,
     bool topField = true
   ) {
     std::shared_ptr<::AVFilterGraph> filterGraph = newAvFilterGraph();
@@ -196,14 +196,14 @@ namespace {
     arguments.push_back(u8'x');
     Nuclex::Support::Text::lexical_append(arguments, frameHeight);
     arguments.append(u8":pix_fmt=", 9);
-    arguments.append(pixelFormat);
+    Nuclex::Support::Text::lexical_append(arguments, pixelFormat);
     arguments.append(":time_base=1/25:pixel_aspect=1/1", 32);
 
     ::AVFilterContext *inputFilterContext = newAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"buffer"),
       u8"in",
-      arguments.c_str()
+      arguments.c_str() //u8"size=720x480:pix_fmt=0"
     );
 
     ::AVFilterContext *nnediFilterContext = newAvFilterContext(
@@ -254,22 +254,77 @@ namespace {
       throw std::runtime_error(u8"Could not create new AVFrame");
     }
 
+    // CHECK: AV frames have their own reference counter and we're adding an external one
+    //        on top of it. May not be ideal (i.e. filter graph still holds onto frame,
+    //        but shared_ptr calls av_frame_free(). Should we use av_frame_unref() instead?)
     return std::shared_ptr<::AVFrame>(newFrame, deleteAvFrame);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Sets up a buffer in which an AV frame can store its pixels</summary>
+  /// <param name="frame">Frame that will have a buffer set up</param>
   void lockAvFrameBuffer(const std::shared_ptr<::AVFrame> &frame) {
     int result = ::av_frame_get_buffer(frame.get(), 0);
     if(result != 0) {
       throwExceptionForAvError(
-        result, std::string(u8"Could not lock memory buffer for AV frame: ", 30)
+        result, std::string(u8"Could not get memory buffer for AV frame: ", 30)
       );
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Creates a new AV frame</summary>
+  /// <param name="image">QImage of which an AV frame will be constructed</param>
+  /// <returns>A new AV frame with the same dimensions and contents as the QImage</returns>
+  std::shared_ptr<::AVFrame> newAvFrameFromQImage(const QImage &image) {
+    std::shared_ptr<::AVFrame> frame = newAvFrame();
+
+    frame->width = image.width();
+    frame->height = image.height();
+    
+    // TODO: Cheap and insufficient decision between 16 bits per color channel
+    //       and 8 bits per color channel. I only have the former kind of images
+    //       currently, but this should compare the actual pixel formats!
+    if(image.bytesPerLine() >= image.width() * 8) {
+      frame->format = AV_PIX_FMT_RGBA64LE; // AV_PIX_FMT_BGR48LE
+
+      lockAvFrameBuffer(frame);
+
+      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::copy_n(
+          image.scanLine(lineIndex), // Will be QRgba64 (64 bit interleaved) pixels
+          image.bytesPerLine(),
+          frame->data[0]
+        );
+      }
+    } else {
+      frame->format = AV_PIX_FMT_RGBA; // AV_PIX_FMT_ABGR;
+
+      lockAvFrameBuffer(frame);
+
+      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::copy_n(
+          image.scanLine(lineIndex), // Will be QRgb (32 bit interleaved) pixels
+          image.bytesPerLine(),
+          frame->data[0]
+        );
+      }
+    }
+
+    return frame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Writes a frame into the &quot;in&quot; filter of a filter graph</summary>
+  /// <param name="filterGraph">Filter graph the frame will be pushed into</param>
+  /// <param name="frame">Frame that will be pushed into the filter graph</param>
+  /// <remarks>
+  ///   Assumes that the filter graph has a filter context for a &quot;buffer&quot; filter
+  ///   named &quot;in&quot; and writes the frame into it.
+  /// </remarks>
   void writeFrameIntoFilterGraph(
     const std::shared_ptr<::AVFilterGraph> &filterGraph,
     const std::shared_ptr<::AVFrame> &frame
@@ -281,24 +336,25 @@ namespace {
       throw std::runtime_error(u8"Could not fetch 'in' filter from filter graph");
     }
 
-    int result = ::av_buffersrc_write_frame(bufferFilterContext, frame.get());
+    // CHECK: Where is the difference between _write_frame and _add_frame()?
+    int result = ::av_buffersrc_add_frame(bufferFilterContext, frame.get());
+    //int result = ::av_buffersrc_write_frame(bufferFilterContext, frame.get());
     if(result != 0) {
-      char buffer[1024];
-      int errorStringResult = ::av_strerror(result, buffer, sizeof(buffer));
-
-      std::string message(u8"Could not store AV frame in buffer AV filter context: ", 54);
-      if(errorStringResult == 0) {
-        message.append(buffer);
-      } else {
-        message.append(u8"unknown error", 13);
-      }
-
-      throw std::runtime_error(message);
+      throwExceptionForAvError(
+        result, std::string(u8"Could not store AV frame in buffer AV filter context: ", 54)
+      );
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Reads a frame from the output of a filter graph</summary>
+  /// <param name="filterGraph">Filter graph the frame will be read from</param>
+  /// <returns>The frame in the &quot;out&quot; filter of the filter graph</returns>
+  /// <remarks>
+  ///   Assumes that the filter graph has a filter context for a &quot;buffersink&quot; filter
+  ///   named &quot;out&quot; and tries to retrieve a frame from it.
+  /// </remarks>
   std::shared_ptr<::AVFrame> readFrameFromFilterGraph(
     const std::shared_ptr<::AVFilterGraph> &filterGraph
   ) {
@@ -309,21 +365,17 @@ namespace {
       throw std::runtime_error(u8"Could not fetch 'out' filter from filter graph");
     }
 
+    // We've got the filter, now create an (empty) frame and ask the buffersink
+    // to hand out the frame it should have collected by this time.
     std::shared_ptr<::AVFrame> frame = newAvFrame();
-
-    int result = ::av_buffersink_get_frame(buffersinkFilterContext, frame.get());
-    if(result != 0) {
-      char buffer[1024];
-      int errorStringResult = ::av_strerror(result, buffer, sizeof(buffer));
-
-      std::string message(u8"Could not extract AV frame from buffersink AV filter context: ", 62);
-      if(errorStringResult == 0) {
-        message.append(buffer);
-      } else {
-        message.append(u8"unknown error", 13);
+    {
+      int result = ::av_buffersink_get_frame(buffersinkFilterContext, frame.get());
+      if(result != 0) {
+        throwExceptionForAvError(
+          result,
+          std::string(u8"Could not extract AV frame from buffersink AV filter context: ", 62)
+        );
       }
-
-      throw std::runtime_error(message);
     }
 
     return frame;
@@ -334,6 +386,14 @@ namespace {
 } // anonymous namespace
 
 namespace Nuclex::Telecide::Algorithm {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  NNedi3Deinterlacer::NNedi3Deinterlacer() :
+    topFieldNnediFilterGraph(),
+    bottomFieldNnediFilterGraph(),
+    filterGraphWidth(std::size_t(-1)),
+    filterGraphHeight(std::size_t(-1)) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -372,35 +432,22 @@ namespace Nuclex::Telecide::Algorithm {
         nullptr, target, (mode == DeinterlaceMode::TopFieldOnly)
       );
     } else if(mode != DeinterlaceMode::Dont) {
-      std::size_t width = target.width();
-      std::size_t height = target.height();
+      std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
+      inputFrame->interlaced_frame = 1;
 
-      std::shared_ptr<::AVFrame> inputFrame = newAvFrame();
-      inputFrame->format = AV_PIX_FMT_BGR48LE;
-      inputFrame->width = width;
-      inputFrame->height = height;
-
-      lockAvFrameBuffer(inputFrame);
-
-      // TODO: work by scanline to be at least a little faster than this.
-      for(int y = 0; y < height; ++y) {
-        for(int x = 0; x < width; ++x) {
-          QRgb pixel = target.pixel(x, y);
-          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3] = qRed(pixel);
-          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3 + 1] = qGreen(pixel);
-          inputFrame->data[0][y * inputFrame->linesize[0] + x * 3 + 2] = qBlue(pixel);
-        }
-      }
-
-      std::shared_ptr<::AVFrame> frame;
+      std::shared_ptr<::AVFrame> outputFrame;
       if(mode == DeinterlaceMode::TopFieldFirst) {
-        ensureTopFieldFilterGraphCreated(width, height);
+        inputFrame->top_field_first = true;
+
+        ensureTopFieldFilterGraphCreated(target.width(), target.height());
         writeFrameIntoFilterGraph(this->topFieldNnediFilterGraph, inputFrame);
-        frame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
+        outputFrame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
       } else {
-        ensureBottomFieldFilterGraphCreated(width, height);
+        inputFrame->top_field_first = false;
+
+        ensureBottomFieldFilterGraphCreated(target.width(), target.height());
         writeFrameIntoFilterGraph(this->bottomFieldNnediFilterGraph, inputFrame);
-        frame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
+        outputFrame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
       }
 
 
@@ -422,7 +469,7 @@ namespace Nuclex::Telecide::Algorithm {
 
     if(!static_cast<bool>(this->topFieldNnediFilterGraph)) {
       this->topFieldNnediFilterGraph = setupNnediFilterGraph(
-        width, height, u8"58", true // AV_PIX_FMT_BGR48LE == 58;
+        width, height, AV_PIX_FMT_RGBA64LE, true // AV_PIX_FMT_BGR48LE == 58;
       );
     }
   }
@@ -442,7 +489,7 @@ namespace Nuclex::Telecide::Algorithm {
 
     if(!static_cast<bool>(this->bottomFieldNnediFilterGraph)) {
       this->bottomFieldNnediFilterGraph = setupNnediFilterGraph(
-        width, height, u8"58", false // AV_PIX_FMT_BGR48LE == 58;
+        width, height, AV_PIX_FMT_RGBA64LE, false // AV_PIX_FMT_BGR48LE == 58;
       );
     }
   }
