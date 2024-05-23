@@ -178,6 +178,7 @@ namespace {
   /// <param name="topField">
   ///   Whether to keep the top field (otherwise keeps the bottom field)
   /// </param>
+  /// <param name="usePriorField">Whether to take data from the preceding field</param>
   /// <returns>
   ///   The new libav filter graph. The input filter context is of type
   ///   &quot;buffer&quot; and named &quot;in&quot;, the output filter context
@@ -187,7 +188,8 @@ namespace {
     std::size_t frameWidth,
     std::size_t frameHeight,
     std::size_t pixelFormat,
-    bool topField = true
+    bool topField = true,
+    bool usePriorField = false
   ) {
     std::shared_ptr<::AVFilterGraph> filterGraph = newAvFilterGraph();
 
@@ -205,17 +207,25 @@ namespace {
     // Parameters for the NNedi filter. We'll try to configure it for maximum
     // quality and force it to process only the field the user desired.
     std::string nnediArguments(u8"weights='/home/cygon/nnedi3_weights.bin'", 40);
-    nnediArguments.append(":deint=all", 10);
-    nnediArguments.append(":qual=slow", 10);
-    nnediArguments.append(":pscrn=none", 11);
-    nnediArguments.append(":nsize=s48x6", 12);
-    nnediArguments.append(":nns=n256", 9);
+    nnediArguments.append(":deint=all", 10); // deinterlace regardless of frame state
+    nnediArguments.append(":qual=slow", 10); // use highest quality
+    nnediArguments.append(":pscrn=none", 11); // disable prescreener (the human is prescreener)
+    nnediArguments.append(":nsize=s48x6", 12); // window the predictor network is working on
+    nnediArguments.append(":nns=n256", 9); // complexity of the predictor network
     if(topField) {
-      nnediArguments.append(":field=t", 8);
       //::av_opt_set(nnediFilterContext, u8"field", u8"top", AV_OPT_SEARCH_CHILDREN);
+      if(usePriorField) {
+        nnediArguments.append(":field=tf", 9);
+      } else {
+        nnediArguments.append(":field=t", 8);
+      }
     } else {
-      nnediArguments.append(":field=b", 8);
       //::av_opt_set(nnediFilterContext, u8"field", u8"bottom", AV_OPT_SEARCH_CHILDREN);
+      if(usePriorField) {
+        nnediArguments.append(":field=bf", 8);
+      } else {
+        nnediArguments.append(":field=b", 8);
+      }
     }
 
     // Create the filter contexts that will be linked together
@@ -489,10 +499,13 @@ namespace Nuclex::Telecide::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   NNedi3Deinterlacer::NNedi3Deinterlacer() :
-    topFieldNnediFilterGraph(),
-    bottomFieldNnediFilterGraph(),
+    topFieldOnlyNnediFilterGraph(),
+    bottomFieldOnlyNnediFilterGraph(),
+    topFieldFirstNnediFilterGraph(),
+    bottomFieldFirstNnediFilterGraph(),
     filterGraphWidth(std::size_t(-1)),
-    filterGraphHeight(std::size_t(-1)) {}
+    filterGraphHeight(std::size_t(-1)),
+    filterGraphSixtyFourBitsPerPixel(false) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -503,103 +516,180 @@ namespace Nuclex::Telecide::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   void NNedi3Deinterlacer::CoolDown() {
-    this->topFieldNnediFilterGraph.reset();
-    this->bottomFieldNnediFilterGraph.reset();
+    this->topFieldOnlyNnediFilterGraph.reset();
+    this->bottomFieldOnlyNnediFilterGraph.reset();
+    this->topFieldFirstNnediFilterGraph.reset();
+    this->bottomFieldFirstNnediFilterGraph.reset();
 
     this->filterGraphWidth = std::size_t(-1);
     this->filterGraphHeight = std::size_t(-1);
+    this->filterGraphSixtyFourBitsPerPixel = false;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::SetPriorFrame(const QImage &priorFrame) {
+    this->priorFrame = priorFrame;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void NNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
-    if((mode == DeinterlaceMode::TopFieldOnly) || (mode == DeinterlaceMode::BottomFieldOnly)) {
-      PreviewDeinterlacer::Deinterlace(
-        nullptr, target, (mode == DeinterlaceMode::TopFieldOnly)
-      );
-    } else if(mode != DeinterlaceMode::Dont) {
-      std::shared_ptr<::AVFrame> outputFrame;
+    if(mode != DeinterlaceMode::Dont) {
 
-      // Step 1: Create am AV frame and copy the pixels from the QImage into it
-      // -and-
-      // Step 2: Run the frame through our filter graph with the NNedi filter in it
-      // -and-
-      // Step 3: Grab the AV frame back out from the pipeline's final "buffersink"
-      if(mode == DeinterlaceMode::TopFieldFirst) {
-        ensureTopFieldFilterGraphCreated(target.width(), target.height());
-        std::size_t attempts = 0;
-        do {
-          std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
-          inputFrame->interlaced_frame = 1;
-          inputFrame->top_field_first = true;
-
-          writeFrameIntoFilterGraph(this->topFieldNnediFilterGraph, inputFrame);
-          outputFrame = readFrameFromFilterGraph(this->topFieldNnediFilterGraph);
-
-          ++attempts;
-          if(attempts >= 10) {
-            throw std::runtime_error(u8"libav filter graph with NNedi doesn't produce frames");
-          }
-        } while(!static_cast<bool>(outputFrame));
-      } else {
-        ensureBottomFieldFilterGraphCreated(target.width(), target.height());
-        std::size_t attempts = 0;
-        do {
-          std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
-          inputFrame->interlaced_frame = 1;
-          inputFrame->top_field_first = false;
-
-          writeFrameIntoFilterGraph(this->bottomFieldNnediFilterGraph, inputFrame);
-          outputFrame = readFrameFromFilterGraph(this->bottomFieldNnediFilterGraph);
-
-          ++attempts;
-          if(attempts >= 10) {
-            throw std::runtime_error(u8"libav filter graph with NNedi doesn't produce frames");
-          }
-        } while(!static_cast<bool>(outputFrame));
+      // Make sure the filter graph has been created an grab a reference to it
+      std::shared_ptr<::AVFilterGraph> nnediFilterGraph;
+      {
+        bool isSixtyFourBitsPerPixel = (target.bytesPerLine() >= target.width() * 8);
+        if(mode == DeinterlaceMode::TopFieldFirst) {
+          ensureTopFieldFirstFilterGraphCreated(
+            target.width(), target.height(), isSixtyFourBitsPerPixel
+          );
+          nnediFilterGraph = this->topFieldFirstNnediFilterGraph;
+        } else if(mode == DeinterlaceMode::BottomFieldFirst) {
+          ensureBottomFieldFirstFilterGraphCreated(
+            target.width(), target.height(), isSixtyFourBitsPerPixel
+          );
+          nnediFilterGraph = this->bottomFieldFirstNnediFilterGraph;
+        } else if(mode == DeinterlaceMode::TopFieldOnly) {
+          ensureTopFieldOnlyFilterGraphCreated(
+            target.width(), target.height(), isSixtyFourBitsPerPixel
+          );
+          nnediFilterGraph = this->topFieldOnlyNnediFilterGraph;
+        } else if(mode == DeinterlaceMode::BottomFieldOnly) {
+          ensureBottomFieldOnlyFilterGraphCreated(
+            target.width(), target.height(), isSixtyFourBitsPerPixel
+          );
+          nnediFilterGraph = this->bottomFieldOnlyNnediFilterGraph;
+        }
       }
 
+      // NNedi requires two frames. Re-feeding the same AV frame instance does
+      // not work, so we'll construct two independent frames
+      std::shared_ptr<::AVFrame> priorFrame;
+      if(this->priorFrame.isNull()) {
+        priorFrame = newAvFrameFromQImage(this->priorFrame);
+      } else {
+        priorFrame = newAvFrameFromQImage(target);
+      }
+      std::shared_ptr<::AVFrame> inputFrame = newAvFrameFromQImage(target);
+      priorFrame->interlaced_frame = 1;
+      inputFrame->interlaced_frame = 1;
+      if(mode == DeinterlaceMode::TopFieldFirst) {
+        priorFrame->top_field_first = 0;
+        inputFrame->top_field_first = 1;
+      } else {
+        priorFrame->top_field_first = 1;
+        inputFrame->top_field_first = 0;
+      }
+
+      // Put both frames into the filter graph's input buffer
+      writeFrameIntoFilterGraph(nnediFilterGraph, priorFrame);
+      writeFrameIntoFilterGraph(nnediFilterGraph, inputFrame);
+
+      // Finally, read a frame out of the filter graph. I'm not sure if
+      // the filter graph starts executing as soon as there is work that can
+      // be done or if this triggers it, anyway, the processed frame comes out here.
+      std::shared_ptr<::AVFrame> outputFrame = readFrameFromFilterGraph(nnediFilterGraph);
+
+      // Finally, put the processed frame back into the QImage
       copyAvFrameToQImage(outputFrame, target);
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::ensureTopFieldFilterGraphCreated(
-    std::size_t width, std::size_t height
+  void NNedi3Deinterlacer::ensureTopFieldOnlyFilterGraphCreated(
+    std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
   ) {
     bool needRebuild = (
       (this->filterGraphWidth != width) ||
-      (this->filterGraphHeight != height)
+      (this->filterGraphHeight != height) ||
+      (this->filterGraphSixtyFourBitsPerPixel != sixtyFourBitsPerPixel)
     );
     if(needRebuild) {
       CoolDown();
     }
 
-    if(!static_cast<bool>(this->topFieldNnediFilterGraph)) {
-      this->topFieldNnediFilterGraph = setupNnediFilterGraph(
-        width, height, AV_PIX_FMT_RGBA64LE, true // AV_PIX_FMT_BGR48LE == 58;
+    if(!static_cast<bool>(this->topFieldOnlyNnediFilterGraph)) {
+      this->topFieldOnlyNnediFilterGraph = setupNnediFilterGraph(
+        width, height, AV_PIX_FMT_RGBA64LE, true, false // AV_PIX_FMT_BGR48LE == 58;
       );
+      this->filterGraphWidth = width;
+      this->filterGraphHeight = height;
+      this->filterGraphSixtyFourBitsPerPixel = sixtyFourBitsPerPixel;
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::ensureBottomFieldFilterGraphCreated(
-    std::size_t width, std::size_t height
+  void NNedi3Deinterlacer::ensureBottomFieldOnlyFilterGraphCreated(
+    std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
   ) {
     bool needRebuild = (
       (this->filterGraphWidth != width) ||
-      (this->filterGraphHeight != height)
+      (this->filterGraphHeight != height) ||
+      (this->filterGraphSixtyFourBitsPerPixel != sixtyFourBitsPerPixel)
     );
     if(needRebuild) {
       CoolDown();
     }
 
-    if(!static_cast<bool>(this->bottomFieldNnediFilterGraph)) {
-      this->bottomFieldNnediFilterGraph = setupNnediFilterGraph(
-        width, height, AV_PIX_FMT_RGBA64LE, false // AV_PIX_FMT_BGR48LE == 58;
+    if(!static_cast<bool>(this->bottomFieldOnlyNnediFilterGraph)) {
+      this->bottomFieldOnlyNnediFilterGraph = setupNnediFilterGraph(
+        width, height, AV_PIX_FMT_RGBA64LE, false, false // AV_PIX_FMT_BGR48LE == 58;
       );
+      this->filterGraphWidth = width;
+      this->filterGraphHeight = height;
+      this->filterGraphSixtyFourBitsPerPixel = sixtyFourBitsPerPixel;
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::ensureTopFieldFirstFilterGraphCreated(
+    std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+  ) {
+    bool needRebuild = (
+      (this->filterGraphWidth != width) ||
+      (this->filterGraphHeight != height) ||
+      (this->filterGraphSixtyFourBitsPerPixel != sixtyFourBitsPerPixel)
+    );
+    if(needRebuild) {
+      CoolDown();
+    }
+
+    if(!static_cast<bool>(this->topFieldFirstNnediFilterGraph)) {
+      this->topFieldFirstNnediFilterGraph = setupNnediFilterGraph(
+        width, height, AV_PIX_FMT_RGBA64LE, true, true // AV_PIX_FMT_BGR48LE == 58;
+      );
+      this->filterGraphWidth = width;
+      this->filterGraphHeight = height;
+      this->filterGraphSixtyFourBitsPerPixel = sixtyFourBitsPerPixel;
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void NNedi3Deinterlacer::ensureBottomFieldFirstFilterGraphCreated(
+    std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+  ) {
+    bool needRebuild = (
+      (this->filterGraphWidth != width) ||
+      (this->filterGraphHeight != height) ||
+      (this->filterGraphSixtyFourBitsPerPixel != sixtyFourBitsPerPixel)
+    );
+    if(needRebuild) {
+      CoolDown();
+    }
+
+    if(!static_cast<bool>(this->bottomFieldFirstNnediFilterGraph)) {
+      this->bottomFieldFirstNnediFilterGraph = setupNnediFilterGraph(
+        width, height, AV_PIX_FMT_RGBA64LE, false, true // AV_PIX_FMT_BGR48LE == 58;
+      );
+      this->filterGraphWidth = width;
+      this->filterGraphHeight = height;
+      this->filterGraphSixtyFourBitsPerPixel = sixtyFourBitsPerPixel;
     }
   }
 

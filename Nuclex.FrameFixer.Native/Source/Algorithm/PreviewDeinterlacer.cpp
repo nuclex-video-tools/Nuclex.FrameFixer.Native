@@ -72,7 +72,7 @@ namespace Nuclex::Telecide::Algorithm {
 
     // Without a prior frame, interpolate the missing lines
     if(previousImage == nullptr) {
-      std::size_t lineIndex = topField ? 2 : 1;
+      std::size_t lineIndex = topField ? 1 : 2;
       while(lineIndex < lineCount - 1) {
 
         if(image.bytesPerLine() >= image.width() * 8) {
@@ -121,7 +121,7 @@ namespace Nuclex::Telecide::Algorithm {
 
     } else { // with a prior frame / without prior frame
 
-      std::size_t lineIndex = topField ? 0 : 1;
+      std::size_t lineIndex = topField ? 1 : 0;
       while(lineIndex < lineCount - 1) {
         std::uint8_t *previousImageLine = previousImage->scanLine(lineIndex);
         std::uint8_t *currentImageLine = image.scanLine(lineIndex);

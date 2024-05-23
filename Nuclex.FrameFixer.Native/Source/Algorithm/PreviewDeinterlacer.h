@@ -34,6 +34,12 @@ namespace Nuclex::Telecide::Algorithm {
     /// <summary>Frees all resources used by the instance</summary>
     public: virtual ~PreviewDeinterlacer() = default;
 
+    /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
+    /// <returns>A short, human-readable name for the deinterlacer</returns>
+    public: std::string GetName() const override {
+      return u8"Preview: copy or interpolate missing fields";
+    }
+
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
     /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
     public: bool NeedsPriorFrame() const override { return true; }

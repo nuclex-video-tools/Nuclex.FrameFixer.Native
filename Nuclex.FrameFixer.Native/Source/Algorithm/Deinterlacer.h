@@ -76,6 +76,10 @@ namespace Nuclex::Telecide::Algorithm {
     /// <summary>Frees all resources used by the instance</summary>
     public: ~Deinterlacer() = default;
 
+    /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
+    /// <returns>A short, human-readable name for the deinterlacer</returns>
+    public: virtual std::string GetName() const = 0;
+
     /// <summary>Called before the deinterlacer is used by the application</summary>
     /// <remarks>
     ///   This call should be optional. It gives the deinterlacer a chance to initialize

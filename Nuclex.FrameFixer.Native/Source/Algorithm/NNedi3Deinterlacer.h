@@ -35,17 +35,38 @@ namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Deinterlacer that uses ffmpeg's NNedi3 filter to deinterlace</summary>
+  /// <summary>Deinterlacer that uses libav's NNedi3 filter to deinterlace</summary>
   class NNedi3Deinterlacer : public Deinterlacer {
 
+    /// <summary>Initializes the NNedi3 via libav deinterlacer</summary>
     public: NNedi3Deinterlacer();
+    /// <summary>Frees all resources used by the deinterlacer</summary>
     public: virtual ~NNedi3Deinterlacer() = default;
+
+    /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
+    /// <returns>A short, human-readable name for the deinterlacer</returns>
+    public: std::string GetName() const override {
+      return u8"NNEdi3-libav: Predict missing fields via AI";
+    }
 
     /// <summary>Called before the deinterlacer is used by the application</summary>
     public: void WarmUp() override;
 
     /// <summary>Called when the deinterlacer is deselect for the time being</summary>
     public: void CoolDown() override;
+
+    /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
+    /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
+    public: bool NeedsPriorFrame() const override { return true; }
+
+    /// <summary>Assigns the prior frame to the deinterlacer</summary>
+    /// <param name="priorFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the prior frame is available anyway),
+    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
+    public: void SetPriorFrame(const QImage &priorFrame) override;
 
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
@@ -55,22 +76,56 @@ namespace Nuclex::Telecide::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
-    private: void ensureTopFieldFilterGraphCreated(std::size_t width, std::size_t height);
-    private: void ensureBottomFieldFilterGraphCreated(std::size_t width, std::size_t height);
+    /// <summary>Creates or recreates the top field only filter graph as needed</summary>
+    /// <param name="width">Width of the frames being processed</param>
+    /// <param name="height">Height of the frames being processed</param>
+    /// <param name="sixtyFourBitsPerPixel">Whether 16 bit color channels are used</param>
+    private: void ensureTopFieldOnlyFilterGraphCreated(
+      std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+    );
+    
+    /// <summary>Creates or recreates the bottom field only filter graph as needed</summary>
+    /// <param name="width">Width of the frames being processed</param>
+    /// <param name="height">Height of the frames being processed</param>
+    /// <param name="sixtyFourBitsPerPixel">Whether 16 bit color channels are used</param>
+    private: void ensureBottomFieldOnlyFilterGraphCreated(
+      std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+    );
 
-    /// <summary>NNedi3 filter graph using the top field</summary>
-    private: std::shared_ptr<::AVFilterGraph> topFieldNnediFilterGraph;
-    /// <summary>NNedi3 filter graph using the bottom field</summary>
-    private: std::shared_ptr<::AVFilterGraph> bottomFieldNnediFilterGraph;
+    /// <summary>Creates or recreates the top field first filter graph as needed</summary>
+    /// <param name="width">Width of the frames being processed</param>
+    /// <param name="height">Height of the frames being processed</param>
+    /// <param name="sixtyFourBitsPerPixel">Whether 16 bit color channels are used</param>
+    private: void ensureTopFieldFirstFilterGraphCreated(
+      std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+    );
+    
+    /// <summary>Creates or recreates the bottom field first filter graph as needed</summary>
+    /// <param name="width">Width of the frames being processed</param>
+    /// <param name="height">Height of the frames being processed</param>
+    /// <param name="sixtyFourBitsPerPixel">Whether 16 bit color channels are used</param>
+    private: void ensureBottomFieldFirstFilterGraphCreated(
+      std::size_t width, std::size_t height, bool sixtyFourBitsPerPixel
+    );
+
+    /// <summary>NNedi3 filter graph using only the top field</summary>
+    private: std::shared_ptr<::AVFilterGraph> topFieldOnlyNnediFilterGraph;
+    /// <summary>NNedi3 filter graph using only the bottom field</summary>
+    private: std::shared_ptr<::AVFilterGraph> bottomFieldOnlyNnediFilterGraph;
+    /// <summary>NNedi3 filter graph using the top field over the bottom field</summary>
+    private: std::shared_ptr<::AVFilterGraph> topFieldFirstNnediFilterGraph;
+    /// <summary>NNedi3 filter graph using the bottom field over the top field</summary>
+    private: std::shared_ptr<::AVFilterGraph> bottomFieldFirstNnediFilterGraph;
+
     /// <summary>Width of the filter graphs that have been created</summary>
     private: std::size_t filterGraphWidth;
     /// <summary>Height of the filter graphs that have been created</summary>
     private: std::size_t filterGraphHeight;
+    /// <summary>Whether the created filter graphs use 64 bits per pixel</summary>
+    private: bool filterGraphSixtyFourBitsPerPixel;
 
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
-    /// <summary>The frame following the current one</summary>
-    private: QImage nextFrame;
 
   };
 
