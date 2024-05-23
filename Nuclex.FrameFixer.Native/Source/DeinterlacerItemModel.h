@@ -47,6 +47,7 @@ namespace Nuclex::FrameFixer {
   class DeinterlacerItemModel : public QAbstractListModel {
     Q_OBJECT
 
+    // List of deinterlacers
     typedef std::vector<std::shared_ptr<Algorithm::Deinterlacer>> DeinterlacerList;
 
     /// <summary>Initializes a new item model for deinterlacers</summary>
@@ -59,6 +60,11 @@ namespace Nuclex::FrameFixer {
     /// <summary>Loads the movie frames from the specified folder</summary>
     /// <param name="path">Path from which the movie frames will be loaded</param>
     public: void SetDeinterlacers(const DeinterlacerList &deinterlacers);
+
+    /// <summary>Retrieves a deinterlacer by its index</summary>
+    /// <param name="index">Index of the deinterlacer that will be retrieved</param>
+    /// <returns>The deinterlacer wit hthe specified index</returns>
+    public: std::shared_ptr<Algorithm::Deinterlacer> &GetDeinterlacer(std::size_t index) const;
 
     /// <summary>Sets the resolution in which thumbnails will be generated</summary>
     /// <param name="resolution">The desired thumbnail resolution</param>

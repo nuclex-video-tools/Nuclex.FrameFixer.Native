@@ -48,6 +48,7 @@ namespace Nuclex::FrameFixer {
 
   class FrameThumbnailItemModel;
   class FrameThumbnailPaintDelegate;
+  class DeinterlacerItemModel;
   class Movie;
   class Frame;
 
@@ -181,6 +182,8 @@ namespace Nuclex::FrameFixer {
     private: std::unique_ptr<FrameThumbnailItemModel> thumbnailItemModel;
     /// <summary>Delegate that draws the thumbnails with decoration</summary>
     private: std::unique_ptr<FrameThumbnailPaintDelegate> thumbnailPaintDelegate;
+    /// <summary>Item model that manages the deinterlacers</summary>
+    private: std::unique_ptr<DeinterlacerItemModel> deinterlacerItemModel;
     /// <summary>Root service container doing the application's work</summary>
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
     /// <summary>The movie whose frames are currently loaded for processing</summary>

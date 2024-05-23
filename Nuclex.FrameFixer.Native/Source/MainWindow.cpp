@@ -28,6 +28,7 @@ along with this library
 #include "./Model/Movie.h"
 #include "./FrameThumbnailItemModel.h"
 #include "./FrameThumbnailPaintDelegate.h"
+#include "./DeinterlacerItemModel.h"
 #include "./Algorithm/InterlaceDetector.h"
 
 #include "./Algorithm/PreviewDeinterlacer.h"
@@ -81,6 +82,7 @@ namespace Nuclex::FrameFixer {
     ui(std::make_unique<Ui::MainWindow>()),
     thumbnailItemModel(),
     thumbnailPaintDelegate(),
+    deinterlacerItemModel(),
     servicesRoot(),
     currentMovie(),
     analysisThread(),
@@ -346,6 +348,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::swapFieldsOptionToggled(bool checked) {
+    (void)checked;
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {
@@ -358,6 +361,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::previewOptionToggled(bool checked) {
+    (void)checked;
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {

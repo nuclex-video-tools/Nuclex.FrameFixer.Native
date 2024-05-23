@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/Include/**",
-                "${workspaceFolder}/obj/cmake-Debug/NuclexTelecideNative_autogen/include/**",
+                "${workspaceFolder}/obj/cmake-Debug/NuclexFrameFixerNative_autogen/include/**",
                 "${workspaceFolder}/../Nuclex.Support.Native/Include/**",
                 "${workspaceFolder}/../Nuclex.Platform.Native/Include/**",
                 "${workspaceFolder}/../Nuclex.Pixels.Native/Include/**",
@@ -13,8 +13,8 @@
                 "/usr/include/qt5/**"
             ],
             "defines": [
-                "NUCLEX_TELECIDE_EXECUTABLE",
-                "NUCLEX_TELECIDE_SOURCE"
+                "NUCLEX_FRAMEFIXER_EXECUTABLE",
+                "NUCLEX_FRAMEFIXER_SOURCE"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",

@@ -14,7 +14,8 @@
       "args": [
         "-B", "obj/cmake-Debug",
         "-DCMAKE_BUILD_TYPE=Debug",
-        "-DBUILD_UNIT_TESTS=ON"
+        "-DBUILD_UNIT_TESTS=ON",
+        "-DENABLE_LIBAV=ON"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -66,7 +67,7 @@
         "isDefault": true
       },
       "type": "shell",
-      "command": "bin/linux-gcc13.2-amd64-debug/NuclexTelecideNativeTests",
+      "command": "bin/linux-gcc13.2-amd64-debug/NuclexFrameFixerNativeTests",
       "args": [ ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -81,7 +82,7 @@
         "isDefault": true
       },
       "type": "shell",
-      "command": "bin/linux-gcc13.2-amd64-debug/NuclexTelecideNativeBenchmark",
+      "command": "bin/linux-gcc13.2-amd64-debug/NuclexFrameFixerNativeBenchmark",
       "args": [ ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -96,7 +97,7 @@
         "isDefault": true
       },
       "type": "shell",
-      "command": "bin/linux-gcc13.2-amd64-debug/NuclexTelecideNative",
+      "command": "bin/linux-gcc13.2-amd64-debug/NuclexFrameFixerNative",
       "args": [ ],
       "options": {
         "cwd": "${workspaceFolder}"

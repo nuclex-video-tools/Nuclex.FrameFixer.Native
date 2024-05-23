@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuGui
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -30,6 +30,10 @@ along with this library
 
 // --------------------------------------------------------------------------------------------- //
 
+/// <summary>Entry point for the application</summary>
+/// <param name="argc">The number of command line arguments provided</param>
+/// <param name="argv">The values of all command line arguments</param>
+/// <returns>The exit code the application has terminated with</returns>
 int main(int argc, char *argv[]) {
   int exitCode;
   {
