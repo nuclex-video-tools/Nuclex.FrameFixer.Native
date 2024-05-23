@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -18,10 +18,10 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H
-#define NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H
 
-#include "Nuclex/Telecide/Config.h"
+#include "Nuclex/FrameFixer/Config.h"
 #include "./Deinterlacer.h"
 
 #include <QImage> // for QImage
@@ -31,7 +31,7 @@ extern "C" {
   struct AVFilterGraph;
 }
 
-namespace Nuclex::Telecide::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -131,6 +131,6 @@ namespace Nuclex::Telecide::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm
 
-#endif // NUCLEX_TELECIDE_ALGORITHM_NNEDI3DEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H

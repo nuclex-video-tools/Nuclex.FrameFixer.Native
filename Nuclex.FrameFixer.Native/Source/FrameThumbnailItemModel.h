@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -18,10 +18,10 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_FRAMETHUMBNAILITEMMODEL_H
-#define NUCLEX_TELECIDE_FRAMETHUMBNAILITEMMODEL_H
+#ifndef NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H
+#define NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H
 
-#include "Nuclex/Telecide/Config.h"
+#include "Nuclex/FrameFixer/Config.h"
 
 #include <QAbstractItemModel>
 #include <QStringList>
@@ -30,7 +30,7 @@ along with this library
 
 #include <Nuclex/Support/Collections/SequentialSlotCache.h> // for SequentialSlotCache
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -38,9 +38,9 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -87,6 +87,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_TELECIDE_FRAMETHUMBNAILITEMMODEL_H
+#endif // NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H

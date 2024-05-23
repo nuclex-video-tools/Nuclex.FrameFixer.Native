@@ -1,4 +1,4 @@
-Telecide
+FrameFixer
 ========
 
 This is a small program born out of my frustrations removing interlacing artifacts

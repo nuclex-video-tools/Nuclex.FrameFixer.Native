@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_TELECIDE_SOURCE 1
+#define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./InterlaceDetector.h"
 
@@ -88,7 +88,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -293,9 +293,9 @@ namespace Nuclex::Telecide {
         for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
           it.MoveTo(x, y);
 
-          Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample5(it);
+          Nuclex::FrameFixer::SwipeSample sample = Nuclex::FrameFixer::InterlaceDetector::Sample5(it);
           std::tuple<double, double> combedness = (
-            Nuclex::Telecide::InterlaceDetector::CalculateCombedness(sample)
+            Nuclex::FrameFixer::InterlaceDetector::CalculateCombedness(sample)
           );
 
           double horizontal = std::get<0>(combedness);
@@ -306,9 +306,9 @@ namespace Nuclex::Telecide {
         for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
           it.MoveTo(x, y);
 
-          Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample3(it);
+          Nuclex::FrameFixer::SwipeSample sample = Nuclex::FrameFixer::InterlaceDetector::Sample3(it);
           std::tuple<double, double> combedness = (
-            Nuclex::Telecide::InterlaceDetector::CalculateCombedness(sample)
+            Nuclex::FrameFixer::InterlaceDetector::CalculateCombedness(sample)
           );
 
           double horizontal = std::get<0>(combedness);
@@ -349,4 +349,4 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer

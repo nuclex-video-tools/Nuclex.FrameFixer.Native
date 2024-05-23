@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_TELECIDE_SOURCE 1
+#define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "FrameThumbnailPaintDelegate.h"
 
@@ -27,7 +27,7 @@ along with this library
 
 #include <QPainter>
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -174,4 +174,4 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer

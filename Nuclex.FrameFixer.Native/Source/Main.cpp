@@ -19,9 +19,9 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_TELECIDE_SOURCE 1
+#define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "Nuclex/Telecide/Config.h"
+#include "Nuclex/FrameFixer/Config.h"
 
 #include "./MainWindow.h"
 
@@ -100,7 +100,7 @@ namespace {
 
 std::vector<std::string> listFilesInDirectory(const std::string &path);
 
-void runTelecideAlgorithm(
+void runFrameFixerAlgorithm(
   Nuclex::Pixels::Storage::BitmapSerializer &serializer,
   const std::vector<std::string> &imageFiles, const std::string &outputFolder
 );
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 
     // Create the service provider (we use a simple class that ties all the services
     // together instead of a full-blown IoC container to keep things simple).
-    std::shared_ptr<Nuclex::Telecide::Services::ServicesRoot> servicesRoot;
+    std::shared_ptr<Nuclex::FrameFixer::Services::ServicesRoot> servicesRoot;
     try {
       //servicesRoot = std::make_shared<Nuclex::CriuGui::Services::ServicesRoot>();
       //servicesRoot->GetSettings()->LoadOrUseDefaults();
@@ -141,8 +141,8 @@ int main(int argc, char *argv[]) {
       return -1;
     }
 
-    std::shared_ptr<Nuclex::Telecide::MainWindow> mainWindow = (
-      std::make_shared<Nuclex::Telecide::MainWindow>()
+    std::shared_ptr<Nuclex::FrameFixer::MainWindow> mainWindow = (
+      std::make_shared<Nuclex::FrameFixer::MainWindow>()
     );
     mainWindow->BindToServicesRoot(servicesRoot);
     mainWindow->show();
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 
 int cliMain(int argc, char *argv[]) {
   if((argc != 2) && (argc != 3)) {
-    ::fprintf(stdout, u8"Syntax: NuclexTelecideNative <telecine-folder> <output-folder>\n");
+    ::fprintf(stdout, u8"Syntax: NuclexFrameFixerNative <telecine-folder> <output-folder>\n");
     ::fprintf(stdout, u8"\n");
     ::fprintf(stdout, u8"Attempts to fix a digitally produced telecine movie where\n");
     ::fprintf(stdout, u8"the telecine pattern is jumbled (but where no half-frames are\n");
@@ -201,7 +201,7 @@ int cliMain(int argc, char *argv[]) {
     }
 
     Nuclex::Pixels::Storage::BitmapSerializer serializer;
-    runTelecideAlgorithm(serializer, filenames, outputFolder);
+    runFrameFixerAlgorithm(serializer, filenames, outputFolder);
   }
   catch(const std::exception &error) {
     ::fprintf(stdout, u8"ERROR: ");
@@ -254,7 +254,7 @@ enum class FrameType {
 
 };
 
-void runTelecideAlgorithm(
+void runFrameFixerAlgorithm(
   Nuclex::Pixels::Storage::BitmapSerializer &serializer,
   const std::vector<std::string> &imageFiles, const std::string &outputFolder
 ) {
@@ -308,8 +308,8 @@ std::tuple<double, double> calculateCombedness(const Nuclex::Pixels::Bitmap &bit
     for(std::size_t x = 1; x < memory.Width - 2; ++x) {
       it.MoveTo(x, y);
 
-      Nuclex::Telecide::SwipeSample sample = Nuclex::Telecide::InterlaceDetector::Sample3(it);
-      std::tuple<double, double> combiness = Nuclex::Telecide::InterlaceDetector::CalculateCombedness(
+      Nuclex::FrameFixer::SwipeSample sample = Nuclex::FrameFixer::InterlaceDetector::Sample3(it);
+      std::tuple<double, double> combiness = Nuclex::FrameFixer::InterlaceDetector::CalculateCombedness(
         sample
       );
 

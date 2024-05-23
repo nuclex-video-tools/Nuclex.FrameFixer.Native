@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -18,10 +18,10 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_MAINWINDOW_H
-#define NUCLEX_TELECIDE_MAINWINDOW_H
+#ifndef NUCLEX_FRAMEFIXER_MAINWINDOW_H
+#define NUCLEX_FRAMEFIXER_MAINWINDOW_H
 
-#include "Nuclex/Telecide/Config.h"
+#include "Nuclex/FrameFixer/Config.h"
 
 #include "./Model/FrameType.h"
 #include "./Algorithm/Deinterlacer.h"
@@ -32,7 +32,7 @@ along with this library
 
 #include <memory> // for std::unique_ptr
 
-namespace Nuclex::Telecide::Services {
+namespace Nuclex::FrameFixer::Services {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -42,7 +42,7 @@ namespace Nuclex::Telecide::Services {
 
 }
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -65,7 +65,7 @@ namespace Ui {
 
 }
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -196,6 +196,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_TELECIDE_MAINWINDOW_H
+#endif // NUCLEX_FRAMEFIXER_MAINWINDOW_H

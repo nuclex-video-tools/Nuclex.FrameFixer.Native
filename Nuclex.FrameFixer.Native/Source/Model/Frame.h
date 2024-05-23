@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -18,17 +18,17 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_TELECIDE_FRAME_H
-#define NUCLEX_TELECIDE_FRAME_H
+#ifndef NUCLEX_FRAMEFIXER_FRAME_H
+#define NUCLEX_FRAMEFIXER_FRAME_H
 
-#include "Nuclex/Telecide/Config.h"
+#include "Nuclex/FrameFixer/Config.h"
 #include "./FrameType.h"
 
 #include <cstddef> // for std::size_t
 #include <string> // for std::string
 #include <optional> // for std::optional
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -48,7 +48,7 @@ namespace Nuclex::Telecide {
     public: std::size_t Index;
     /// <summary>Name of the image file to which the frame has been extracted</summary>
     public: std::string Filename;
-    /// <summary>Type of this frame in the telecide sequence</summary>
+    /// <summary>Type of this frame in the framefixer sequence</summary>
     public: FrameType Type;
     /// <summary>Amount of combing that was detected in the frame</summary>
     public: std::optional<double> Combedness; 
@@ -62,6 +62,6 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_TELECIDE_FRAME_H
+#endif // NUCLEX_FRAMEFIXER_FRAME_H

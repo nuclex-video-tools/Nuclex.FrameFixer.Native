@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex Telecide
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_TELECIDE_SOURCE 1
+#define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "Movie.h"
 
@@ -39,7 +39,7 @@ namespace {
   /// <param name="left">Frame that will be compared on the right side</param>
   /// <returns>True if the left frame is ordered before the right frame</returns>
   bool compareFramesByFilename(
-    const Nuclex::Telecide::Frame &left, const Nuclex::Telecide::Frame &right
+    const Nuclex::FrameFixer::Frame &left, const Nuclex::FrameFixer::Frame &right
   ) {
     return left.Filename < right.Filename;
   }
@@ -48,7 +48,7 @@ namespace {
 
 }
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -214,4 +214,4 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer

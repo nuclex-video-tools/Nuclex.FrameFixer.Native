@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Telecide GUI</string>
+   <string>FrameFixer GUI</string>
   </property>
   <widget class="QWidget" name="centralLayoutGrid">
    <layout class="QGridLayout" name="gridLayout">
@@ -313,7 +313,7 @@ Space: Statistics</string>
   <customwidget>
    <class>QZoomableGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>Nuclex/Telecide/QZoomableGraphicsView.h</header>
+   <header>Nuclex/FrameFixer/QZoomableGraphicsView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -4,9 +4,9 @@ cmake_minimum_required (VERSION 3.8)
 # -------------------------------------------------------------------------------------------------
 
 project(
-	NuclexTelecideNative
+	NuclexFrameFixerNative
 	VERSION 1.0.0
-	DESCRIPTION "Converts .wav files to Opus without clipping"
+	DESCRIPTION "Human-aided deinterlacer with many algorithms for difficult footage"
 )
 
 option(
@@ -36,6 +36,13 @@ option(
 	ON
 )
 
+option(
+	ENABLE_LIBAV
+	"Whether to use the system's installed libav (ffmpeg API) to provide \
+	additional deinterlacers such as NNedi, Yadif and BWDif. Requires libav."
+	ON
+)
+
 # -------------------------------------------------------------------------------------------------
 
 # Qt: automatically run the "Meta-Object Compiler" which reads C++ header files and
@@ -47,6 +54,7 @@ set(CMAKE_AUTOMOC ON)
 # files (.ui) and generate matching C++ header files.
 #   https://doc.qt.io/qt-5/uic.html
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS UserInterface)
 
 # Qt: automatically run the "Resource Compiler" on Qt resource files (.qrc) to read
 # all referenced resources and generate C++ sources storing the file contents.
@@ -55,8 +63,6 @@ set(CMAKE_AUTORCC ON)
 
 # find includes in the corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_AUTOUIC_SEARCH_PATHS UserInterface)
 
 # Contains compiler options, compiler tag for output directory, etc.
 include("../BuildSystem/cmake/cplusplus.cmake")
@@ -69,18 +75,6 @@ find_package(Threads REQUIRED)
 # Locate Qt, the cross-platform User Interface and base API abstraction library
 # we're using for all UI stuff
 find_package(Qt5 COMPONENTS REQUIRED Widgets)
-
-find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h)
-find_library(AVCODEC_LIBRARY avcodec)
-
-find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h)
-find_library(AVFORMAT_LIBRARY avformat)
-
-find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h)
-find_library(AVUTIL_LIBRARY avutil)
-
-find_path(AVFILTER_INCLUDE_DIR libavfilter/avfilter.h)
-find_library(AVFILTER_LIBRARY avfilter)
 
 # Add Nuclex.Support.Native as a sub-project, we link it for utility methods.
 if(NOT (TARGET NuclexSupportNative))
@@ -106,8 +100,25 @@ if(NOT (TARGET NuclexPixelsNative))
 	)
 endif()
 
-message(STATUS "Enabled options for Nuclex.Telecide.Native:")
+message(STATUS "Enabled options for Nuclex.FrameFixer.Native:")
 message(STATUS "  ⚫ Build core library")
+
+# Locate the installed libav header files and libraries on the system
+if(ENABLE_LIBAV)
+	message(STATUS "  ⚫ Use system libav")
+
+  find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h)
+  find_library(AVCODEC_LIBRARY avcodec)
+
+  find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h)
+  find_library(AVFORMAT_LIBRARY avformat)
+
+  find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h)
+  find_library(AVUTIL_LIBRARY avutil)
+
+  find_path(AVFILTER_INCLUDE_DIR libavfilter/avfilter.h)
+  find_library(AVFILTER_LIBRARY avfilter)
+endif()
 
 if(BUILD_UNIT_TESTS)
 	message(STATUS "  ⚫ Build unit tests")
@@ -130,12 +141,6 @@ endif()
 # Use CMake's own package for locating Doxygen on the system
 if(BUILD_DOCS)
 	find_package(Doxygen)
-endif()
-
-# Add OpenCV if Yadif is enabled. The Yadif implemented used here is an OpenCV port
-# to avoid pulling in complex depencies from AviSynth, AVSynth, VapourSynth or ffmpeg.
-if(ENABLE_YADIF)
-	find_package(OpenCV REQUIRED)
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -172,7 +177,7 @@ file(
 file(
 	GLOB_RECURSE headerFiles
 	CONFIGURE_DEPENDS
-	"Include/Nuclex/Telecide/*.h"
+	"Include/Nuclex/FrameFixer/*.h"
 )
 file(
 	GLOB_RECURSE unittestFiles
@@ -195,21 +200,29 @@ function(add_third_party_libraries target_name)
     PUBLIC NuclexPlatformNative
     PUBLIC NuclexPixelsNative
     PRIVATE Qt5::Widgets
-    PRIVATE ${OpenCV_LIBS}
-    PRIVATE ${AVCODEC_LIBRARY} 
-    PRIVATE ${AVFORMAT_LIBRARY} 
-    PRIVATE ${AVUTIL_LIBRARY} 
-    PRIVATE ${AVFILTER_LIBRARY}
 		PRIVATE Threads::Threads
   )
 
-  target_include_directories(
-		${target_name}
-    PRIVATE ${AVCODEC_INCLUDE_DIR} 
-    PRIVATE ${AVFORMAT_INCLUDE_DIR} 
-    PRIVATE ${AVUTIL_INCLUDE_DIR} 
-    PRIVATE ${AVFILTER_INCLUDE_DIR}
-  )
+	if(ENABLE_LIBAV)
+		target_compile_definitions(
+			${target_name}
+			PUBLIC ENABLE_LIBAV
+		)
+		target_include_directories(
+			${target_name}
+			PRIVATE ${AVCODEC_INCLUDE_DIR} 
+			PRIVATE ${AVFORMAT_INCLUDE_DIR} 
+			PRIVATE ${AVUTIL_INCLUDE_DIR} 
+			PRIVATE ${AVFILTER_INCLUDE_DIR}
+		)
+		target_link_libraries(
+			${target_name}
+			PRIVATE ${AVCODEC_LIBRARY} 
+			PRIVATE ${AVFORMAT_LIBRARY} 
+			PRIVATE ${AVUTIL_LIBRARY} 
+			PRIVATE ${AVFILTER_LIBRARY}
+		)
+	endif()
 
 	# On Unix systems, the application and unit test executable should look for
 	# dependencies in its own directory first.
@@ -226,41 +239,41 @@ endfunction()
 # -------------------------------------------------------------------------------------------------
 
 # name of the .exe file, window flag and the list of things to compile
-add_executable(NuclexTelecideNative)
+add_executable(NuclexFrameFixerNative)
 
 # Enable compiler warnings only if this application is compiled on its own.
 # If it's used as a sub-project, the including project's developers aren't
 # interested in seeing warnings from a project they're not maintaining.
-if(${CMAKE_PROJECT_NAME} STREQUAL "NuclexTelecideNative")
-	enable_target_compiler_warnings(NuclexTelecideNative)
+if(${CMAKE_PROJECT_NAME} STREQUAL "NuclexFrameFixerNative")
+	enable_target_compiler_warnings(NuclexFrameFixerNative)
 else()
-	disable_target_compiler_warnings(NuclexTelecideNative)
+	disable_target_compiler_warnings(NuclexFrameFixerNative)
 endif()
 
 # Add directory with public headers to include path
 target_include_directories(
-	NuclexTelecideNative
+	NuclexFrameFixerNative
 	PUBLIC "Include"
 )
 
 # Add public headers and sources to compilation list
 # (headers, too, in case CMake is used to generate an IDE project)
 target_sources(
-	NuclexTelecideNative
+	NuclexFrameFixerNative
 	PUBLIC ${headerFiles}
 	PRIVATE ${sourceFiles}
 	PRIVATE ${userInterfaceFiles}
 )
 
 # Add include directories and static libraries the application depends on
-add_third_party_libraries(NuclexTelecideNative)
+add_third_party_libraries(NuclexFrameFixerNative)
 
 # -------------------------------------------------------------------------------------------------
 
 set_property(GLOBAL PROPERTY QUIET_INSTALL ON)
 
 #file(
-#	COPY ${PROJECT_SOURCE_DIR}/Telecide.ini
+#	COPY ${PROJECT_SOURCE_DIR}/FrameFixer.ini
 #	DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}/
 #)
 
@@ -269,7 +282,7 @@ set_property(GLOBAL PROPERTY QUIET_INSTALL ON)
 # "compiler tag" and dynamically formed -- it ensures that when linking
 # a pre-compiled shared library, the correct library is used).
 install(
-	TARGETS NuclexTelecideNative
+	TARGETS NuclexFrameFixerNative
 	ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
 	LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
 	RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
@@ -303,7 +316,7 @@ install(
 )
 
 # Install .pdb files on Windows platforms for the main application
-install_debug_symbols(NuclexTelecideNative)
+install_debug_symbols(NuclexFrameFixerNative)
 
 # -------------------------------------------------------------------------------------------------
 
@@ -314,8 +327,8 @@ if(BUILD_DOCS)
 	endif()
 
 	add_custom_target(
-		NuclexTelecideNativeDocs ALL
-		COMMAND ${DOXYGEN_EXECUTABLE} "Nuclex.Telecide.Native.doxygen.cfg"
+		NuclexFrameFixerNativeDocs ALL
+		COMMAND ${DOXYGEN_EXECUTABLE} "Nuclex.FrameFixer.Native.doxygen.cfg"
 		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 	)
 

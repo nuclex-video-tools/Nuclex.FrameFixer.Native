@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex TELECIDE
+Nuclex FRAMEFIXER
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -19,7 +19,7 @@ along with this library
 #pragma endregion // CPL License
 
 // If the application is compiled as a DLL, this ensures symbols are exported
-#define NUCLEX_TELECIDE_SOURCE 1
+#define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./ExportDialog.h"
 #include "ui_ExportDialog.h"
@@ -30,7 +30,7 @@ along with this library
 #include <QCloseEvent> // for QCloseEvent
 #include <QMessageBox> // for QMessageBox
 
-namespace Nuclex::Telecide {
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -187,4 +187,4 @@ namespace Nuclex::Telecide {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::Telecide
+} // namespace Nuclex::FrameFixer
