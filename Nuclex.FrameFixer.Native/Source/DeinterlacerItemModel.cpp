@@ -49,6 +49,14 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::shared_ptr<Algorithm::Deinterlacer> DeinterlacerItemModel::GetDeinterlacer(
+    std::size_t index
+  ) const {
+    return this->deinterlacers.at(index);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   int DeinterlacerItemModel::rowCount(const QModelIndex &parent) const {
     return static_cast<int>(this->deinterlacers.size());
   }
@@ -65,7 +73,7 @@ namespace Nuclex::FrameFixer {
       return QVariant();
     }
 
-    if(role != Qt::DecorationRole) {
+    if(role != Qt::DisplayRole) {
       return QVariant();
     }
 

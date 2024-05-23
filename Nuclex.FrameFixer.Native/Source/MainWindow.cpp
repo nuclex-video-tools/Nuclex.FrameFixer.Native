@@ -85,6 +85,7 @@ namespace Nuclex::FrameFixer {
     deinterlacerItemModel(),
     servicesRoot(),
     currentMovie(),
+    deinterlacer(),
     analysisThread(),
     analysisThreadMutex(new QMutex()) {
 
@@ -112,13 +113,13 @@ namespace Nuclex::FrameFixer {
     this->thumbnailPaintDelegate.reset(new FrameThumbnailPaintDelegate());
     this->ui->thumbnailList->setItemDelegate(this->thumbnailPaintDelegate.get());
 
-    std::unique_ptr<QStringList> deinterlacers = std::make_unique<QStringList>();
-    deinterlacers->push_back(u8"Copy / interpolate missing fields");
-    deinterlacers->push_back(u8"Yadif (from cvDeinterlace)");
-    deinterlacers->push_back(u8"YadifMod2 (from AviSynth)");
-    deinterlacers->push_back(u8"NNedi3 (from ffmpeg)");
-    deinterlacers->push_back(u8"Anime deinterlacer (custom)");
-    this->ui->deinterlacerCombo->addItems(*deinterlacers.get());
+    this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
+    DeinterlacerItemModel::DeinterlacerList deinterlacers;
+    deinterlacers.push_back(std::make_shared<Algorithm::PreviewDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::NNedi3Deinterlacer>());
+    this->deinterlacerItemModel->SetDeinterlacers(deinterlacers);
+
+    this->ui->deinterlacerCombo->setModel(this->deinterlacerItemModel.get());
     selectedDeinterlacerChanged(0); // Make sure deinterlace instance is set up
 
     connectUiSignals();
@@ -317,7 +318,7 @@ namespace Nuclex::FrameFixer {
       status += u8"Emitted: ";
       status += Nuclex::Support::Text::lexical_cast<std::string>(emittedFrameCount);
       status += u8"\n";
-      status += u8"Sync: ";
+      status += u8"Sync At: ";
       status += Nuclex::Support::Text::lexical_cast<std::string>(lastMatchingIndex);
       status += u8"\n";
       this->ui->frameStatusLabel->setText(QString::fromStdString(status));      
@@ -474,15 +475,11 @@ namespace Nuclex::FrameFixer {
       this->deinterlacer->CoolDown();
     }
 
-    if(selectedIndex == 0) {
-      this->deinterlacer.reset(new Algorithm::PreviewDeinterlacer());
-    } else if(selectedIndex == 1) {
-      this->deinterlacer.reset(new Algorithm::ReYadifDeinterlacer());
-    } else if(selectedIndex == 3) {
-      this->deinterlacer.reset(new Algorithm::NNedi3Deinterlacer());
-    }
+    this->deinterlacer = this->deinterlacerItemModel->GetDeinterlacer(selectedIndex);
 
-    this->deinterlacer->WarmUp();
+    if(static_cast<bool>(this->deinterlacer)) {
+      this->deinterlacer->WarmUp();
+    }
 
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
@@ -568,7 +565,7 @@ namespace Nuclex::FrameFixer {
     }
 
     std::vector<QImage> framesToAverage;
-    QImage previousFrame, frame;
+    QImage previousFrame, frame, nextFrame;
 
     std::size_t outputIndex = 1;
     for(std::size_t frameIndex = 0; frameIndex <= endFrame; ++frameIndex) {
@@ -583,6 +580,17 @@ namespace Nuclex::FrameFixer {
       if(frameType == FrameType::Unknown) {
         frameType = this->currentMovie->Frames[frameIndex].ProvisionalType;
       }
+
+      if(this->ui->swapFieldsOption->isChecked()) {
+        switch(frameType) {
+          case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
+          case FrameType::BottomFieldFirst: { frameType = FrameType::TopFieldFirst; break; }
+          case FrameType::TopFieldOnly: { frameType = FrameType::BottomFieldOnly; break; }
+          case FrameType::BottomFieldOnly: { frameType = FrameType::TopFieldOnly; break; }
+          default: { break; }
+        }
+      }
+
       if(frameType == FrameType::Average) {
         framesToAverage.push_back(std::move(frame));
       } else {
@@ -601,6 +609,7 @@ namespace Nuclex::FrameFixer {
           }
           framesToAverage.clear();
         }
+        
 
         // TODO: Not checking previousFrame here. Who cares?
         if(frameType == FrameType::TopFieldFirst) {

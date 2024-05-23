@@ -188,12 +188,13 @@ namespace Nuclex::FrameFixer {
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
     /// <summary>The movie whose frames are currently loaded for processing</summary>
     private: std::shared_ptr<Movie> currentMovie;
+    /// <summary>The currently selected deinterlacer</summary>
+    private: std::shared_ptr<Algorithm::Deinterlacer> deinterlacer;
+
     /// <summary>Thread that analyzes the combiness of frames</summary>
     private: std::unique_ptr<QThread> analysisThread;
     /// <summary>Mutex controlling access to the analysis thread</summary>
     private: std::unique_ptr<QMutex> analysisThreadMutex;
-    /// <summary>The currently selected deinterlacer</summary>
-    private: std::unique_ptr<Algorithm::Deinterlacer> deinterlacer;
 
   };
 
