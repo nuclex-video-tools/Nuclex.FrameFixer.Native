@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuGui
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -34,17 +34,11 @@ namespace Nuclex::FrameFixer {
   FrameThumbnailItemModel::FrameThumbnailItemModel(QObject *parent) :
     QAbstractListModel(parent),
     movie(),
-    thumbnailCache() {
-    //rootItem.reset(
-    //  new ProcessItem({tr("Title"), tr("Summary")})
-    //);
-  }
+    thumbnailCache() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  FrameThumbnailItemModel::~FrameThumbnailItemModel() {
-    //delete rootItem;
-  }
+  FrameThumbnailItemModel::~FrameThumbnailItemModel() {}
 
   // ------------------------------------------------------------------------------------------- //
 

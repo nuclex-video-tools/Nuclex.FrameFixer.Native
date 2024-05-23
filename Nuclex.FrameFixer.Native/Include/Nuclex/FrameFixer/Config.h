@@ -27,7 +27,7 @@ along with this library
 #if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
   #error The Nuclex.FrameFixer.Native library does not support WinRT
 #elif defined(WIN32) || defined(_WIN32)
-  #define NUCLEX_CRIUGUI_WINDOWS 1
+  #define NUCLEX_FRAMEFIXER_WINDOWS 1
 #else
   #define NUCLEX_FRAMEFIXER_LINUX 1
 #endif

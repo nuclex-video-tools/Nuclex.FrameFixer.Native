@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuGui
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -93,28 +93,28 @@ namespace Nuclex::FrameFixer {
         painter->restore();    
       } else if(frame.Type == FrameType::TopFieldFirst) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkGreen));
+        painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "TB");
         painter->restore();    
       } else if(frame.Type == FrameType::BottomFieldFirst) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkBlue));
+        painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "BT");
         painter->restore();    
       } else if(frame.Type == FrameType::TopFieldOnly) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkGreen));
+        painter->setBrush(QBrush(Qt::darkBlue));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "T▲");
         painter->restore();    
       } else if(frame.Type == FrameType::BottomFieldOnly) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkBlue));
+        painter->setBrush(QBrush(Qt::darkGreen));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "B▼");

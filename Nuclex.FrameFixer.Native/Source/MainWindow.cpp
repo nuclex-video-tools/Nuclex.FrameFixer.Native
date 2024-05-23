@@ -1,6 +1,6 @@
 #pragma region CPL License
 /*
-Nuclex CriuGui
+Nuclex FrameFixer
 Copyright (C) 2024 Nuclex Development Labs
 
 This application is free software; you can redistribute it and/or modify it
@@ -691,4 +691,4 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::CriuGui
+} // namespace Nuclex::FrameFixer

@@ -18,45 +18,47 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H
-#define NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H
+#ifndef NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
+#define NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
 #include <QAbstractItemModel>
+#include <QStringList>
 
 #include <memory> // for std::shared_ptr
+#include <vector> // for std::vector
 
-#include <Nuclex/Support/Collections/SequentialSlotCache.h> // for SequentialSlotCache
+namespace Nuclex::FrameFixer::Algorithm {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class Deinterlacer;
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // namespace Nuclex::FrameFixer::Algorithm
 
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class Movie;
-
-  // ------------------------------------------------------------------------------------------- //
-
-} // namespace Nuclex::FrameFixer
-
-namespace Nuclex::FrameFixer {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Presents the frames of a movie as dynamically generated thumbnails</summary>
-  class FrameThumbnailItemModel : public QAbstractListModel {
+  /// <summary>Presents a list of deinterlacers with human-readable names</summary>
+  class DeinterlacerItemModel : public QAbstractListModel {
     Q_OBJECT
 
-    /// <summary>Initializes a new item model for frame thumbnails</summary>
+    typedef std::vector<std::shared_ptr<Algorithm::Deinterlacer>> DeinterlacerList;
+
+    /// <summary>Initializes a new item model for deinterlacers</summary>
     /// <param name="parent">Always null</param>
-    public: explicit FrameThumbnailItemModel(QObject *parent = nullptr);
+    public: explicit DeinterlacerItemModel(QObject *parent = nullptr);
 
     /// <summary>Stops all background processing and frees all memory</summary>
-    public: ~FrameThumbnailItemModel() override;
+    public: ~DeinterlacerItemModel() override;
 
-    /// <summary>Sets the movie for whose frames thumbnails will be provided</summary>
-    /// <param name="movie">Movie for which thumbnails will be provided</param>
-    public: void SetMovie(const std::shared_ptr<Movie> &movie);
+    /// <summary>Loads the movie frames from the specified folder</summary>
+    /// <param name="path">Path from which the movie frames will be loaded</param>
+    public: void SetDeinterlacers(const DeinterlacerList &deinterlacers);
 
     /// <summary>Sets the resolution in which thumbnails will be generated</summary>
     /// <param name="resolution">The desired thumbnail resolution</param>
@@ -75,12 +77,8 @@ namespace Nuclex::FrameFixer {
       const QModelIndex &index, int role = Qt::DisplayRole
     ) const override;
 
-    /// <summary>The movie for which the model provides thumbnails</summary>
-    private: std::shared_ptr<Movie> movie;
-    /// <summary>Cached thumbnails for the movie's frames</summary>
-    private: std::unique_ptr<
-      Nuclex::Support::Collections::SequentialSlotCache<std::size_t, QVariant>
-    > thumbnailCache;
+    /// <summary>Deinterlacers whose names will be provided as an item model</summary>
+    private: DeinterlacerList deinterlacers;
 
   };
 
@@ -88,4 +86,4 @@ namespace Nuclex::FrameFixer {
 
 } // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_FRAMEFIXER_FRAMETHUMBNAILITEMMODEL_H
+#endif // NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
