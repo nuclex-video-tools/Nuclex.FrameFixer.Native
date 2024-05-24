@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVNNEDI3DEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVNNEDI3DEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./LibAvDeinterlacer.h"
@@ -29,12 +29,12 @@ namespace Nuclex::FrameFixer::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Deinterlacer that uses libav's NNedi3 filter to deinterlace</summary>
-  class NNedi3Deinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
+  class LibAvNNedi3Deinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
 
     /// <summary>Initializes the NNedi3 via libav deinterlacer</summary>
-    public: NNedi3Deinterlacer();
+    public: LibAvNNedi3Deinterlacer();
     /// <summary>Frees all resources used by the deinterlacer</summary>
-    public: virtual ~NNedi3Deinterlacer() = default;
+    public: virtual ~LibAvNNedi3Deinterlacer() = default;
 
     /// <summary>Called when the deinterlacer is deselected for the time being</summary>
     public: void CoolDown() override;
@@ -82,4 +82,4 @@ namespace Nuclex::FrameFixer::Algorithm {
 
 } // namespace Nuclex::FrameFixer::Algorithm
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_NNEDI3DEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVNNEDI3DEINTERLACER_H

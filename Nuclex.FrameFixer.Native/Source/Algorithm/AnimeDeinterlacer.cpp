@@ -33,6 +33,17 @@ along with this library
 // "For extracting Motion Vector image"
 // https://github.com/zbwglory/MV-release
 
+// Ideas
+//
+// - Look for whole lines lacking saturation (typical artifacts when movie has
+//   been encoded in YUV-422 or YUV-420 with lower resolution chroma),
+//   then replace saturation or chroma with interpolated chroma, keep luma.
+//
+// - Use 1D feature detection (i.e. via gradients) to figure out movement
+//   and consider contents of previous frame, use to decide interpolation angle
+//   (perhaps full frame motion estimation of half-image works for this, too?)
+//  
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //

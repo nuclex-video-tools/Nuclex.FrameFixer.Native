@@ -146,6 +146,29 @@ namespace Nuclex::FrameFixer::Algorithm {
           redChannel += frame->linesize[2];
           alphaChannel += frame->linesize[3];
         }
+      } else if(frame->format == AV_PIX_FMT_GBRAP) { // planar output (Yadif does this)
+        const std::uint8_t *greenChannel = frame->data[0];
+        const std::uint8_t *blueChannel = frame->data[1];
+        const std::uint8_t *redChannel = frame->data[2];
+        const std::uint8_t *alphaChannel = frame->data[3];
+
+        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+          QRgba64 *targetScanline = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
+          for(std::size_t pixelIndex = 0; pixelIndex < frame->width; ++pixelIndex) {
+            targetScanline[pixelIndex] = QRgba64::fromRgba(
+              reinterpret_cast<const quint8 *>(redChannel)[pixelIndex],
+              reinterpret_cast<const quint8 *>(greenChannel)[pixelIndex],
+              reinterpret_cast<const quint8 *>(blueChannel)[pixelIndex],
+              reinterpret_cast<const quint8 *>(alphaChannel)[pixelIndex]
+            );
+          }
+
+          targetScanline += image.bytesPerLine();
+          greenChannel += frame->linesize[0];
+          blueChannel += frame->linesize[1];
+          redChannel += frame->linesize[2];
+          alphaChannel += frame->linesize[3];
+        }
       } else if(frame->format == AV_PIX_FMT_RGBA64LE) { // AV_PIX_FMT_BGR48LE
         const std::uint8_t *frameData = frame->data[0];
         for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {

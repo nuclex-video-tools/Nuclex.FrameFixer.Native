@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./NNedi3Deinterlacer.h"
+#include "./LibAvNNedi3Deinterlacer.h"
 
 #include <Nuclex/Support/Text/LexicalAppend.h>
 
@@ -34,29 +34,6 @@ along with this library
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Throws an exception for the specified libav result code</summary>
-  /// <param name="libavResult">
-  ///   libav result code for which an error message will be provided in the exception
-  /// </param>
-  /// <param name="message">
-  ///   Additional text that will be prefixed to the exception message
-  /// </param>
-  [[noreturn]] void throwExceptionForAvError(int libAvResult, const std::string &message) {
-    char buffer[1024];
-    int errorStringResult = ::av_strerror(libAvResult, buffer, sizeof(buffer));
-
-    std::string combinedMessage(message);
-    if(errorStringResult == 0) {
-      combinedMessage.append(buffer);
-    } else {
-      combinedMessage.append(u8"unknown error ", 14);
-      Nuclex::Support::Text::lexical_append(combinedMessage, libAvResult);
-    }
-
-    throw std::runtime_error(combinedMessage);
-  }
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -65,12 +42,12 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  NNedi3Deinterlacer::NNedi3Deinterlacer() :
+  LibAvNNedi3Deinterlacer::LibAvNNedi3Deinterlacer() :
     priorFrame() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::CoolDown() {
+  void LibAvNNedi3Deinterlacer::CoolDown() {
     LibAvDeinterlacerBase::CoolDown();
 
     QImage emptyImage;
@@ -79,13 +56,13 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::SetPriorFrame(const QImage &priorFrame) {
+  void LibAvNNedi3Deinterlacer::SetPriorFrame(const QImage &priorFrame) {
     this->priorFrame = priorFrame;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void NNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+  void LibAvNNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
     DefaultFilterParameters parameters = MakeFilterParameters(target, mode);
     std::shared_ptr<::AVFilterGraph> filterGraph = GetOrCreateFilterGraph(parameters);
     //std::shared_ptr<::AVFilterGraph> filterGraph = ConstructFilterGraph(parameters);
@@ -140,7 +117,7 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<::AVFilterGraph> NNedi3Deinterlacer::ConstructFilterGraph(
+  std::shared_ptr<::AVFilterGraph> LibAvNNedi3Deinterlacer::ConstructFilterGraph(
     const DefaultFilterParameters &filterParameters
   ) {
     using Nuclex::FrameFixer::Platform::LibAvApi;

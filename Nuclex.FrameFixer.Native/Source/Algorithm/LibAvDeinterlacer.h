@@ -179,7 +179,7 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// <param name="filterParameters">Parameters for which a cache key will be formed</param>
     /// <returns>The cache key for the specified filter parameters</returns>
     protected: virtual std::string GetCacheKey(const TFilterParameters &filterParameters) {
-      std::string cacheKey;(u8"F-", 2);
+      std::string cacheKey(u8"F-", 2);
       Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.FrameWidth);
       cacheKey.push_back(u8'x');
       Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.FrameHeight);
