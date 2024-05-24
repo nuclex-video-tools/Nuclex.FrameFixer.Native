@@ -33,10 +33,9 @@ along with this library
 #include "./Exporter.h"
 
 #include "./Algorithm/PreviewDeinterlacer.h"
-#include "./Algorithm/ReYadifDeinterlacer.h"
-#include "./Algorithm/NNedi3Deinterlacer.h"
-#include "./Algorithm/AnimeDeinterlacer.h"
-#include "./Algorithm/Averager.h"
+#include "./Algorithm/LibAvNNedi3Deinterlacer.h"
+#include "./Algorithm/LibAvYadifDeinterlacer.h"
+#include "./Algorithm/LibAvEstdifDeinterlacer.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
@@ -117,7 +116,10 @@ namespace Nuclex::FrameFixer {
     this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
     DeinterlacerItemModel::DeinterlacerList deinterlacers;
     deinterlacers.push_back(std::make_shared<Algorithm::PreviewDeinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::NNedi3Deinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::LibAvNNedi3Deinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::LibAvYadifDeinterlacer>(false));
+    deinterlacers.push_back(std::make_shared<Algorithm::LibAvYadifDeinterlacer>(true));
+    deinterlacers.push_back(std::make_shared<Algorithm::LibAvEstdifDeinterlacer>());
     this->deinterlacerItemModel->SetDeinterlacers(deinterlacers);
 
     this->ui->deinterlacerCombo->setModel(this->deinterlacerItemModel.get());
