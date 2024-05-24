@@ -36,6 +36,7 @@ along with this library
 #include "./Algorithm/LibAvNNedi3Deinterlacer.h"
 #include "./Algorithm/LibAvYadifDeinterlacer.h"
 #include "./Algorithm/LibAvEstdifDeinterlacer.h"
+#include "./Algorithm/Filter.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
@@ -412,6 +413,8 @@ namespace Nuclex::FrameFixer {
         std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
         frameImage.load(QString::fromStdString(imagePath));
       }
+
+      Filter::HighPass(frameImage);
 
       // Display the frame in Qt's graphics view
       {

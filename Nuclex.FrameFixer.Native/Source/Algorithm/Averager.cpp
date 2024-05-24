@@ -93,10 +93,10 @@ namespace Nuclex::FrameFixer {
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
           int componentIndex = 0;
           for(std::size_t x = 0; x < image.width(); ++x) {
-            scanline[componentIndex++] = qRed(pixels[x]);
-            scanline[componentIndex++] = qGreen(pixels[x]);
-            scanline[componentIndex++] = qBlue(pixels[x]);
-            scanline[componentIndex++] = qAlpha(pixels[x]);
+            scanline[componentIndex++] = pixels[x].red();
+            scanline[componentIndex++] = pixels[x].green();
+            scanline[componentIndex++] = pixels[x].blue();
+            scanline[componentIndex++] = pixels[x].alpha();
           }
         }
 
@@ -108,10 +108,10 @@ namespace Nuclex::FrameFixer {
 
           int componentIndex = 0;
           for(std::size_t x = 0; x < image.width(); ++x) {
-            scanline[componentIndex++] += qRed(otherPixels[x]);
-            scanline[componentIndex++] += qGreen(otherPixels[x]);
-            scanline[componentIndex++] += qBlue(otherPixels[x]);
-            scanline[componentIndex++] += qAlpha(otherPixels[x]);
+            scanline[componentIndex++] += otherPixels[x].red();
+            scanline[componentIndex++] += otherPixels[x].green();
+            scanline[componentIndex++] += otherPixels[x].blue();
+            scanline[componentIndex++] += otherPixels[x].alpha();
           }
         }
 
@@ -126,7 +126,7 @@ namespace Nuclex::FrameFixer {
             quint32 blue = scanline[componentIndex++];
             quint32 alpha = scanline[componentIndex++];
 
-            pixels[x] = QRgba64::fromRgba(
+            pixels[x] = QRgba64::fromRgba64(
               static_cast<quint16>(red / otherImageCount),
               static_cast<quint16>(green / otherImageCount),
               static_cast<quint16>(blue / otherImageCount),
