@@ -218,9 +218,14 @@ namespace Nuclex::FrameFixer {
         std::string imagePath = movie->GetFramePath(frameIndex);
         imagesToAverage.emplace_back(QString::fromStdString(imagePath));
 
+        bool isLastFrame = ((frameIndex + 1) >= frameCount);
+        if(this->inputFrameRange.has_value()) {
+          isLastFrame |= ((frameIndex + 1) >= this->inputFrameRange.value().second);
+        }
+
         // Just keep collecting all frames tagged for the averaging block, unless we
         // reach the end of the movie, in which case we need to flush it now.
-        if((frameIndex + 1) < frameCount) {
+        if(!isLastFrame) {
           continue;
         }
       }
@@ -336,13 +341,16 @@ namespace Nuclex::FrameFixer {
           }
         }
       }
+      if(this->inputFrameRange.has_value()) {
+        nextImageUsesAveraging &= ((frameIndex + 1) < this->inputFrameRange.value().second);
+      }
 
       // If the next image is tagged for averaging, don't save the image,
       // we'll have to average it first with one or more future frames.
       if(nextImageUsesAveraging) {
         firstImageToAverageType = currentFrameType;
       } else { // next image tagged / not tagged for averaging
-        if(firstImageToAverageType == FrameType::Triplicate) {
+        if(currentFrameType == FrameType::Triplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
@@ -351,16 +359,31 @@ namespace Nuclex::FrameFixer {
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
-        } else if(firstImageToAverageType == FrameType::Duplicate) {
+        } else if(currentFrameType == FrameType::Duplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
         }
-        saveImage(
-          currentImage, directory, frameIndex, outputFrameIndex++,
-          this->inputFrameRange, this->outputFrameRange
-        );
+        if(currentFrameType  != FrameType::Discard) {
+          saveImage(
+            currentImage, directory, frameIndex, outputFrameIndex++,
+            this->inputFrameRange, this->outputFrameRange
+          );
+        }
+
+        // Stop if we produced all the requested frames
+        if(this->inputFrameRange.has_value()) {
+          if(frameIndex >= this->inputFrameRange.value().second) {
+            break;
+          }
+        }
+        if(this->outputFrameRange.has_value()) {
+          if(outputFrameIndex >= this->outputFrameRange.value().second) {
+            break;
+          }
+        }
+
       } // next image is not tagged for averaging
     } // for frame index from 0 to frame count
   }

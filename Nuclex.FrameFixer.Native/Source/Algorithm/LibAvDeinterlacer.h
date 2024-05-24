@@ -89,7 +89,7 @@ namespace Nuclex::FrameFixer::Algorithm {
     }
 
     /// <summary>Stores cached filter graphs</summary>
-    private: std::map<std::string, std::shared_ptr<::AVFilterGraph>> filterGraphCache;
+    protected: std::map<std::string, std::shared_ptr<::AVFilterGraph>> filterGraphCache;
     
   };
 
@@ -112,7 +112,7 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </param>
     public: virtual void Deinterlace(QImage &target, DeinterlaceMode mode) override {
       TFilterParameters parameters = MakeFilterParameters(target, mode);
-      std::shared_ptr<::AVFilterGraph> filterGraph = GetOrCreateFilterGraph();
+      std::shared_ptr<::AVFilterGraph> filterGraph = GetOrCreateFilterGraph(parameters);
 
       Platform::LibAvApi::PushFrameIntoFilterGraph(
         filterGraph, AvFrameFromQImage(target)
@@ -180,9 +180,9 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// <returns>The cache key for the specified filter parameters</returns>
     protected: virtual std::string GetCacheKey(const TFilterParameters &filterParameters) {
       std::string cacheKey;(u8"F-", 2);
-      Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.Width);
+      Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.FrameWidth);
       cacheKey.push_back(u8'x');
-      Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.Height);
+      Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.FrameHeight);
       cacheKey.push_back(u8'@');
       Nuclex::Support::Text::lexical_append(cacheKey, filterParameters.LibAvPixelFormat);
 
