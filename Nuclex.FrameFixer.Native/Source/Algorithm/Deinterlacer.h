@@ -88,7 +88,7 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </remarks>
     public: virtual void WarmUp() {}
 
-    /// <summary>Called when the deinterlacer is deselect for the time being</summary>
+    /// <summary>Called when the deinterlacer is deselected for the time being</summary>
     /// <remarks>
     ///   Rather than load all resources and access all libraries in the constructor,
     ///   deinterlacers should do so on first use or when <see cref="WarmUp" /> is called.

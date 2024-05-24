@@ -59,6 +59,17 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>
+  ///   Saves a frame as a PNG in the target directory if conditions are fulfilled
+  /// </summary>
+  /// <param name="image">Image containing the pixels that will potentially be saved</param>
+  /// <param name="directory">Directory in which the frame will be saved as a PNG</param>
+  /// <param name="inputFrameIndex">
+  ///   Index of the source frame that produced this outputframe
+  /// </param>
+  /// <param name="outputFrameIndex">Index of the output frame</param>
+  /// <param name="inputFrameRange">Optional range of input frames that will be saved</param>
+  /// <param name="outputFrameRange">Optional range of output frames that will be saved</param>
   void saveImage(
     QImage &image,
     const std::string &directory,
@@ -198,7 +209,7 @@ namespace Nuclex::FrameFixer {
           case FrameType::Triplicate: { outputFrameIndex += 3; break; }
           default: { ++outputFrameIndex; break; }
         }
-        continue;
+        continue; // Skip procesing and loop here!
       }
 
       // If the frame type is set to 'average', queue the image up as an
