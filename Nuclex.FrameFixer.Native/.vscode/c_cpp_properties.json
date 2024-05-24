@@ -14,7 +14,8 @@
             ],
             "defines": [
                 "NUCLEX_FRAMEFIXER_EXECUTABLE",
-                "NUCLEX_FRAMEFIXER_SOURCE"
+                "NUCLEX_FRAMEFIXER_SOURCE",
+                "NUCLEX_FRAMEFIXER_ENABLE_LIBAV"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",

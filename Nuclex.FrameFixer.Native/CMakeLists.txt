@@ -206,7 +206,7 @@ function(add_third_party_libraries target_name)
 	if(ENABLE_LIBAV)
 		target_compile_definitions(
 			${target_name}
-			PUBLIC ENABLE_LIBAV
+			PUBLIC NUCLEX_FRAMEFIXER_ENABLE_LIBAV
 		)
 		target_include_directories(
 			${target_name}

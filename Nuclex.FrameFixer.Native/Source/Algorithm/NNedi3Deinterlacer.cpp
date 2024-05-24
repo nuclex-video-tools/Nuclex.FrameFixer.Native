@@ -23,19 +23,14 @@ along with this library
 
 #include "./NNedi3Deinterlacer.h"
 #include "./PreviewDeinterlacer.h"
+
 #include <Nuclex/Support/Text/LexicalAppend.h>
 
 #include <vector> // for std::vector
 #include <stdexcept> // for std::bad_alloc
 #include <memory> // for std::unqiue_ptr
 
-extern "C" {
-  #include <libavfilter/avfilter.h>
-  #include <libavutil/opt.h>
-  #include <libavfilter/avfilter.h>
-  #include <libavfilter/buffersrc.h>
-  #include <libavfilter/buffersink.h>
-}
+#include "./../Platform/LibAvApi.h"
 
 namespace {
 
@@ -65,110 +60,6 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Frees an AV filter graph and the filters in it</summary>
-  /// <param name="filterGraph">Filter graph that will be freed</param>
-  /// <remarks>
-  ///   This is a wrapper method so the shared_ptr can call avfilter_graph_free()
-  /// </remarks>
-  void deleteAvFilterGraph(AVFilterGraph *filterGraph) {
-    ::avfilter_graph_free(&filterGraph);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Creates a new AV filter graph</summary>
-  /// <returns>A new, empty AV filter graph</returns>
-  std::shared_ptr<::AVFilterGraph> newAvFilterGraph() {
-    ::AVFilterGraph *newFilterGraph = ::avfilter_graph_alloc();
-    if(newFilterGraph == nullptr) {
-      throw std::runtime_error(u8"Could not create new AVFilterGraph");
-    }
-
-    return std::shared_ptr<::AVFilterGraph>(newFilterGraph, deleteAvFilterGraph);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Creates a new AV filter context in the specified filter graph</summary>
-  /// <param name="filterGraph">Filter graph in which the filter context will be created</param>
-  /// <param name="filter">Filter for which a context will be created</param>
-  /// <param name="name">
-  ///   Name of the filter (displayed in errors and useful for later retrieval)
-  /// </param>
-  /// <param name="arguments">
-  ///   Parameters that will be passed to the filter, identical to the filter line that
-  ///   can be specified for filters in ffmpeg
-  /// </param>
-  /// <param name="opaque">User pointer that will be accessible to the filter</param>
-  /// <returns>The filter context created in the specified filter graph</returns>
-  /// <remarks>
-  ///   The filter graph takes ownership of the filter context, so it will remain alive
-  ///   for as long as the filter graph exists.
-  /// </remarks>
-  ::AVFilterContext *newAvFilterContext(
-    const std::shared_ptr<::AVFilterGraph> &filterGraph,
-    const ::AVFilter *filter,
-    const std::string &name = std::string(),
-    const std::string &arguments = std::string(),
-    void *opaque = nullptr
-  ) {
-    ::AVFilterContext *filterContext = nullptr;
-
-    int result = ::avfilter_graph_create_filter(
-      &filterContext,
-      filter,
-      name.empty() ? nullptr : name.c_str(),
-      arguments.empty() ? nullptr : arguments.c_str(),
-      opaque,
-      filterGraph.get()
-    );
-    if((result < 0) || (filterContext == nullptr)) {
-      throwExceptionForAvError(
-        result, std::string(u8"Could not create filter context: ", 33)
-      );
-    }
-
-    return filterContext;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>
-  ///   Links an output to the input pad of onefilter context to the input pad of another
-  /// </summary>
-  /// <param name="from">AV filter context whose output pad will be linked</param>
-  /// <param name="to">AV filter context whose input pad will be linked</param>
-  /// <param name="fromOutputPadIndex">Index of the output pad that will be connected</param>
-  /// <param name="toInputPadIndex">Index of the input pad that will be connected</param>
-  void linkAvFilterContexts(
-    ::AVFilterContext *from, ::AVFilterContext *to,
-    std::size_t fromOutputPadIndex = 0, std::size_t toInputPadIndex = 0
-  ) {
-    int result = ::avfilter_link(from, fromOutputPadIndex, to, toInputPadIndex);
-    if(result != 0) {
-      throwExceptionForAvError(
-        result, std::string(u8"Could not link AV filter contexts: ", 35)
-      );
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Verifies a completed AV filter graph and prepared it for execution</summary>
-  /// <param name="filterGraph">
-  ///   Filter graph that will be verified and prepared for execution
-  /// </param>
-  void configureAvFilterGraph(const std::shared_ptr<::AVFilterGraph> &filterGraph) {
-    int result = ::avfilter_graph_config(filterGraph.get(), nullptr);
-    if(result != 0) {
-      throwExceptionForAvError(
-        result, std::string(u8"Could not configure AV filter graph: ", 37)
-      );
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
   /// <summary>
   ///   Sets up a complete AV filter graph that runs the NNedi3 deinterlace filter
   /// </summary>
@@ -191,7 +82,9 @@ namespace {
     bool topField = true,
     bool usePriorField = false
   ) {
-    std::shared_ptr<::AVFilterGraph> filterGraph = newAvFilterGraph();
+    using Nuclex::FrameFixer::Platform::LibAvApi;
+
+    std::shared_ptr<::AVFilterGraph> filterGraph = LibAvApi::NewAvFilterGraph();
 
     // Parameters that will be passed to the "buffer" filter context which
     // will make out input frame available to the NNedi filter.
@@ -229,19 +122,19 @@ namespace {
     }
 
     // Create the filter contexts that will be linked together
-    ::AVFilterContext *inputFilterContext = newAvFilterContext(
+    ::AVFilterContext *inputFilterContext = LibAvApi::NewAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"buffer"),
       u8"in",
       inputBufferArguments
     );
-    ::AVFilterContext *nnediFilterContext = newAvFilterContext(
+    ::AVFilterContext *nnediFilterContext = LibAvApi::NewAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"nnedi"),
       u8"deinterlace",
       nnediArguments
     );
-    ::AVFilterContext *outputFilterContext = newAvFilterContext(
+    ::AVFilterContext *outputFilterContext = LibAvApi::NewAvFilterContext(
       filterGraph,
       ::avfilter_get_by_name(u8"buffersink"),
       u8"out"
@@ -249,53 +142,13 @@ namespace {
 
     // Now build a pipeline using the three filter contexts by connection
     // their output pads to the input pads of the filter contexts following them
-    linkAvFilterContexts(inputFilterContext, nnediFilterContext);
-    linkAvFilterContexts(nnediFilterContext, outputFilterContext);
+    LibAvApi::LinkAvFilterContexts(inputFilterContext, nnediFilterContext);
+    LibAvApi::LinkAvFilterContexts(nnediFilterContext, outputFilterContext);
 
     // Unclear what this does. I assume it verifies and pre-loads resources.
-    configureAvFilterGraph(filterGraph);
+    LibAvApi::ConfigureAvFilterGraph(filterGraph);
 
     return filterGraph;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Frees an AV frame</summary>
-  /// <param name="frame">Frame that will be freed</param>
-  /// <remarks>
-  ///   This is a wrapper method so the shared_ptr can call av_frame_free()
-  /// </remarks>
-  void deleteAvFrame(::AVFrame *frame) {
-    ::av_frame_free(&frame);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Creates a new AV frame</summary>
-  /// <returns>A new, empty AV frame</returns>
-  std::shared_ptr<::AVFrame> newAvFrame() {
-    ::AVFrame *newFrame = ::av_frame_alloc();
-    if(newFrame == nullptr) {
-      throw std::runtime_error(u8"Could not create new AVFrame");
-    }
-
-    // CHECK: AV frames have their own reference counter and we're adding an external one
-    //        on top of it. May not be ideal (i.e. filter graph still holds onto frame,
-    //        but shared_ptr calls av_frame_free(). Should we use av_frame_unref() instead?)
-    return std::shared_ptr<::AVFrame>(newFrame, deleteAvFrame);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Sets up a buffer in which an AV frame can store its pixels</summary>
-  /// <param name="frame">Frame that will have a buffer set up</param>
-  void lockAvFrameBuffer(const std::shared_ptr<::AVFrame> &frame) {
-    int result = ::av_frame_get_buffer(frame.get(), 0);
-    if(result != 0) {
-      throwExceptionForAvError(
-        result, std::string(u8"Could not get memory buffer for AV frame: ", 30)
-      );
-    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -304,7 +157,9 @@ namespace {
   /// <param name="image">QImage of which an AV frame will be constructed</param>
   /// <returns>A new AV frame with the same dimensions and contents as the QImage</returns>
   std::shared_ptr<::AVFrame> newAvFrameFromQImage(const QImage &image) {
-    std::shared_ptr<::AVFrame> frame = newAvFrame();
+    using Nuclex::FrameFixer::Platform::LibAvApi;
+
+    std::shared_ptr<::AVFrame> frame = LibAvApi::NewAvFrame();
 
     frame->width = image.width();
     frame->height = image.height();
@@ -315,7 +170,7 @@ namespace {
     if(image.bytesPerLine() >= image.width() * 8) {
       frame->format = AV_PIX_FMT_RGBA64LE; // AV_PIX_FMT_BGR48LE
 
-      lockAvFrameBuffer(frame);
+      LibAvApi::LockAvFrameBuffer(frame);
 
       std::uint8_t *frameData = frame->data[0];
       for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
@@ -329,7 +184,7 @@ namespace {
     } else {
       frame->format = AV_PIX_FMT_RGBA; // AV_PIX_FMT_ABGR;
 
-      lockAvFrameBuffer(frame);
+      LibAvApi::LockAvFrameBuffer(frame);
 
       std::uint8_t *frameData = frame->data[0];
       for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
@@ -347,78 +202,12 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Writes a frame into the &quot;in&quot; filter of a filter graph</summary>
-  /// <param name="filterGraph">Filter graph the frame will be pushed into</param>
-  /// <param name="frame">Frame that will be pushed into the filter graph</param>
-  /// <remarks>
-  ///   Assumes that the filter graph has a filter context for a &quot;buffer&quot; filter
-  ///   named &quot;in&quot; and writes the frame into it.
-  /// </remarks>
-  void writeFrameIntoFilterGraph(
-    const std::shared_ptr<::AVFilterGraph> &filterGraph,
-    const std::shared_ptr<::AVFrame> &frame
-  ) {
-    AVFilterContext *bufferFilterContext = ::avfilter_graph_get_filter(
-      filterGraph.get(), u8"in"
-    );
-    if(bufferFilterContext == nullptr) {
-      throw std::runtime_error(u8"Could not fetch 'in' filter from filter graph");
-    }
-
-    // CHECK: Where is the difference between _write_frame and _add_frame()?
-    int result = ::av_buffersrc_add_frame(bufferFilterContext, frame.get());
-    //int result = ::av_buffersrc_write_frame(bufferFilterContext, frame.get());
-    if(result != 0) {
-      throwExceptionForAvError(
-        result, std::string(u8"Could not store AV frame in buffer AV filter context: ", 54)
-      );
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Reads a frame from the output of a filter graph</summary>
-  /// <param name="filterGraph">Filter graph the frame will be read from</param>
-  /// <returns>The frame in the &quot;out&quot; filter of the filter graph</returns>
-  /// <remarks>
-  ///   Assumes that the filter graph has a filter context for a &quot;buffersink&quot; filter
-  ///   named &quot;out&quot; and tries to retrieve a frame from it.
-  /// </remarks>
-  std::shared_ptr<::AVFrame> readFrameFromFilterGraph(
-    const std::shared_ptr<::AVFilterGraph> &filterGraph
-  ) {
-    AVFilterContext *buffersinkFilterContext = ::avfilter_graph_get_filter(
-      filterGraph.get(), u8"out"
-    );
-    if(buffersinkFilterContext == nullptr) {
-      throw std::runtime_error(u8"Could not fetch 'out' filter from filter graph");
-    }
-
-    // We've got the filter, now create an (empty) frame and ask the buffersink
-    // to hand out the frame it should have collected by this time.
-    std::shared_ptr<::AVFrame> frame = newAvFrame();
-    {
-      int result = ::av_buffersink_get_frame(buffersinkFilterContext, frame.get());
-      if(result == -11) {
-        return std::shared_ptr<::AVFrame>();
-      }
-      if(result != 0) {
-        throwExceptionForAvError(
-          result,
-          std::string(u8"Could not extract AV frame from buffersink AV filter context: ", 62)
-        );
-      }
-    }
-
-    return frame;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
   /// <summary>Creates a new AV frame</summary>
   /// <param name="image">QImage of which an AV frame will be constructed</param>
   /// <returns>A new AV frame with the same dimensions and contents as the QImage</returns>
   void copyAvFrameToQImage(const std::shared_ptr<::AVFrame> &frame, QImage &image) {
+    using Nuclex::FrameFixer::Platform::LibAvApi;
+
     bool dimensionsMatch = (
       (frame->width == image.width()) &&
       (frame->height == image.height())
@@ -432,7 +221,7 @@ namespace {
     //       currently, but this should compare the actual pixel formats!
     if(image.bytesPerLine() >= image.width() * 8) {
       if(frame->data[0] == nullptr) {
-        lockAvFrameBuffer(frame);
+        LibAvApi::LockAvFrameBuffer(frame);
       }
       if(frame->format == AV_PIX_FMT_GBRAP16LE) { // planar output (NNedi does this)
         const std::uint8_t *greenChannel = frame->data[0];
@@ -475,7 +264,7 @@ namespace {
         throw std::runtime_error(u8"Processed AV frame has different pixel format from QImage");
       }
       if(frame->data[0] == nullptr) {
-        lockAvFrameBuffer(frame);
+        LibAvApi::LockAvFrameBuffer(frame);
       }
 
       const std::uint8_t *frameData = frame->data[0];
@@ -535,6 +324,8 @@ namespace Nuclex::FrameFixer::Algorithm {
   // ------------------------------------------------------------------------------------------- //
 
   void NNedi3Deinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+    using Platform::LibAvApi;
+
     if(mode != DeinterlaceMode::Dont) {
 
       // Make sure the filter graph has been created an grab a reference to it
@@ -584,13 +375,13 @@ namespace Nuclex::FrameFixer::Algorithm {
       }
 
       // Put both frames into the filter graph's input buffer
-      writeFrameIntoFilterGraph(nnediFilterGraph, priorFrame);
-      writeFrameIntoFilterGraph(nnediFilterGraph, inputFrame);
+      LibAvApi::PushFrameIntoFilterGraph(nnediFilterGraph, priorFrame);
+      LibAvApi::PushFrameIntoFilterGraph(nnediFilterGraph, inputFrame);
 
       // Finally, read a frame out of the filter graph. I'm not sure if
       // the filter graph starts executing as soon as there is work that can
       // be done or if this triggers it, anyway, the processed frame comes out here.
-      std::shared_ptr<::AVFrame> outputFrame = readFrameFromFilterGraph(nnediFilterGraph);
+      std::shared_ptr<::AVFrame> outputFrame = LibAvApi::ReadFrameFromFilterGraph(nnediFilterGraph);
 
       // Finally, put the processed frame back into the QImage
       copyAvFrameToQImage(outputFrame, target);
