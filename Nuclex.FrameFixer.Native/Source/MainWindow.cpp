@@ -30,6 +30,7 @@ along with this library
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./DeinterlacerItemModel.h"
 #include "./Algorithm/InterlaceDetector.h"
+#include "./Exporter.h"
 
 #include "./Algorithm/PreviewDeinterlacer.h"
 #include "./Algorithm/ReYadifDeinterlacer.h"
@@ -394,60 +395,27 @@ namespace Nuclex::FrameFixer {
 
   void MainWindow::displayFrameInView(const Frame &frame) {
     if(static_cast<bool>(this->currentMovie)) {
-      FrameType frameType = frame.Type;
-      if(frameType == FrameType::Unknown) {
-        frameType = frame.ProvisionalType; // this one is calculated
-      }
+      QImage frameImage;
 
-      if(this->ui->swapFieldsOption->isChecked()) {
-        switch(frameType) {
-          case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
-          case FrameType::BottomFieldFirst: { frameType = FrameType::TopFieldFirst; break; }
-          case FrameType::TopFieldOnly: { frameType = FrameType::BottomFieldOnly; break; }
-          case FrameType::BottomFieldOnly: { frameType = FrameType::TopFieldOnly; break; }
-          default: { break; }
+      if(this->ui->previewOption->isChecked()) {
+        Exporter movieExporter;
+        movieExporter.SetDeinterlacer(this->deinterlacer);
+        
+        if(this->ui->swapFieldsOption->isChecked()) {
+          movieExporter.FlipTopAndBottomField();
         }
-      }
-      if(!this->ui->previewOption->isChecked()) {
-        frameType = FrameType::Progressive;
-      }
 
-      // Load the frame and deinterlace it
-      std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
-      QImage bitmap(QString::fromStdString(imagePath));
-      {
-        Algorithm::DeinterlaceMode mode = Algorithm::DeinterlaceMode::Dont;
-        switch(frameType) {
-          case FrameType::TopFieldFirst: { mode = Algorithm::DeinterlaceMode::TopFieldFirst; break; }
-          case FrameType::BottomFieldFirst: { mode = Algorithm::DeinterlaceMode::BottomFieldFirst; break; }
-          case FrameType::TopFieldOnly: { mode = Algorithm::DeinterlaceMode::TopFieldOnly; break; }
-          case FrameType::BottomFieldOnly: { mode = Algorithm::DeinterlaceMode::BottomFieldOnly; break; }
-          default: { break; }
-        }
-        if(this->deinterlacer->NeedsPriorFrame()) {
-          std::string previousImagePath = this->currentMovie->GetFramePath(frame.Index - 1);
-          QImage previousBitmap(QString::fromStdString(previousImagePath));
-          this->deinterlacer->SetPriorFrame(previousBitmap);
-
-          if(this->deinterlacer->NeedsNextFrame()) {
-            std::string nextImagePath = this->currentMovie->GetFramePath(frame.Index + 1);
-            QImage nextBitmap(QString::fromStdString(nextImagePath));
-            this->deinterlacer->SetNextFrame(nextBitmap);
-
-            this->deinterlacer->Deinterlace(bitmap, mode);
-          } else {
-            this->deinterlacer->Deinterlace(bitmap, mode);
-          }
-        } else {
-          this->deinterlacer->Deinterlace(bitmap, mode);
-        }
+        frameImage = movieExporter.Preview(this->currentMovie, frame.Index);
+      } else {
+        std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
+        frameImage.load(QString::fromStdString(imagePath));
       }
 
       // Display the frame in Qt's graphics view
       {
         std::unique_ptr<QGraphicsScene> frameScene = std::make_unique<QGraphicsScene>();
         std::unique_ptr<QGraphicsPixmapItem> pixmapItem = (
-          std::make_unique<QGraphicsPixmapItem>(QPixmap::fromImage(bitmap))
+          std::make_unique<QGraphicsPixmapItem>(QPixmap::fromImage(frameImage))
         );
         frameScene->addItem(pixmapItem.get());
 
@@ -557,96 +525,15 @@ namespace Nuclex::FrameFixer {
   void MainWindow::exportDetelecinedFrames(
     const std::string &directory, std::size_t startFrame, std::size_t endFrame
   ) {
-    std::string::size_type length = directory.length();
-
-    std::string exportPath(directory);
-    if((length >= 1) && (directory[length - 1] != '/')) {
-      exportPath.push_back('/');
+    Exporter movieExporter;
+    movieExporter.SetDeinterlacer(this->deinterlacer);
+    
+    if(this->ui->swapFieldsOption->isChecked()) {
+      movieExporter.FlipTopAndBottomField();
     }
 
-    std::vector<QImage> framesToAverage;
-    QImage previousFrame, frame, nextFrame;
-
-    std::size_t outputIndex = 1;
-    for(std::size_t frameIndex = 0; frameIndex <= endFrame; ++frameIndex) {
-      std::string imagePath = this->currentMovie->GetFramePath(frameIndex);
-
-      // Only begin to load images as we get near the frames to be exported.
-      if(frame.isNull() || (frameIndex + 10 >= startFrame)) {
-        frame.load(QString::fromStdString(imagePath));
-      }
-
-      FrameType frameType = this->currentMovie->Frames[frameIndex].Type;
-      if(frameType == FrameType::Unknown) {
-        frameType = this->currentMovie->Frames[frameIndex].ProvisionalType;
-      }
-
-      if(this->ui->swapFieldsOption->isChecked()) {
-        switch(frameType) {
-          case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
-          case FrameType::BottomFieldFirst: { frameType = FrameType::TopFieldFirst; break; }
-          case FrameType::TopFieldOnly: { frameType = FrameType::BottomFieldOnly; break; }
-          case FrameType::BottomFieldOnly: { frameType = FrameType::TopFieldOnly; break; }
-          default: { break; }
-        }
-      }
-
-      if(frameType == FrameType::Average) {
-        framesToAverage.push_back(std::move(frame));
-      } else {
-        if(framesToAverage.size() >= 1) {
-          Averager::Average(previousFrame, framesToAverage);
-          if(frameIndex >= startFrame) {
-            SaveImage(previousFrame, exportPath, outputIndex);
-          }
-          ++outputIndex;
-
-          for(std::size_t index = 0; index < framesToAverage.size(); ++index) {
-            if(frameIndex >= startFrame) {
-              SaveImage(previousFrame, exportPath, outputIndex);
-            }
-            ++outputIndex;
-          }
-          framesToAverage.clear();
-        }
-        
-
-        // TODO: Not checking previousFrame here. Who cares?
-        if(frameType == FrameType::TopFieldFirst) {
-          Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, true);
-        } else if(frameType == FrameType::BottomFieldFirst) {
-          Algorithm::PreviewDeinterlacer::Deinterlace(&previousFrame, frame, false);
-        } else if(frameType == FrameType::BottomFieldOnly) {
-          Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, true);
-        } else if(frameType == FrameType::TopFieldOnly) {
-          Algorithm::PreviewDeinterlacer::Deinterlace(nullptr, frame, false);
-        } else if(frameType == FrameType::Duplicate) {
-          if(frameIndex >= startFrame) {
-            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
-          }
-          ++outputIndex;
-        } else if(frameType == FrameType::Triplicate) {
-          if(frameIndex >= startFrame) {
-            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
-          }
-          ++outputIndex;
-          if(frameIndex >= startFrame) {
-            SaveImage(frame, exportPath, outputIndex); // extra (duplication)
-          }
-          ++outputIndex;
-        }
-
-        if(frameType != FrameType::Discard) {
-          if(this->currentMovie->Frames[frameIndex + 1].Type != FrameType::Average) {
-            if(frameIndex >= startFrame) {
-              SaveImage(frame, exportPath, outputIndex);
-            }
-            ++outputIndex;
-          }
-        }
-        frame.swap(previousFrame);
-      }
-    }
+    movieExporter.RestrictRangeOfInputFrames(startFrame, endFrame);
+    movieExporter.Export(this->currentMovie, directory);
   }
 
   // ------------------------------------------------------------------------------------------- //

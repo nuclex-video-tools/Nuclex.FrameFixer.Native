@@ -125,7 +125,8 @@ namespace Nuclex::FrameFixer {
   Exporter::Exporter() :
     deinterlacer(std::make_shared<Algorithm::PreviewDeinterlacer>()),
     inputFrameRange(),
-    outputFrameRange() {}
+    outputFrameRange(),
+    flipFields(false) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -205,8 +206,14 @@ namespace Nuclex::FrameFixer {
       if(currentFrameType == FrameType::Average) {
         std::string imagePath = movie->GetFramePath(frameIndex);
         imagesToAverage.emplace_back(QString::fromStdString(imagePath));
-        continue;
-      } else if((imagesToAverage.size() >= 1) || (frameIndex + 1 == frameCount)) {
+
+        // Just keep collecting all frames tagged for the averaging block, unless we
+        // reach the end of the movie, in which case we need to flush it now.
+        if((frameIndex + 1) < frameCount) {
+          continue;
+        }
+      }
+      if(imagesToAverage.size() >= 1) {
         Averager::Average(currentImage, imagesToAverage);
 
         // First, save the very first frame prior to the one or more frames tagged
@@ -309,7 +316,7 @@ namespace Nuclex::FrameFixer {
 
       // Figure out if the frame that follows uses averaging
       bool nextImageUsesAveraging = false;
-      if(frameIndex + 1 < movie->Frames.size()) {
+      if((frameIndex + 1) < frameCount) {
         if(movie->Frames[frameIndex + 1].Type == FrameType::Average) {
           nextImageUsesAveraging = true;
         } else if(movie->Frames[frameIndex + 1].Type == FrameType::Unknown) {
@@ -345,6 +352,64 @@ namespace Nuclex::FrameFixer {
         );
       } // next image is not tagged for averaging
     } // for frame index from 0 to frame count
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  QImage Exporter::Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex) {
+    std::string imagePath = movie->GetFramePath(frameIndex);
+    QImage currentImage(QString::fromStdString(imagePath));
+
+    QImage priorImage;
+    if(this->deinterlacer->NeedsPriorFrame()) {
+      if(frameIndex > 0) {
+        std::string imagePath = movie->GetFramePath(frameIndex - 1);
+        priorImage.load(QString::fromStdString(imagePath));
+        this->deinterlacer->SetPriorFrame(priorImage);
+      } else {
+        this->deinterlacer->SetPriorFrame(currentImage);
+      }
+    }
+
+    QImage nextImage;
+    if(this->deinterlacer->NeedsNextFrame()) {
+      if(frameIndex > 0) {
+        std::string imagePath = movie->GetFramePath(frameIndex + 1);
+        nextImage.load(QString::fromStdString(imagePath));
+        this->deinterlacer->SetNextFrame(nextImage);
+      } else {
+        this->deinterlacer->SetNextFrame(nextImage);
+      }
+    }
+
+    FrameType currentFrameType = movie->Frames[frameIndex].Type;
+    if(currentFrameType == FrameType::Unknown) {
+      currentFrameType = movie->Frames[frameIndex].ProvisionalType;
+    }
+
+    if(this->flipFields) {
+      if(currentFrameType == FrameType::TopFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+      } else if(currentFrameType == FrameType::BottomFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+      } else if(currentFrameType == FrameType::TopFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
+      } else if(currentFrameType == FrameType::BottomFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+      }
+    } else {
+      if(currentFrameType == FrameType::TopFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+      } else if(currentFrameType == FrameType::BottomFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+      } else if(currentFrameType == FrameType::TopFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+      } else if(currentFrameType == FrameType::BottomFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
+      }
+    }
+
+    return currentImage;
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -28,6 +28,8 @@ along with this library
 #include <string> // for std::string
 #include <optional> // for std::optional
 
+#include <QImage>
+
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
@@ -66,6 +68,9 @@ namespace Nuclex::FrameFixer {
       const std::shared_ptr<Algorithm::Deinterlacer> &deinterlacer
     );
 
+    // <summary>Disables the deinterlacer
+    //public: void BypassDeinterlacer(bool bypass = true);
+
     /// <summary>Enables or disables flipping of the top and bottom fields</summary>
     /// <param name="flip">True to flip the top and bottom fields</param>
     public: void FlipTopAndBottomField(bool flip = true);
@@ -99,6 +104,8 @@ namespace Nuclex::FrameFixer {
     /// <param name="movie">Movie that will be processed (deinterlaced) and saved</param>
     /// <param name="directory">Directory in which the processed frames will be saved</param>
     public: void Export(const std::shared_ptr<Movie> &movie, const std::string &directory);
+
+    public: QImage Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex);
 
     /// <summary>Deinterlacer the exporter is using on the input frames</summary>
     private: std::shared_ptr<Algorithm::Deinterlacer> deinterlacer;
