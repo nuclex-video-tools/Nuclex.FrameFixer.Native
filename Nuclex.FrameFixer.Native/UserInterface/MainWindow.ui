@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>759</width>
-    <height>783</height>
+    <width>808</width>
+    <height>831</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -206,7 +206,8 @@
       <item>
        <widget class="QLabel" name="frameStatusLabel">
         <property name="text">
-         <string>~: Progressive
+         <string>Shortcuts:
+~: Progressive
 1: Top-&gt;Bottom
 2: Bottom-&gt;Top
 3: Top Only
@@ -224,6 +225,16 @@ Space: Statistics</string>
        <widget class="QCheckBox" name="swapFieldsOption">
         <property name="text">
          <string>Swap Fields</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="enhanceOption">
+        <property name="text">
+         <string>Enhance</string>
+        </property>
+        <property name="shortcut">
+         <string>E</string>
         </property>
        </widget>
       </item>

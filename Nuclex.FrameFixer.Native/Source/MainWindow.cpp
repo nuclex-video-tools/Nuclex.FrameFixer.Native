@@ -204,6 +204,10 @@ namespace Nuclex::FrameFixer {
       this, &MainWindow::swapFieldsOptionToggled
     );
     connect(
+      this->ui->enhanceOption, &QCheckBox::toggled,
+      this, &MainWindow::enhanceOptionToggled
+    );
+    connect(
       this->ui->previewOption, &QCheckBox::toggled,
       this, &MainWindow::previewOptionToggled
     );
@@ -365,6 +369,19 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::enhanceOptionToggled(bool checked) {
+    (void)checked;
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex != std::size_t(-1)) {
+        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
+        displayFrameInView(selectedFrame);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::previewOptionToggled(bool checked) {
     (void)checked;
     if(static_cast<bool>(this->currentMovie)) {
@@ -414,7 +431,9 @@ namespace Nuclex::FrameFixer {
         frameImage.load(QString::fromStdString(imagePath));
       }
 
-      Filter::HighPass(frameImage);
+      if(this->ui->enhanceOption->isChecked()) {
+        Filter::HighPass(frameImage);
+      }
 
       // Display the frame in Qt's graphics view
       {

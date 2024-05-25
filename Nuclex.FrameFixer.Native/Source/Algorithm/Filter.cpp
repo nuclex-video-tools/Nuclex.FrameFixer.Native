@@ -30,11 +30,10 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  // Define a 3x3 Sobel high-pass filter kernel
-  const std::vector<std::vector<int>> sobelKernel = {
-    {-1, -2, -1},
-    {0, 0, 0},
-    {1, 2, 1}
+  float lessEdgeDetectionKernel[3][3] = {
+    { -0.5f, -0.5f, -0.5f },
+    { -0.5f,  4.0f, -0.5f },
+    { -0.5f, -0.5f, -0.5f }
   };
 
   float edgeDetectionKernel[3][3] = {
@@ -43,22 +42,52 @@ namespace {
     { -1.0f, -1.0f, -1.0f }
   };
 
+  float moreEdgeDetectionKernel[3][3] = {
+    { -2.0f, -2.0f, -2.0f },
+    { -2.0f, 16.0f, -2.0f },
+    { -2.0f, -2.0f, -2.0f }
+  };
+
+  float antiEdgeDetectionKernel[3][3] = {
+    { 2.0f,   2.0f, 2.0f },
+    { 2.0f, -16.0f, 2.0f },
+    { 2.0f,   2.0f, 2.0f }
+  };
+
   // ------------------------------------------------------------------------------------------- //
 
   float applyKernelToLightness(
     std::vector<Nuclex::Pixels::ColorModels::HslColor> *lines[3],
     float kernel[3][3],
-    std::size_t x
+    std::size_t middleLineX
   ) {
-    float sum = 0.0f;
+    float sum = 0.5f;
 
     for(int y = -1; y < 2; ++y) {
-      std::vector<Nuclex::Pixels::ColorModels::HslColor> &line = *lines[y + 1];
+      for(int x = -1; x < 2; ++x) {
+        float kernelValue = kernel[y + 1][x + 1];
+        float lightness = (*lines[y + 1])[x + middleLineX].Lightness;
+        sum += kernelValue * lightness;
+      }
+    }
 
-      for(int xx = -1; xx < 2; ++xx) {
-        int xxx = x;
-        xxx += xx;
-        sum += line[xxx].Lightness * kernel[y + 1][x + 1];
+    return sum;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float applyKernelToSaturation(
+    std::vector<Nuclex::Pixels::ColorModels::HslColor> *lines[3],
+    float kernel[3][3],
+    std::size_t middleLineX
+  ) {
+    float sum = 0.5f;
+
+    for(int y = -1; y < 2; ++y) {
+      for(int x = -1; x < 2; ++x) {
+        float kernelValue = kernel[y + 1][x + 1];
+        float saturation = (*lines[y + 1])[x + middleLineX].Saturation;
+        sum += kernelValue * saturation;
       }
     }
 
@@ -129,12 +158,22 @@ namespace Nuclex::FrameFixer {
 
         // Filter the middle of the three processed lines
         {
+          std::vector<HslColor> &line = *lines[1];
           QRgba64 *scanLine = reinterpret_cast<QRgba64 *>(target.scanLine(lineIndex));
           for(std::size_t x = 1; x < target.width() - 1; ++x) {
-            //float lightness = applyKernelToLightness(lines, edgeDetectionKernel, x);
-            float lightness = (*lines[1])[x].Lightness;
-            quint16 lightness16 = static_cast<quint16>(lightness * 65535.0f);
-            scanLine[x] = QRgba64::fromRgba64(lightness16, lightness16, lightness16, 65535U);
+            float lightness = applyKernelToLightness(lines, lessEdgeDetectionKernel, x);
+            //float saturation = applyKernelToSaturation(lines, lessEdgeDetectionKernel, x);
+
+            HslColor hslColor = line[x];
+            hslColor.Lightness = lightness; //(hslColor.Lightness * 3.0f + lightness) / 4.0f;;
+            //hslColor.Saturation = (hslColor.Saturation * 3.0f + saturation) / 4.0f;
+            RgbColor rgbColor = ColorModelConverter::RgbFromHsl(hslColor);
+            scanLine[x] = QRgba64::fromRgba64(
+              static_cast<quint16>(rgbColor.Red * 65535.0f),
+              static_cast<quint16>(rgbColor.Green * 65535.0f),
+              static_cast<quint16>(rgbColor.Blue * 65535.0f),
+              65535U
+            );
           }
         }
 
