@@ -31,6 +31,8 @@ along with this library
 #include <QMutex> // for QMutex
 
 #include <memory> // for std::unique_ptr
+#include <optional> // for std::optional
+#include <map> // for std::pair
 
 namespace Nuclex::FrameFixer::Services {
 
@@ -165,7 +167,13 @@ namespace Nuclex::FrameFixer {
     private: void displayFrameInView(const Frame &frame);
 
     private: void exportDetelecinedFrames(
-      const std::string &directory, std::size_t startFrame, std::size_t endFrame
+      const std::string &directory,
+      std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange = (
+        std::optional<std::pair<std::size_t, std::size_t>>()
+      ),
+      std::optional<std::pair<std::size_t, std::size_t>> outputFrameRange = (
+        std::optional<std::pair<std::size_t, std::size_t>>()
+      )
     );
 
     private: void stopAnalysisThread();

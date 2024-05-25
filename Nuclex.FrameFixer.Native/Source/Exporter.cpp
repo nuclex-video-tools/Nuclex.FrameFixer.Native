@@ -215,8 +215,12 @@ namespace Nuclex::FrameFixer {
       // If the frame type is set to 'average', queue the image up as an
       // averaging sample
       if(currentFrameType == FrameType::Average) {
-        std::string imagePath = movie->GetFramePath(frameIndex);
-        imagesToAverage.emplace_back(QString::fromStdString(imagePath));
+        if(nextImage.isNull()) {
+          std::string imagePath = movie->GetFramePath(frameIndex);
+          imagesToAverage.emplace_back(QString::fromStdString(imagePath));
+        } else {
+          nextImage.swap(imagesToAverage.emplace_back());
+        }
 
         bool isLastFrame = ((frameIndex + 1) >= frameCount);
         if(this->inputFrameRange.has_value()) {

@@ -29,6 +29,7 @@ along with this library
 #include <QFileDialog> // for QFileDialog, shows file and folder selection dialogs
 #include <QCloseEvent> // for QCloseEvent
 #include <QMessageBox> // for QMessageBox
+#include <QRadioButton>
 
 namespace Nuclex::FrameFixer {
 
@@ -45,9 +46,19 @@ namespace Nuclex::FrameFixer {
       this, &ExportDialog::browseExportDirectoryClicked
     );
     connect(
-      this->ui->partialExportOption, &QCheckBox::toggled,
-      this, &ExportDialog::partialExportToggled
+      this->ui->exportAllChoice, &QRadioButton::toggled,
+      this, &ExportDialog::exportAllChosen
     );
+    connect(
+      this->ui->exportInputRangeChoice, &QRadioButton::toggled,
+      this, &ExportDialog::exportInputFrameRangeChosen
+    );
+    connect(
+      this->ui->exportOutputRangeChoice, &QRadioButton::toggled,
+      this, &ExportDialog::exportOutputFrameRangeChosen
+    );
+
+    exportAllChosen(true);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -63,38 +74,39 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void ExportDialog::SetMaximumFrameCount(std::size_t frameCount) {
-    this->ui->startFrameNumber->setMaximum(static_cast<int>(frameCount));
-    this->ui->endFrameNumber->setMaximum(static_cast<int>(frameCount));
+    this->ui->inputStartFrameNumber->setMaximum(static_cast<int>(frameCount));
+    this->ui->inputEndFrameNumber->setMaximum(static_cast<int>(frameCount));    
+    this->ui->inputEndFrameNumber->setValue(static_cast<int>(frameCount));    
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetInputFrameRange() const {
+    if(this->ui->exportInputRangeChoice->isChecked()) {
+
+    }
+    return std::optional<std::pair<std::size_t, std::size_t>>();
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetOutputFrameRange() const {
+    if(this->ui->exportInputRangeChoice->isChecked()) {
+
+    }
+    return std::optional<std::pair<std::size_t, std::size_t>>();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void ExportDialog::SetInitialframeCount(std::size_t frameCount) {
-    this->ui->endFrameNumber->setValue(static_cast<int>(frameCount));
+    this->ui->inputEndFrameNumber->setValue(static_cast<int>(frameCount));
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::string ExportDialog::GetExportDirectory() const {
     return this->ui->exportDirectoryText->text().toStdString();
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  bool ExportDialog::IsPartialExportSelected() const {
-    return this->ui->partialExportOption->isChecked();
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-  
-  std::size_t ExportDialog::GetStartFrame() const {
-    return static_cast<std::size_t>(this->ui->startFrameNumber->value());
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-  
-  std::size_t ExportDialog::GetEndFrame() const {
-    return static_cast<std::size_t>(this->ui->endFrameNumber->value());
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -139,11 +151,44 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::partialExportToggled(bool checked) {
-    this->ui->startFrameLabel->setEnabled(checked);
-    this->ui->startFrameNumber->setEnabled(checked);
-    this->ui->endFrameLabel->setEnabled(checked);
-    this->ui->endFrameNumber->setEnabled(checked);
+  void ExportDialog::exportAllChosen(bool checked) {
+    this->ui->inputStartFrameLabel->setEnabled(!checked);
+    this->ui->inputStartFrameNumber->setEnabled(!checked);
+    this->ui->inputEndFrameLabel->setEnabled(!checked);
+    this->ui->inputEndFrameNumber->setEnabled(!checked);
+
+    this->ui->outputStartFrameLabel->setEnabled(!checked);
+    this->ui->outputStartFrameNumber->setEnabled(!checked);
+    this->ui->outputEndFrameLabel->setEnabled(!checked);
+    this->ui->outputEndFrameNumber->setEnabled(!checked);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void ExportDialog::exportInputFrameRangeChosen(bool checked) {
+    this->ui->inputStartFrameLabel->setEnabled(checked);
+    this->ui->inputStartFrameNumber->setEnabled(checked);
+    this->ui->inputEndFrameLabel->setEnabled(checked);
+    this->ui->inputEndFrameNumber->setEnabled(checked);
+
+    this->ui->outputStartFrameLabel->setEnabled(!checked);
+    this->ui->outputStartFrameNumber->setEnabled(!checked);
+    this->ui->outputEndFrameLabel->setEnabled(!checked);
+    this->ui->outputEndFrameNumber->setEnabled(!checked);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void ExportDialog::exportOutputFrameRangeChosen(bool checked) {
+    this->ui->inputStartFrameLabel->setEnabled(!checked);
+    this->ui->inputStartFrameNumber->setEnabled(!checked);
+    this->ui->inputEndFrameLabel->setEnabled(!checked);
+    this->ui->inputEndFrameNumber->setEnabled(!checked);
+
+    this->ui->outputStartFrameLabel->setEnabled(checked);
+    this->ui->outputStartFrameNumber->setEnabled(checked);
+    this->ui->outputEndFrameLabel->setEnabled(checked);
+    this->ui->outputEndFrameNumber->setEnabled(checked);
   }
 
   // ------------------------------------------------------------------------------------------- //

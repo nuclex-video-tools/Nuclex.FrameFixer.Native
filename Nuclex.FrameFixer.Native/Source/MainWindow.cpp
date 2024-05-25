@@ -537,8 +537,8 @@ namespace Nuclex::FrameFixer {
       if(result == QDialog::DialogCode::Accepted) {
         exportDetelecinedFrames(
           exportDialog->GetExportDirectory(),
-          exportDialog->GetStartFrame(),
-          exportDialog->GetEndFrame()
+          exportDialog->GetInputFrameRange(),
+          exportDialog->GetOutputFrameRange()
         );
       }
     }
@@ -547,7 +547,13 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void MainWindow::exportDetelecinedFrames(
-    const std::string &directory, std::size_t startFrame, std::size_t endFrame
+    const std::string &directory,
+    std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange /* = (
+      std::optional<std::pair<std::size_t, std::size_t>>()
+    ) */,
+    std::optional<std::pair<std::size_t, std::size_t>> outputFrameRange /* = (
+      std::optional<std::pair<std::size_t, std::size_t>>()
+    ) */
   ) {
     Exporter movieExporter;
     movieExporter.SetDeinterlacer(this->deinterlacer);
@@ -556,7 +562,16 @@ namespace Nuclex::FrameFixer {
       movieExporter.FlipTopAndBottomField();
     }
 
-    movieExporter.RestrictRangeOfInputFrames(startFrame, endFrame);
+    if(inputFrameRange.has_value()) {
+      movieExporter.RestrictRangeOfInputFrames(
+        inputFrameRange.value().first, inputFrameRange.value().second
+      );
+    }
+    if(outputFrameRange.has_value()) {
+      movieExporter.RestrictRangeOfOutputFrames(
+        outputFrameRange.value().first, outputFrameRange.value().second
+      );
+    }
     movieExporter.Export(this->currentMovie, directory);
   }
 

@@ -25,6 +25,8 @@ along with this library
 
 #include <QDialog> // for QDialog
 #include <memory> // for std::unique_ptr
+#include <optional> // for std::optional
+#include <map> // for std::pair
 
 namespace Nuclex::FrameFixer::Services {
 
@@ -66,9 +68,8 @@ namespace Nuclex::FrameFixer {
     public: void SetInitialframeCount(std::size_t frameCount);
 
     public: std::string GetExportDirectory() const;
-    public: bool IsPartialExportSelected() const;
-    public: std::size_t GetStartFrame() const;
-    public: std::size_t GetEndFrame() const;
+    public: std::optional<std::pair<std::size_t, std::size_t>> GetInputFrameRange() const;
+    public: std::optional<std::pair<std::size_t, std::size_t>> GetOutputFrameRange() const;
 
 #if 0
     /// <summary>Binds the dialog to the specified service provide</summary>
@@ -79,11 +80,23 @@ namespace Nuclex::FrameFixer {
     /// <summary>Verifies the settings when the dialog is closed via the okay button</summary>
     protected: void accept() override;
 
-    /// <summary>Enables or disables some controls when partial export is toggled</summary>
+    /// <summary>Enables or disables some controls when export all is chosen</summary>
     /// <param name="checked">
-    ///   True if the partial export option is checked, false otherwise
+    ///   True if the export all option is selected, false otherwise
     /// </param>
-    private: void partialExportToggled(bool checked);
+    private: void exportAllChosen(bool checked);
+
+    /// <summary>Enables or disables some controls when export input frames is chosen</summary>
+    /// <param name="checked">
+    ///   True if the export input frame range option is selected, false otherwise
+    /// </param>
+    private: void exportInputFrameRangeChosen(bool checked);
+
+    /// <summary>Enables or disables some controls when export output frames is chosen</summary>
+    /// <param name="checked">
+    ///   True if the export output frame range option is selected, false otherwise
+    /// </param>
+    private: void exportOutputFrameRangeChosen(bool checked);
 
     /// <summary>Opens the directory browser when the user clicks on the browse button</summary>
     private: void browseExportDirectoryClicked();
