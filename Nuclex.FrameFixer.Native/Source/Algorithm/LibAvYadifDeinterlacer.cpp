@@ -119,9 +119,14 @@ namespace Nuclex::FrameFixer::Algorithm {
     std::shared_ptr<::AVFrame> outputFrame2 = ( // From 2 onwards outputs 2 frames...
       Platform::LibAvApi::ReadFrameFromFilterGraph(filterGraph)
     );
+    std::shared_ptr<::AVFrame> outputFrame3 = ( // From 2 onwards outputs 2 frames...
+      Platform::LibAvApi::ReadFrameFromFilterGraph(filterGraph)
+    );
 
     // Finally, put the processed frame back into the QImage
-    if(static_cast<bool>(outputFrame2)) {
+    if(static_cast<bool>(outputFrame3)) {
+      CopyAvFrameToQImage(outputFrame3, target);
+    } else if(static_cast<bool>(outputFrame2)) {
       CopyAvFrameToQImage(outputFrame2, target);
     } else {
       CopyAvFrameToQImage(outputFrame1, target);

@@ -192,7 +192,7 @@ namespace Nuclex::FrameFixer {
     std::size_t frameCount = movie->Frames.size();
     for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
       const Frame &currentFrame = movie->Frames[frameIndex];
-      FrameType currentFrameType = getFrameType(currentFrame);
+      FrameType currentFrameType = getFrameType(currentFrame, this->flipFields);
 
       // Figure out if we're still far from the export range. If so, do quick skip mode.
       bool skip = false;
@@ -287,7 +287,7 @@ namespace Nuclex::FrameFixer {
       }
       if(needsNextFrame && (frameIndex < frameCount)) {
         std::string imagePath = movie->GetFramePath(frameIndex + 1);
-        currentImage.load(QString::fromStdString(imagePath));
+        nextImage.load(QString::fromStdString(imagePath));
       } else if(!nextImage.isNull()) {
         QImage emptyImage;
         nextImage.swap(emptyImage);
@@ -308,26 +308,14 @@ namespace Nuclex::FrameFixer {
         }
       }
 
-      if(this->flipFields) {
-        if(currentFrameType == FrameType::TopFieldFirst) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
-        } else if(currentFrameType == FrameType::BottomFieldFirst) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
-        } else if(currentFrameType == FrameType::TopFieldOnly) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
-        } else if(currentFrameType == FrameType::BottomFieldOnly) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
-        }
-      } else {
-        if(currentFrameType == FrameType::TopFieldFirst) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
-        } else if(currentFrameType == FrameType::BottomFieldFirst) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
-        } else if(currentFrameType == FrameType::TopFieldOnly) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
-        } else if(currentFrameType == FrameType::BottomFieldOnly) {
-          this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
-        }
+      if(currentFrameType == FrameType::TopFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+      } else if(currentFrameType == FrameType::BottomFieldFirst) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+      } else if(currentFrameType == FrameType::TopFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+      } else if(currentFrameType == FrameType::BottomFieldOnly) {
+        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
       }
 
       // Figure out if the frame that follows uses averaging
@@ -365,7 +353,7 @@ namespace Nuclex::FrameFixer {
             this->inputFrameRange, this->outputFrameRange
           );
         }
-        if(currentFrameType  != FrameType::Discard) {
+        if(currentFrameType != FrameType::Discard) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
