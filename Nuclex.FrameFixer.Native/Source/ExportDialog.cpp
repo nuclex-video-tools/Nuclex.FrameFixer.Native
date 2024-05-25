@@ -83,18 +83,26 @@ namespace Nuclex::FrameFixer {
 
   std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetInputFrameRange() const {
     if(this->ui->exportInputRangeChoice->isChecked()) {
-
+      return std::pair<std::size_t, std::size_t>(
+        this->ui->inputStartFrameNumber->value(),
+        this->ui->inputEndFrameNumber->value()
+      );
+    } else {
+      return std::optional<std::pair<std::size_t, std::size_t>>();
     }
-    return std::optional<std::pair<std::size_t, std::size_t>>();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetOutputFrameRange() const {
-    if(this->ui->exportInputRangeChoice->isChecked()) {
-
+    if(this->ui->exportOutputRangeChoice->isChecked()) {
+      return std::pair<std::size_t, std::size_t>(
+        this->ui->outputStartFrameNumber->value(),
+        this->ui->outputEndFrameNumber->value()
+      );
+    } else {
+      return std::optional<std::pair<std::size_t, std::size_t>>();
     }
-    return std::optional<std::pair<std::size_t, std::size_t>>();
   }
 
   // ------------------------------------------------------------------------------------------- //
