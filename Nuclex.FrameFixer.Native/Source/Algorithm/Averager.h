@@ -43,7 +43,6 @@ namespace Nuclex::FrameFixer {
     /// <param name="otherImages">Images that will be composited onto the first image</param>
     public: static void Average(QImage &image, const std::vector<QImage> &otherImages);
 
-
   };
 
   // ------------------------------------------------------------------------------------------- //

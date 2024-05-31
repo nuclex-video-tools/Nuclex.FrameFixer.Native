@@ -28,6 +28,14 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
+  //
+  //     ###      I'm unsure about this implementation for anything but greyscale.
+  //    ## ##     
+  //   ## | ##    It uses 'step1' as pixel size in bytes, but then steps in bytes (moving
+  //  ##  '  ##   through color channels). Perhaps this is okay for YUV, or perhaps it should
+  // ###########  be called separately per color plane?
+  //
+
   /// <summaryDeinterlacer that integrates the Yadif algorithm</summary>
   class ReYadifDeinterlacer : public Deinterlacer {
 

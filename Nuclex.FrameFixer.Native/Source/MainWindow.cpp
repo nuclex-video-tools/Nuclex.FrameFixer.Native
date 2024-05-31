@@ -37,6 +37,7 @@ along with this library
 #include "./Algorithm/LibAvYadifDeinterlacer.h"
 #include "./Algorithm/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
+#include "./Algorithm/Deblend/GradientMatrix.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
@@ -432,7 +433,7 @@ namespace Nuclex::FrameFixer {
       }
 
       if(this->ui->enhanceOption->isChecked()) {
-        Filter::HighPass(frameImage);
+        Filter::LuminanceHighPass(frameImage);
       }
 
       // Display the frame in Qt's graphics view

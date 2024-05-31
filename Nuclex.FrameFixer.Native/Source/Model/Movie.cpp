@@ -107,12 +107,14 @@ namespace Nuclex::FrameFixer {
         QStringList tokens = line.split(',', Qt::SplitBehaviorFlags::KeepEmptyParts);
         
         std::size_t frameIndex = lexical_cast<std::size_t>(tokens[0].trimmed().toStdString());
+        /*
         QString combinessAsString = tokens[1].trimmed();
         if(!combinessAsString.isEmpty()) {
           movie->Frames[frameIndex].Combedness = lexical_cast<double>(
             combinessAsString.toStdString()
           );
         }
+        */
 
         QString typeAsString = tokens[2].trimmed();
         if(!typeAsString.isEmpty()) {
@@ -156,9 +158,10 @@ namespace Nuclex::FrameFixer {
         std::string line;
         lexical_append(line, this->Frames[index].Index);
         line.append(u8", ");
-        if(this->Frames[index].Combedness.has_value()) {
-          lexical_append(line, this->Frames[index].Combedness.value());
-        }
+        line.append(this->Frames[index].Filename);
+        //if(this->Frames[index].Combedness.has_value()) {
+        //  lexical_append(line, this->Frames[index].Combedness.value());
+        //}
         line.append(u8", ");
         switch(this->Frames[index].Type) {
           case FrameType::Discard: { line.append(u8"Discard"); break; }

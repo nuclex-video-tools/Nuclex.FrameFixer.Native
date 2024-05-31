@@ -102,7 +102,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Filter::HighPass(QImage &target) {
+  void Filter::LuminanceHighPass(QImage &target) {
     using Nuclex::Pixels::ColorModels::HslColor;
     using Nuclex::Pixels::ColorModels::RgbColor;
     using Nuclex::Pixels::ColorModels::ColorModelConverter;
@@ -162,7 +162,6 @@ namespace Nuclex::FrameFixer {
           QRgba64 *scanLine = reinterpret_cast<QRgba64 *>(target.scanLine(lineIndex));
           for(std::size_t x = 1; x < target.width() - 1; ++x) {
             float lightness = applyKernelToLightness(lines, lessEdgeDetectionKernel, x);
-            //float saturation = applyKernelToSaturation(lines, lessEdgeDetectionKernel, x);
 
             HslColor hslColor = line[x];
             hslColor.Lightness = lightness; //(hslColor.Lightness * 3.0f + lightness) / 4.0f;;
@@ -185,7 +184,9 @@ namespace Nuclex::FrameFixer {
           lines[2] = first;
         }
       } // for each line
-    } // if 16 bits per color channel
+    } else { // if 16 bits per color channel / 8 bits per color channel
+      throw std::runtime_error(u8"8 bit color depth not implemented yet, use 16 bit color depth");
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

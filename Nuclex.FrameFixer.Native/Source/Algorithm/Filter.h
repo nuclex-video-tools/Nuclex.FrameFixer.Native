@@ -33,7 +33,34 @@ namespace Nuclex::FrameFixer {
   /// <summary>Applies filters to images</summary>
   class Filter {
 
-    public: static void HighPass(QImage &target);
+    /// <summary>Runs a high pass filter on an image's luma channel</summary>
+    /// <param name="target">Target image that will be filtered</param>
+    /// <remarks>
+    ///   This filter strongly highlights fine edges, making combing / interlacing
+    ///   artifacts much more visible.
+    /// </remarks>
+    public: static void LuminanceHighPass(QImage &target);
+
+    // Should really be generalized, but YAGNI - until more than one filter exists
+#if 0
+    /// <summary>Applies a custom filter to an image's saturation</summary>
+    /// <param name="target">Image to which the filter gets applied</param>
+    /// <param name="kernel">Filter kernel that will be applied to the image</param>
+    /// <remarks>
+    ///   The image is converted to HSL, then the filter is applied to the saturation
+    ///   channel, then the image is converted back into RGB.
+    /// </remarks>
+    public: static void OnSaturation(QImage &target, float kernel[3][3]);
+
+    /// <summary>Applies a custom filter to an image's luminance</summary>
+    /// <param name="target">Image to which the filter gets applied</param>
+    /// <param name="kernel">Filter kernel that will be applied to the image</param>
+    /// <remarks>
+    ///   The image is converted to HSL, then the filter is applied to the luma
+    ///   channel, then the image is converted back into RGB.
+    /// </remarks>
+    public: static void OnLuminance(QImage &target, float kernel[3][3]);
+#endif
 
   };
 
