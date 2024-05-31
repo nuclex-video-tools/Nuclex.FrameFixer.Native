@@ -74,8 +74,6 @@ namespace {
     );
   }
 
-  //class GradientMatrixWithConstruct : public: Nuclex::  
-
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Custom alloctor that allocates a shared gradient matrix</summary>
@@ -122,16 +120,13 @@ namespace {
       NUCLEX_FRAMEFIXER_NDEBUG_UNUSED(count);
       assert(count == 1);
 
-      std::size_t totalByteCount = alignof(TGradientMatrix);
-      totalByteCount += getRowArrayOffset<TGradientMatrix>();
+      std::size_t totalByteCount = getRowArrayOffset<TGradientMatrix>();
       totalByteCount += sizeof(Gradient **[2]) * height / 2;
-      std::size_t matrixElementsOffset = getMatrixElementsOffset(totalByteCount);
-      totalByteCount += matrixElementsOffset;
+      totalByteCount = getMatrixElementsOffset(totalByteCount);
       totalByteCount += sizeof(Gradient[2]) * width * height / 2;
-      totalByteCount -= 1; // added earlier for matrix element offset calculation
 
       return reinterpret_cast<TGradientMatrix *>(
-        std::aligned_alloc(alignof(TGradientMatrix), totalByteCount)
+        new(std::align_val_t(alignof(TGradientMatrix))) std::uint8_t[totalByteCount]
       );
     }
 
@@ -166,14 +161,16 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
     height(height),
     memory(nullptr) {
 
-    std::size_t totalByteCount = alignof(Gradient **); // maximum potential misalignment + 1
-    totalByteCount += sizeof(Gradient **[2]) * height / 2;
-    std::size_t matrixElementsOffset = getMatrixElementsOffset(totalByteCount);
-    totalByteCount += matrixElementsOffset;
-    totalByteCount += sizeof(Gradient[2]) * width * height / 2;
-    totalByteCount -= 1; // added earlier for matrix element offset calculation
+    std::size_t matrixElementsOffset = getMatrixElementsOffset(
+      sizeof(Gradient **[2]) * height / 2
+    );
+    std::size_t totalByteCount = (
+      matrixElementsOffset + (sizeof(Gradient[2]) * width * height / 2)
+    );
 
-    std::unique_ptr<std::uint8_t[]> buffer(new std::uint8_t[totalByteCount]);
+    std::unique_ptr<std::uint8_t[]> buffer(
+      new(std::align_val_t(alignof(Gradient *))) std::uint8_t[totalByteCount]
+    );
     initializePointersWithBuffer(buffer.get(), matrixElementsOffset);
     this->memory = buffer.release();
   }
@@ -197,13 +194,53 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
       )
     );
 
-/*
-    gradientMatrix->initializePointersWithBuffer(
-      reinterpret_cast<std::uint8_t>(gradientMatrix.get()) + sizeof(GradientMatrix)
+    std::uint8_t *rowArrayStart = (
+      reinterpret_cast<std::uint8_t *>(gradientMatrix.get()) +
+      getRowArrayOffset<GradientMatrix>()
     );
-*/
+    std::size_t matrixElementsOffset = getMatrixElementsOffset(
+      rowArrayStart + (sizeof(Gradient **[2]) * height / 2) -
+      reinterpret_cast<std::uint8_t *>(gradientMatrix.get())
+    );     
+
+    gradientMatrix->width = width;
+    gradientMatrix->height = height;
+    gradientMatrix->memory = nullptr;
+    gradientMatrix->initializePointersWithBuffer(rowArrayStart, matrixElementsOffset);
 
     return gradientMatrix;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void GradientMatrix::FillAll(float value) {
+    for(std::size_t y = 0; y < this->height; ++y) {
+      Gradient *row = this->M[y];
+      for(std::size_t x = 0; x < this->width; ++x) {
+        row[x].RedHorizontal = value;
+        row[x].RedVertical = value;
+        row[x].GreenHorizontal = value;
+        row[x].GreenVertical = value;
+        row[x].BlueHorizontal = value;
+        row[x].BlueVertical = value;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void GradientMatrix::DivideAllBy(float value) {
+    for(std::size_t y = 0; y < this->height; ++y) {
+      Gradient *row = this->M[y];
+      for(std::size_t x = 0; x < this->width; ++x) {
+        row[x].RedHorizontal /= value;
+        row[x].RedVertical /= value;
+        row[x].GreenHorizontal /= value;
+        row[x].GreenVertical /= value;
+        row[x].BlueHorizontal /= value;
+        row[x].BlueVertical /= value;
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

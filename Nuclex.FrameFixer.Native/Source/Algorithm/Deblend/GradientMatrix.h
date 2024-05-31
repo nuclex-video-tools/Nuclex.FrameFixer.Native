@@ -36,6 +36,9 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
   /// <summary>Two dimensional matrix of gradients</summary>
   class GradientMatrix {
 
+    /// <summary>Needed for std::allocate_shared, don't use</summary>
+    public: explicit GradientMatrix() = default;
+
     /// <summary>Initializes a new gradient matrix</summary>
     /// <param name="width">Width of the gradient matrix (number of columns)</param>
     /// <param name="height">Height of the gradient matrix (number of rows)</param>
@@ -56,12 +59,24 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
     );
 
     /// <summary>
+    ///   Fills all dimensions of all gradient in the matrix with the specified value
+    /// </summary>
+    /// <param name="value">Value to which all of the gradient will be set</param>
+    public: void FillAll(float value);
+
+    /// <summary>
     ///   Divides all dimensions of all gradients in the matrix by the speified value
     /// </summary>
     /// <param name="value">Value by which all gradietns will be divided</param>
     public: void DivideAllBy(float value);
 
-    public: GradientMatrix() = default;
+    /// <summary>Sets up the <see cref="M" /> array with the row start pointers</summary>
+    /// <param name="buffer">
+    ///   Memory address at which the <see cref="M" /> array should start
+    /// </param>
+    /// <param name="matrixElementsOffset">
+    ///   Memory offset, in bytes, from the <see cref="M" /> array to the first matrix element
+    /// </param>
     private: void initializePointersWithBuffer(std::uint8_t *buffer, std::size_t matrixElementsOffset);
 
     /// <summary>Provides access to the elements of the gradient matrix</summary>
