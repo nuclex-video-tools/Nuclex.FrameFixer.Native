@@ -191,6 +191,32 @@
        </widget>
       </item>
       <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBlendedButton">
+        <property name="text">
+         <string>BL</string>
+        </property>
+        <property name="shortcut">
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="rightButtonSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>

@@ -25,6 +25,7 @@ along with this library
 
 #include <cstdlib> // for std::aligned_alloc()
 #include <cassert> // for assert()
+#include <stdexcept> // for std::invalid_arguments
 
 namespace {
 
@@ -149,6 +150,18 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>
+  ///   Variant of the gradient matrix with a default constructor to be constructible
+  ///   via std::allocate_shared()
+  /// </summary>
+  class DefaultConstructibleGradientMatrix :
+    public Nuclex::FrameFixer::Algorithm::Deblend::GradientMatrix {
+    /// <summary>Leaves the gradient with uninitialized attributes</summary>
+    public: DefaultConstructibleGradientMatrix() = default;
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
 } // anonymous namespace
 
 namespace Nuclex::FrameFixer::Algorithm::Deblend {
@@ -189,8 +202,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
     std::size_t width, std::size_t height
   ) {
     std::shared_ptr<GradientMatrix> gradientMatrix = (
-      std::allocate_shared<GradientMatrix>(
-        GradientMatrixAllocator<GradientMatrix>(width, height)
+      std::allocate_shared<DefaultConstructibleGradientMatrix>(
+        GradientMatrixAllocator<DefaultConstructibleGradientMatrix>(width, height)
       )
     );
 
@@ -241,6 +254,21 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
         row[x].BlueVertical /= value;
       }
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void GradientMatrix::Multiply(const GradientMatrix &other) {
+    bool dimensionsMath = (
+      (this->width == other.width) &&
+      (this->height == other.height)
+    );
+    if(!dimensionsMath) {
+      throw std::invalid_argument(u8"Gradient matrices have to be the same size");
+    }
+
+    
   }
 
   // ------------------------------------------------------------------------------------------- //

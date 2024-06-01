@@ -153,6 +153,24 @@ namespace Nuclex::FrameFixer {
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
+      } else if(frame.Type == FrameType::Replaced) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkRed));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "X*");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
+        painter->restore();    
+      } else if(frame.Type == FrameType::Blended) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::darkRed));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "<>");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
+        painter->restore();    
       }
 
       if(frame.Combedness.has_value()) {

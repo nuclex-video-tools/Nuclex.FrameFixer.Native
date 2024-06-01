@@ -286,12 +286,26 @@ namespace Nuclex::FrameFixer {
       if(!nextImage.isNull()) {
         nextImage.swap(currentImage);
       } else {
-        std::string imagePath = movie->GetFramePath(frameIndex);
-        currentImage.load(QString::fromStdString(imagePath));
+        if(movie->Frames[frameIndex].ReplaceWithIndex.has_value()) {
+          std::string imagePath = movie->GetFramePath(
+            movie->Frames[frameIndex].ReplaceWithIndex.value()
+          );
+          currentImage.load(QString::fromStdString(imagePath));
+        } else {
+          std::string imagePath = movie->GetFramePath(frameIndex);
+          currentImage.load(QString::fromStdString(imagePath));
+        }
       }
       if(needsNextFrame && (frameIndex < frameCount)) {
-        std::string imagePath = movie->GetFramePath(frameIndex + 1);
-        nextImage.load(QString::fromStdString(imagePath));
+        if(movie->Frames[frameIndex + 1].ReplaceWithIndex.has_value()) {
+          std::string imagePath = movie->GetFramePath(
+            movie->Frames[frameIndex + 1].ReplaceWithIndex.value()
+          );
+          nextImage.load(QString::fromStdString(imagePath));
+        } else {
+          std::string imagePath = movie->GetFramePath(frameIndex + 1);
+          nextImage.load(QString::fromStdString(imagePath));
+        }
       } else if(!nextImage.isNull()) {
         QImage emptyImage;
         nextImage.swap(emptyImage);
@@ -408,31 +422,20 @@ namespace Nuclex::FrameFixer {
       }
     }
 
-    FrameType currentFrameType = movie->Frames[frameIndex].Type;
-    if(currentFrameType == FrameType::Unknown) {
-      currentFrameType = movie->Frames[frameIndex].ProvisionalType;
-    }
+    FrameType currentFrameType = getFrameType(movie->Frames[frameIndex], this->flipFields);
 
-    if(this->flipFields) {
-      if(currentFrameType == FrameType::TopFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
-      } else if(currentFrameType == FrameType::BottomFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
-      } else if(currentFrameType == FrameType::TopFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
-      } else if(currentFrameType == FrameType::BottomFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
-      }
-    } else {
-      if(currentFrameType == FrameType::TopFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
-      } else if(currentFrameType == FrameType::BottomFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
-      } else if(currentFrameType == FrameType::TopFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
-      } else if(currentFrameType == FrameType::BottomFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
-      }
+    if(currentFrameType == FrameType::TopFieldFirst) {
+      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+    } else if(currentFrameType == FrameType::BottomFieldFirst) {
+      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+    } else if(currentFrameType == FrameType::TopFieldOnly) {
+      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+    } else if(currentFrameType == FrameType::BottomFieldOnly) {
+      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
+    } else if(currentFrameType == FrameType::Replaced) {
+      imagePath = movie->GetFramePath(movie->Frames[frameIndex].ReplaceWithIndex.value());
+      QImage replacementImage(QString::fromStdString(imagePath));
+      currentImage.swap(replacementImage);
     }
 
     return currentImage;

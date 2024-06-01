@@ -36,9 +36,6 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
   /// <summary>Two dimensional matrix of gradients</summary>
   class GradientMatrix {
 
-    /// <summary>Needed for std::allocate_shared, don't use</summary>
-    public: explicit GradientMatrix() = default;
-
     /// <summary>Initializes a new gradient matrix</summary>
     /// <param name="width">Width of the gradient matrix (number of columns)</param>
     /// <param name="height">Height of the gradient matrix (number of rows)</param>
@@ -58,6 +55,12 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
       std::size_t width, std::size_t height
     );
 
+    /// <summary>Width of the gradient matrix (number of columns)</summary>
+    public: std::size_t GetWidth() const { return this->width; }
+
+    /// <summary>Height of the gradient matrix (number of rows)</summary>
+    public: std::size_t GetHeight() const { return this->height; }
+
     /// <summary>
     ///   Fills all dimensions of all gradient in the matrix with the specified value
     /// </summary>
@@ -69,6 +72,13 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
     /// </summary>
     /// <param name="value">Value by which all gradietns will be divided</param>
     public: void DivideAllBy(float value);
+
+    /// <summary>Multiplies the matrix with another</summary>
+    /// <param name="multiplicand">Other matrix this one will be multiplied with</param>
+    public: void Multiply(const GradientMatrix &multiplicand);
+
+    /// <summary>Needed for std::allocate_shared, don't use</summary>
+    protected: explicit GradientMatrix() = default;
 
     /// <summary>Sets up the <see cref="M" /> array with the row start pointers</summary>
     /// <param name="buffer">

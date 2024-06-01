@@ -125,7 +125,19 @@ namespace Nuclex::FrameFixer {
 #endif
 
     /// <summary>Frame is progressive but unknown if A, B, D or standalone</summary>
-    Progressive
+    Progressive,
+
+    /// <summary>Frame is being replaced with another frame from the movie</summary>
+    Replaced,
+
+    /// <summary>Frame is a mix between other frames (same behavior as progressive)</summary>
+    /// <remarks>
+    ///   This merely tags the frame as blended. Such frames are the result of nasty
+    ///   deinterlacing software and at best can be mathematically deduced from
+    ///   the surrounding frames (which this application current can't do, so you can
+    ///   at least tag the frames as blended for later fixing)
+    /// </remarks>
+    Blended
 
   };
 

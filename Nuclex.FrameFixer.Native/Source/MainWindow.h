@@ -129,6 +129,8 @@ namespace Nuclex::FrameFixer {
     private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
     /// <summary>Marks the current frame for triplication</param>
     private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
+    /// <summary>Marks the current frame for triplication</param>
+    private: void markBlendedClicked() { toggleFrameType(FrameType::Blended); }
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
     private: void showStatisticsClicked();

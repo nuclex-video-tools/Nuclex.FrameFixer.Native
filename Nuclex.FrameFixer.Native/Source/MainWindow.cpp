@@ -191,6 +191,11 @@ namespace Nuclex::FrameFixer {
       this, &MainWindow::markTriplicateClicked
     );
     connect(
+      this->ui->markBlendedButton, &QPushButton::clicked,
+      this, &MainWindow::markBlendedClicked
+    );
+
+    connect(
       this->ui->thumbnailList->selectionModel(), &QItemSelectionModel::selectionChanged,
       this, &MainWindow::selectedThumbnailChanged
     );

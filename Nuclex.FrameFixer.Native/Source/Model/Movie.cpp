@@ -106,15 +106,9 @@ namespace Nuclex::FrameFixer {
         QString line = stateReader.readLine();
         QStringList tokens = line.split(',', Qt::SplitBehaviorFlags::KeepEmptyParts);
         
-        std::size_t frameIndex = lexical_cast<std::size_t>(tokens[0].trimmed().toStdString());
-        /*
-        QString combinessAsString = tokens[1].trimmed();
-        if(!combinessAsString.isEmpty()) {
-          movie->Frames[frameIndex].Combedness = lexical_cast<double>(
-            combinessAsString.toStdString()
-          );
-        }
-        */
+        std::size_t frameIndex = lexical_cast<std::size_t>(
+          tokens[0].trimmed().toStdString()
+        );
 
         QString typeAsString = tokens[2].trimmed();
         if(!typeAsString.isEmpty()) {
@@ -136,6 +130,17 @@ namespace Nuclex::FrameFixer {
             movie->Frames[frameIndex].Type = FrameType::Duplicate;
           } else if(typeAsString == u8"Triplicate") {
             movie->Frames[frameIndex].Type = FrameType::Triplicate;
+          } else if(typeAsString == u8"Blended") {
+            movie->Frames[frameIndex].Type = FrameType::Blended;
+          } else if(typeAsString.startsWith(u8"ReplaceWith(")) {
+            int endIndex = typeAsString.indexOf(u8')', 12);
+            if((endIndex != -1) && (endIndex > 12)) {
+              std::size_t replacementFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
+                typeAsString.mid(12, endIndex - 12).toStdString()
+              );
+              movie->Frames[frameIndex].Type = FrameType::Replaced;
+              movie->Frames[frameIndex].ReplaceWithIndex = replacementFrameIndex;
+            }
           }
         }
       }
@@ -173,6 +178,17 @@ namespace Nuclex::FrameFixer {
           case FrameType::Average: { line.append(u8"Average"); break; }
           case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }
           case FrameType::Triplicate: { line.append(u8"Triplicate"); break; }
+          case FrameType::Blended: { line.append(u8"Blended"); break; }
+          case FrameType::Replaced: {
+            line.append(u8"ReplaceWith(");
+            line.append(
+              Nuclex::Support::Text::lexical_cast<std::string>(
+                this->Frames[index].ReplaceWithIndex.value()
+              )
+            );
+            line.append(u8")");
+            break;
+          }
           default: { break; } // Others are not manually assignable and not saved
         }
         line.append(u8"\n");

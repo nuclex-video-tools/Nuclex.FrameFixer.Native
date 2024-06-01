@@ -41,7 +41,9 @@ namespace Nuclex::FrameFixer {
       Index(std::size_t(-1)),
       Filename(filename),
       Type(FrameType::Unknown),
+      ReplaceWithIndex(),
       Combedness(),
+      MixFactor(),
       ProvisionalType(FrameType::Unknown) {}
 
     /// <summary>Absolute index of the frame from the beginning of the movie</summary>
@@ -50,6 +52,9 @@ namespace Nuclex::FrameFixer {
     public: std::string Filename;
     /// <summary>Type of this frame in the framefixer sequence</summary>
     public: FrameType Type;
+
+    /// <summary>Frame with which this one should be replaced</summary>
+    public: std::optional<std::size_t> ReplaceWithIndex;
     /// <summary>Amount of combing that was detected in the frame</summary>
     public: std::optional<double> Combedness; 
     /// <summary>Extrapolation point between previous and this frame</summary>
