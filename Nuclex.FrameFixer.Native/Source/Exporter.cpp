@@ -34,16 +34,24 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Determines the final frame type as which a frame will be processed</summary>
+  /// <param name="frame">Frame whose type will be determined</param>
+  /// <param name="flip">Whether the flip field order option is turned on</param>
+  /// <returns>The frame type of the specified frame</returns>
   Nuclex::FrameFixer::FrameType getFrameType(
-    const Nuclex::FrameFixer::Frame &frame, bool flip =false
+    const Nuclex::FrameFixer::Frame &frame, bool flip = false
   ) {
     using Nuclex::FrameFixer::FrameType;
 
+    // Use the assigned frame type. If none was assigned, use the determined frame type
+    // which is calculated by other parts of the application by either detecting combing
+    // patterns or repeating the most recent 5-frame cycle.
     FrameType frameType = frame.Type;
     if(frameType == FrameType::Unknown) {
       frameType = frame.ProvisionalType;
     }
 
+    // Swap top and bottom field enum values if the field order is set to flipped.
     if(flip) {
       switch(frameType) {
         case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
@@ -172,7 +180,7 @@ namespace Nuclex::FrameFixer {
   void Exporter::RestrictRangeOfOutputFrames(
     std::size_t startFrameIndex, std::size_t endFrameIndex
   ) {
-    this->inputFrameRange = std::pair<std::size_t, std::size_t>(
+    this->outputFrameRange = std::pair<std::size_t, std::size_t>(
       startFrameIndex, endFrameIndex
     );
   }
