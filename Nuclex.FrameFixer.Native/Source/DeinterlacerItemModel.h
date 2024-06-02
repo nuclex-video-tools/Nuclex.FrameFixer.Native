@@ -29,7 +29,7 @@ along with this library
 #include <memory> // for std::shared_ptr
 #include <vector> // for std::vector
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -37,7 +37,7 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+}
 
 namespace Nuclex::FrameFixer {
 
@@ -48,7 +48,9 @@ namespace Nuclex::FrameFixer {
     Q_OBJECT
 
     // List of deinterlacers
-    public: typedef std::vector<std::shared_ptr<Algorithm::Deinterlacer>> DeinterlacerList;
+    public: typedef std::vector<std::shared_ptr<
+      Algorithm::Deinterlace::Deinterlacer>
+    > DeinterlacerList;
 
     /// <summary>Initializes a new item model for deinterlacers</summary>
     /// <param name="parent">Always null</param>
@@ -64,7 +66,9 @@ namespace Nuclex::FrameFixer {
     /// <summary>Retrieves a deinterlacer by its index</summary>
     /// <param name="index">Index of the deinterlacer that will be retrieved</param>
     /// <returns>The deinterlacer wit hthe specified index</returns>
-    public: std::shared_ptr<Algorithm::Deinterlacer> GetDeinterlacer(std::size_t index) const;
+    public: std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> GetDeinterlacer(
+      std::size_t index
+    ) const;
 
     /// <summary>Sets the resolution in which thumbnails will be generated</summary>
     /// <param name="resolution">The desired thumbnail resolution</param>

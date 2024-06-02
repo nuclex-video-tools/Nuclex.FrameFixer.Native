@@ -29,7 +29,7 @@ along with this library
 #include <stdexcept> // for std::bad_alloc
 #include <memory> // for std::unqiue_ptr
 
-#include "./../Platform/LibAvApi.h"
+#include "../../Platform/LibAvApi.h"
 
 namespace {
 
@@ -38,7 +38,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -156,4 +156,4 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace

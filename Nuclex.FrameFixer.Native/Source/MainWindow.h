@@ -24,7 +24,7 @@ along with this library
 #include "Nuclex/FrameFixer/Config.h"
 
 #include "./Model/FrameType.h"
-#include "./Algorithm/Deinterlacer.h"
+#include "./Algorithm/Deinterlace/Deinterlacer.h"
 
 #include <QMainWindow> // for QMainWindow
 #include <QItemSelection> // for QItemSelection
@@ -203,7 +203,7 @@ namespace Nuclex::FrameFixer {
     /// <summary>The movie whose frames are currently loaded for processing</summary>
     private: std::shared_ptr<Movie> currentMovie;
     /// <summary>The currently selected deinterlacer</summary>
-    private: std::shared_ptr<Algorithm::Deinterlacer> deinterlacer;
+    private: std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> deinterlacer;
 
     /// <summary>Thread that analyzes the combiness of frames</summary>
     private: std::unique_ptr<QThread> analysisThread;

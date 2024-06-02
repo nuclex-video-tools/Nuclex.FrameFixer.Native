@@ -18,43 +18,36 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_REYADIFDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_REYADIFDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVNNEDI3DEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVNNEDI3DEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
-#include "./Deinterlacer.h"
+#include "./LibAvDeinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  //
-  //     ###      I'm unsure about this implementation for anything but greyscale.
-  //    ## ##     
-  //   ## | ##    It uses 'step1' as pixel size in bytes, but then steps in bytes (moving
-  //  ##  '  ##   through color channels). Perhaps this is okay for YUV, or perhaps it should
-  // ###########  be called separately per color plane?
-  //
+  /// <summary>Deinterlacer that uses libav's NNedi3 filter to deinterlace</summary>
+  class LibAvNNedi3Deinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
 
-  /// <summaryDeinterlacer that integrates the Yadif algorithm</summary>
-  class ReYadifDeinterlacer : public Deinterlacer {
+    /// <summary>Initializes the NNedi3 via libav deinterlacer</summary>
+    public: LibAvNNedi3Deinterlacer();
+    /// <summary>Frees all resources used by the deinterlacer</summary>
+    public: virtual ~LibAvNNedi3Deinterlacer() = default;
 
-    /// <summary>Frees all resources used by the instance</summary>
-    public: ~ReYadifDeinterlacer() = default;
+    /// <summary>Called when the deinterlacer is deselected for the time being</summary>
+    public: void CoolDown() override;
 
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
     public: std::string GetName() const override {
-      return u8"ReYadif: Broken Yadif implementation";
+      return u8"NNEdi3-libav: Predict missing fields via AI";
     }
 
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
     /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
     public: bool NeedsPriorFrame() const override { return true; }
-
-    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
-    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
-    public: bool NeedsNextFrame() const override { return true; }
 
     /// <summary>Assigns the prior frame to the deinterlacer</summary>
     /// <param name="priorFrame">QImage containing the previous frame</param>
@@ -65,15 +58,6 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </remarks>
     public: void SetPriorFrame(const QImage &priorFrame) override;
 
-    /// <summary>Assigns the next frame to the deinterlacer</summary>
-    /// <param name="nextFrame">QImage containing the previous frame</param>
-    /// <remarks>
-    ///   This can either always be called (if the next frame is available anyway),
-    ///   using the <see cref="NeedsNextFrame" /> method, can potentially be omitted
-    ///   depending on the actual deinterlacer implementation.
-    /// </remarks>
-    public: void SetNextFrame(const QImage &nextFrame) override;
-
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
     /// <param name="mode">
@@ -82,15 +66,20 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
+    /// <summary>Constructs a new filter graph with the specified parameters</summary>
+    /// <param name="filterParameters">Parameters that will be passed to the filter</param>
+    /// <returns>The new filter graph</returns>
+    protected: std::shared_ptr<::AVFilterGraph> ConstructFilterGraph(
+      const DefaultFilterParameters &filterParameters
+    ) override;
+
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
-    /// <summary>The frame following the current one</summary>
-    private: QImage nextFrame;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_REYADIFDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVNNEDI3DEINTERLACER_H

@@ -23,7 +23,7 @@ along with this library
 
 #include "DeinterlacerItemModel.h"
 
-#include "./Algorithm/Deinterlacer.h"
+#include "./Algorithm/Deinterlace/Deinterlacer.h"
 
 #include <QPixmap>
 
@@ -49,7 +49,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<Algorithm::Deinterlacer> DeinterlacerItemModel::GetDeinterlacer(
+  std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> DeinterlacerItemModel::GetDeinterlacer(
     std::size_t index
   ) const {
     return this->deinterlacers.at(index);

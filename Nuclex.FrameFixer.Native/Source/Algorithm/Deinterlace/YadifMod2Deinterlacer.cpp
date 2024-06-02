@@ -23,7 +23,7 @@ along with this library
 
 #include "./YadifMod2Deinterlacer.h"
 
-#include "../yadifmod2-0.2.8/common.h"
+#include "./yadifmod2-0.2.8/common.h"
 
 #include <vector> // for std::vector
 
@@ -35,7 +35,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -120,4 +120,4 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace

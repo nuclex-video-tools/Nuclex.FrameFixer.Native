@@ -18,13 +18,13 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYESTDIFDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYESTDIFDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYESTDIFDEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYESTDIFDEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./LibAvDeinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -60,6 +60,6 @@ namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYESTDIFDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYESTDIFDEINTERLACER_H

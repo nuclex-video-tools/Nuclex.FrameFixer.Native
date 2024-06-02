@@ -23,7 +23,7 @@ along with this library
 
 #include "./Exporter.h"
 #include "./Model/Movie.h"
-#include "./Algorithm/PreviewDeinterlacer.h"
+#include "./Algorithm/Deinterlace/PreviewDeinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <Nuclex/Support/Text/LexicalCast.h>
@@ -142,7 +142,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   Exporter::Exporter() :
-    deinterlacer(std::make_shared<Algorithm::PreviewDeinterlacer>()),
+    deinterlacer(std::make_shared<Algorithm::Deinterlace::PreviewDeinterlacer>()),
     inputFrameRange(),
     outputFrameRange(),
     flipFields(false) {}
@@ -154,7 +154,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void Exporter::SetDeinterlacer(
-    const std::shared_ptr<Algorithm::Deinterlacer> &deinterlacer
+    const std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> &deinterlacer
   ) {
     this->deinterlacer = deinterlacer;
   }
@@ -335,13 +335,21 @@ namespace Nuclex::FrameFixer {
       }
 
       if(currentFrameType == FrameType::TopFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+        this->deinterlacer->Deinterlace(
+          currentImage, Algorithm::Deinterlace::DeinterlaceMode::TopFieldFirst
+        );
       } else if(currentFrameType == FrameType::BottomFieldFirst) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+        this->deinterlacer->Deinterlace(
+          currentImage, Algorithm::Deinterlace::DeinterlaceMode::BottomFieldFirst
+        );
       } else if(currentFrameType == FrameType::TopFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+        this->deinterlacer->Deinterlace(
+          currentImage, Algorithm::Deinterlace::DeinterlaceMode::TopFieldOnly
+        );
       } else if(currentFrameType == FrameType::BottomFieldOnly) {
-        this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
+        this->deinterlacer->Deinterlace(
+          currentImage, Algorithm::Deinterlace::DeinterlaceMode::BottomFieldOnly
+        );
       }
 
       // Figure out if the frame that follows uses averaging
@@ -433,13 +441,21 @@ namespace Nuclex::FrameFixer {
     FrameType currentFrameType = getFrameType(movie->Frames[frameIndex], this->flipFields);
 
     if(currentFrameType == FrameType::TopFieldFirst) {
-      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldFirst);
+      this->deinterlacer->Deinterlace(
+        currentImage, Algorithm::Deinterlace::DeinterlaceMode::TopFieldFirst
+      );
     } else if(currentFrameType == FrameType::BottomFieldFirst) {
-      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldFirst);
+      this->deinterlacer->Deinterlace(
+        currentImage, Algorithm::Deinterlace::DeinterlaceMode::BottomFieldFirst
+      );
     } else if(currentFrameType == FrameType::TopFieldOnly) {
-      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::TopFieldOnly);
+      this->deinterlacer->Deinterlace(
+        currentImage, Algorithm::Deinterlace::DeinterlaceMode::TopFieldOnly
+      );
     } else if(currentFrameType == FrameType::BottomFieldOnly) {
-      this->deinterlacer->Deinterlace(currentImage, Algorithm::DeinterlaceMode::BottomFieldOnly);
+      this->deinterlacer->Deinterlace(
+        currentImage, Algorithm::Deinterlace::DeinterlaceMode::BottomFieldOnly
+      );
     } else if(currentFrameType == FrameType::Replaced) {
       imagePath = movie->GetFramePath(movie->Frames[frameIndex].ReplaceWithIndex.value());
       QImage replacementImage(QString::fromStdString(imagePath));

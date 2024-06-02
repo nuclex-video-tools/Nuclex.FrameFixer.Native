@@ -32,10 +32,10 @@ along with this library
 #include "./Algorithm/InterlaceDetector.h"
 #include "./Exporter.h"
 
-#include "./Algorithm/PreviewDeinterlacer.h"
-#include "./Algorithm/LibAvNNedi3Deinterlacer.h"
-#include "./Algorithm/LibAvYadifDeinterlacer.h"
-#include "./Algorithm/LibAvEstdifDeinterlacer.h"
+#include "./Algorithm/Deinterlace/PreviewDeinterlacer.h"
+#include "./Algorithm/Deinterlace/LibAvNNedi3Deinterlacer.h"
+#include "./Algorithm/Deinterlace/LibAvYadifDeinterlacer.h"
+#include "./Algorithm/Deinterlace/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
 #include "./Algorithm/Deblend/GradientMatrix.h"
 
@@ -117,11 +117,11 @@ namespace Nuclex::FrameFixer {
 
     this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
     DeinterlacerItemModel::DeinterlacerList deinterlacers;
-    deinterlacers.push_back(std::make_shared<Algorithm::PreviewDeinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::LibAvNNedi3Deinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::LibAvYadifDeinterlacer>(false));
-    deinterlacers.push_back(std::make_shared<Algorithm::LibAvYadifDeinterlacer>(true));
-    deinterlacers.push_back(std::make_shared<Algorithm::LibAvEstdifDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::PreviewDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvNNedi3Deinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvYadifDeinterlacer>(false));
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvYadifDeinterlacer>(true));
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvEstdifDeinterlacer>());
     this->deinterlacerItemModel->SetDeinterlacers(deinterlacers);
 
     this->ui->deinterlacerCombo->setModel(this->deinterlacerItemModel.get());

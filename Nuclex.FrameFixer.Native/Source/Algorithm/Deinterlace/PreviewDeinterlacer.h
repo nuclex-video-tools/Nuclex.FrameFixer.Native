@@ -18,53 +18,40 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYADIFDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYADIFDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
-#include "./LibAvDeinterlacer.h"
+#include "./Deinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Deinterlacer that uses libav's Yadif filter to deinterlace</summary>
-  class LibAvYadifDeinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
+  /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
+  class PreviewDeinterlacer : public Deinterlacer {
 
-    /// <summary>Initializes the Yadif via libav deinterlacer</summary>
-    /// <param name="bwDifMode">Whether to use bwdif instead</param>
-    public: LibAvYadifDeinterlacer(bool bwDifMode);
-    /// <summary>Frees all resources used by the deinterlacer</summary>
-    public: virtual ~LibAvYadifDeinterlacer() = default;
-
-    /// <summary>Called when the deinterlacer is deselected for the time being</summary>
-    public: void CoolDown() override;
+    /// <summary>Frees all resources used by the instance</summary>
+    public: virtual ~PreviewDeinterlacer() = default;
 
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
     public: std::string GetName() const override {
-      if(this->bwDifMode) {
-        return u8"BWDif-libav: Yadif with w3dif and cubic interpolation";
-      } else {
-        return u8"Yadif-libav: Adaptive temporal and spatial interpolation";
-      }
+      return u8"Preview: copy or interpolate missing fields";
     }
 
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
     /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
     public: bool NeedsPriorFrame() const override { return true; }
 
-    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
-    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
-    public: bool NeedsNextFrame() const override { return true; }
-
     /// <summary>Assigns the prior frame to the deinterlacer</summary>
     /// <param name="priorFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the prior frame is available anyway),
+    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
     public: void SetPriorFrame(const QImage &priorFrame) override;
-
-    /// <summary>Assigns the next frame to the deinterlacer</summary>
-    /// <param name="priorFrame">QImage containing the next frame</param>
-    public: void SetNextFrame(const QImage &nextFrame) override;
 
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
@@ -74,24 +61,27 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
-    /// <summary>Constructs a new filter graph with the specified parameters</summary>
-    /// <param name="filterParameters">Parameters that will be passed to the filter</param>
-    /// <returns>The new filter graph</returns>
-    protected: std::shared_ptr<::AVFilterGraph> ConstructFilterGraph(
-      const DefaultFilterParameters &filterParameters
-    ) override;
+    /// <summary>Cheaply deinterlaces the specified image</summary>
+    /// <param name="previousImage">
+    ///   Image that came before the current one. If provided, the missing rows will be
+    ///   taken from this image. Otherwise, the missing rows are interpolated.
+    /// </param>
+    /// <param name="image">Image that will be deinterlaced</param>
+    /// <param name="topField">
+    ///   If true, the top field (even rows) will be filled in,
+    ///   otherwise, the bottom field (odd rows) will be filled in
+    /// </param>
+    public: static void Deinterlace(
+      QImage *previousImage, QImage &image, bool topField = true
+    );
 
-    /// <summary>Whether BWDif is used instead of Yadif</summary>
-    private: bool bwDifMode;
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
-    /// <summary>The frame succeeding the current one</summary>
-    private: QImage nextFrame;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_LIBAVYADIFDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H

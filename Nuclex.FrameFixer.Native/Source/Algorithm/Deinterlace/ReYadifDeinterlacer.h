@@ -18,31 +18,43 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_PREVIEWDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_REYADIFDEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_REYADIFDEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./Deinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
-  class PreviewDeinterlacer : public Deinterlacer {
+  //
+  //     ###      I'm unsure about this implementation for anything but greyscale.
+  //    ## ##     
+  //   ## | ##    It uses 'step1' as pixel size in bytes, but then steps in bytes (moving
+  //  ##  '  ##   through color channels). Perhaps this is okay for YUV, or perhaps it should
+  // ###########  be called separately per color plane?
+  //
+
+  /// <summaryDeinterlacer that integrates the Yadif algorithm</summary>
+  class ReYadifDeinterlacer : public Deinterlacer {
 
     /// <summary>Frees all resources used by the instance</summary>
-    public: virtual ~PreviewDeinterlacer() = default;
+    public: ~ReYadifDeinterlacer() = default;
 
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
     public: std::string GetName() const override {
-      return u8"Preview: copy or interpolate missing fields";
+      return u8"ReYadif: Broken Yadif implementation";
     }
 
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
     /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
     public: bool NeedsPriorFrame() const override { return true; }
+
+    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
+    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
+    public: bool NeedsNextFrame() const override { return true; }
 
     /// <summary>Assigns the prior frame to the deinterlacer</summary>
     /// <param name="priorFrame">QImage containing the previous frame</param>
@@ -53,6 +65,15 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </remarks>
     public: void SetPriorFrame(const QImage &priorFrame) override;
 
+    /// <summary>Assigns the next frame to the deinterlacer</summary>
+    /// <param name="nextFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the next frame is available anyway),
+    ///   using the <see cref="NeedsNextFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
+    public: void SetNextFrame(const QImage &nextFrame) override;
+
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
     /// <param name="mode">
@@ -61,27 +82,15 @@ namespace Nuclex::FrameFixer::Algorithm {
     /// </param>
     public: void Deinterlace(QImage &target, DeinterlaceMode mode) override;
 
-    /// <summary>Cheaply deinterlaces the specified image</summary>
-    /// <param name="previousImage">
-    ///   Image that came before the current one. If provided, the missing rows will be
-    ///   taken from this image. Otherwise, the missing rows are interpolated.
-    /// </param>
-    /// <param name="image">Image that will be deinterlaced</param>
-    /// <param name="topField">
-    ///   If true, the top field (even rows) will be filled in,
-    ///   otherwise, the bottom field (odd rows) will be filled in
-    /// </param>
-    public: static void Deinterlace(
-      QImage *previousImage, QImage &image, bool topField = true
-    );
-
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
+    /// <summary>The frame following the current one</summary>
+    private: QImage nextFrame;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_REYADIFDEINTERLACER_H
