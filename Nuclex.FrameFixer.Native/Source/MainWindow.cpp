@@ -29,7 +29,7 @@ along with this library
 #include "./FrameThumbnailItemModel.h"
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./DeinterlacerItemModel.h"
-#include "./Algorithm/InterlaceDetector.h"
+#include "./Algorithm/Analysis/InterlaceDetector.h"
 #include "./Exporter.h"
 
 #include "./Algorithm/Deinterlace/PreviewDeinterlacer.h"
@@ -609,7 +609,7 @@ namespace Nuclex::FrameFixer {
         std::string framePath = this->currentMovie->GetFramePath(index);
         Nuclex::Pixels::Bitmap frameBitmap = serializer.Load(framePath);
 
-        double combedness = InterlaceDetector::GetInterlaceProbability(frameBitmap);
+        double combedness = Algorithm::Analysis::InterlaceDetector::GetInterlaceProbability(frameBitmap);
         frame.Combedness = combedness;
       }
     }

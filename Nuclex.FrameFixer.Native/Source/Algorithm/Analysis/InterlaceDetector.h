@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_INTERLACEDETECTOR_H
-#define NUCLEX_FRAMEFIXER_INTERLACEDETECTOR_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_ANALYSIS_INTERLACEDETECTOR_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_ANALYSIS_INTERLACEDETECTOR_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -28,7 +28,7 @@ along with this library
 #include <Nuclex/Pixels/Bitmap.h>
 #include <Nuclex/Pixels/ColorModels/RgbPixelIterator.h>
 
-namespace Nuclex::FrameFixer {
+namespace Nuclex::FrameFixer::Algorithm::Analysis {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -109,6 +109,6 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer
+} // namespace Nuclex::FrameFixer::Algorithm::Analysis
 
-#endif // NUCLEX_FRAMEFIXER_INTERLACEDETECTOR_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_ANALYSIS_INTERLACEDETECTOR_H

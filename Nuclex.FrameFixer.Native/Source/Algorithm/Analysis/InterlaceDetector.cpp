@@ -88,7 +88,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer {
+namespace Nuclex::FrameFixer::Algorithm::Analysis {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -293,9 +293,11 @@ namespace Nuclex::FrameFixer {
         for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
           it.MoveTo(x, y);
 
-          Nuclex::FrameFixer::SwipeSample sample = Nuclex::FrameFixer::InterlaceDetector::Sample5(it);
+          Nuclex::FrameFixer::Algorithm::Analysis::SwipeSample sample = (
+            Nuclex::FrameFixer::Algorithm::Analysis::InterlaceDetector::Sample5(it)
+          );
           std::tuple<double, double> combedness = (
-            Nuclex::FrameFixer::InterlaceDetector::CalculateCombedness(sample)
+            Nuclex::FrameFixer::Algorithm::Analysis::InterlaceDetector::CalculateCombedness(sample)
           );
 
           double horizontal = std::get<0>(combedness);
@@ -306,9 +308,11 @@ namespace Nuclex::FrameFixer {
         for(std::size_t x = margin; x < memory.Width - margin - 1; ++x) {
           it.MoveTo(x, y);
 
-          Nuclex::FrameFixer::SwipeSample sample = Nuclex::FrameFixer::InterlaceDetector::Sample3(it);
+          Nuclex::FrameFixer::Algorithm::Analysis::SwipeSample sample = (
+            Nuclex::FrameFixer::Algorithm::Analysis::InterlaceDetector::Sample3(it)
+          );
           std::tuple<double, double> combedness = (
-            Nuclex::FrameFixer::InterlaceDetector::CalculateCombedness(sample)
+            Nuclex::FrameFixer::Algorithm::Analysis::InterlaceDetector::CalculateCombedness(sample)
           );
 
           double horizontal = std::get<0>(combedness);
@@ -349,4 +353,4 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer
+} // namespace Nuclex::FrameFixer::Algorithm::Analysis
