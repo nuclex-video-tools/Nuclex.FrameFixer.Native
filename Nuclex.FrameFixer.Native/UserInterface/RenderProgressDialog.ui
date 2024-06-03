@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ExportProgressDialog</class>
- <widget class="QDialog" name="ExportProgressDialog">
+ <class>RenderProgressDialog</class>
+ <widget class="QDialog" name="RenderProgressDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -84,9 +84,9 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="3">
-    <widget class="QLabel" name="exportingLabel">
+    <widget class="QLabel" name="renderingLabel">
      <property name="text">
-      <string>Exporting...</string>
+      <string>Rendering...</string>
      </property>
     </widget>
    </item>

@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_EXPORTER_H
-#define NUCLEX_FRAMEFIXER_EXPORTER_H
+#ifndef NUCLEX_FRAMEFIXER_RENDERER_H
+#define NUCLEX_FRAMEFIXER_RENDERER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -50,20 +50,30 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
 }
 
+namespace Nuclex::FrameFixer::Algorithm::Interpolation {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class Interpolator;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Processes and exports the processed frames of a movie clip to files</summary>
-  class Exporter {
+  /// <summary>Processes and saves the processed frames of a movie clip to files</summary>
+  class Renderer {
 
-    /// <summary>Initializes a new exporter</summary>
-    public: Exporter();
-    /// <summary>Frees all resources the exporter is using</summary>
-    public: ~Exporter();
+    /// <summary>Initializes a new renderer</summary>
+    public: Renderer();
+    /// <summary>Frees all resources the renderer is using</summary>
+    public: ~Renderer();
 
-    /// <summary>Selects the deinterlacer the exporter should use</summary>
-    /// <param name="deinterlacer">Deinterlacer the exporter will be using</param>
+    /// <summary>Selects the deinterlacer the renderer should use</summary>
+    /// <param name="deinterlacer">Deinterlacer the renderer will be using</param>
     public: void SetDeinterlacer(
       const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer
     );
@@ -76,13 +86,13 @@ namespace Nuclex::FrameFixer {
     public: void FlipTopAndBottomField(bool flip = true);
 
     /// <summary>
-    ///   Limits the frames being exported to those produced by the specified input frames
+    ///   Limits the frames being rendered to those produced by the specified input frames
     /// </summary>
     /// <param name="startFrameIndex">First input frame that will be considered</param>
     /// <param name="endFrameIndex">Last input frame that will be considered</param>
     /// <remarks>
-    ///   This does not influence the numbering of output frames. If exporting frames
-    ///   from 0 to 1000 would produce output frames 0 to 500, then exporting frames from
+    ///   This does not influence the numbering of output frames. If rendering frames
+    ///   from 0 to 1000 would produce output frames 0 to 500, then rendering frames from
     ///   500 to 100 would regenerate identical output frames numbeed from 250 too 500.
     /// </remarks>
     public: void RestrictRangeOfInputFrames(
@@ -90,7 +100,7 @@ namespace Nuclex::FrameFixer {
     );
 
     /// <summary>
-    ///   Limits the frames being exported to those with the specified output frame numbers
+    ///   Limits the frames being rendered to those with the specified output frame numbers
     /// </summary>
     /// <param name="startFrameIndex">First output frame that will be written</param>
     /// <param name="endFrameIndex">Last output frame that will be written</param>
@@ -98,20 +108,28 @@ namespace Nuclex::FrameFixer {
       std::size_t startFrameIndex, std::size_t endFrameIndex
     );
 
-    /// <summary>
-    ///   Processes and exports a movie's frames into the specified directory
-    /// </summary>
+    /// <summary>Processes and saves a movie's frames into the specified directory</summary>
     /// <param name="movie">Movie that will be processed (deinterlaced) and saved</param>
     /// <param name="directory">Directory in which the processed frames will be saved</param>
-    public: void Export(const std::shared_ptr<Movie> &movie, const std::string &directory);
+    public: void Render(const std::shared_ptr<Movie> &movie, const std::string &directory);
 
+    /// <summary>Generates a preview image of a single frame without saving it</summary>
+    /// <param name="movie">Movie of which a preview frame will be rendered</param>
+    /// <param name="index">Index of the frame that will be rendered as a preview</param>
+    /// <returns>A Qt image with a preview of the frame with the specified index</returns>
+    /// <remarks>
+    ///   The frame index is of an input frame, so it is possible to request previews of
+    ///   frames that have been tagged as 'Discard' and would not be rendered. This is fine
+    ///   and expected (as this method is directly used to display frames in the UI),
+    ///   a discarded frame will simply be previewed as-is, with no processing applied.
+    /// </remarks>
     public: QImage Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex);
 
-    /// <summary>Deinterlacer the exporter is using on the input frames</summary>
+    /// <summary>Deinterlacer the renderer is using on the input frames</summary>
     private: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> deinterlacer;
-    /// <summary>Range of input frames the exporter should process</summary>
+    /// <summary>Range of input frames the renderer should process</summary>
     private: std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange;
-    /// <summary>Range of resulting output frames the exporter should save</summary>
+    /// <summary>Range of resulting output frames the rendere should save</summary>
     private: std::optional<std::pair<std::size_t, std::size_t>> outputFrameRange;
     /// <summary>Whether the top and bottom fields should be flipped</summary>
     private: bool flipFields;
@@ -122,4 +140,4 @@ namespace Nuclex::FrameFixer {
 
 } // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_FRAMEFIXER_EXPORTER_H
+#endif // NUCLEX_FRAMEFIXER_RENDERER_H

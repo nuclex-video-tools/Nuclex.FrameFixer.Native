@@ -21,9 +21,10 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./Exporter.h"
+#include "./Renderer.h"
+
 #include "./Model/Movie.h"
-#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/Deinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <Nuclex/Support/Text/LexicalCast.h>
@@ -141,19 +142,19 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  Exporter::Exporter() :
-    deinterlacer(std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>()),
+  Renderer::Renderer() :
+    deinterlacer(),
     inputFrameRange(),
     outputFrameRange(),
     flipFields(false) {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  Exporter::~Exporter() {}
+  Renderer::~Renderer() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Exporter::SetDeinterlacer(
+  void Renderer::SetDeinterlacer(
     const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer
   ) {
     this->deinterlacer = deinterlacer;
@@ -161,13 +162,13 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Exporter::FlipTopAndBottomField(bool flip /* = true */) {
+  void Renderer::FlipTopAndBottomField(bool flip /* = true */) {
     this->flipFields = flip;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Exporter::RestrictRangeOfInputFrames(
+  void Renderer::RestrictRangeOfInputFrames(
     std::size_t startFrameIndex, std::size_t endFrameIndex
   ) {
     this->inputFrameRange = std::pair<std::size_t, std::size_t>(
@@ -177,7 +178,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Exporter::RestrictRangeOfOutputFrames(
+  void Renderer::RestrictRangeOfOutputFrames(
     std::size_t startFrameIndex, std::size_t endFrameIndex
   ) {
     this->outputFrameRange = std::pair<std::size_t, std::size_t>(
@@ -187,7 +188,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Exporter::Export(const std::shared_ptr<Movie> &movie, const std::string &directory) {
+  void Renderer::Render(const std::shared_ptr<Movie> &movie, const std::string &directory) {
     std::size_t outputFrameIndex = 0;
 
     bool needsNextFrame = this->deinterlacer->NeedsNextFrame();
@@ -412,7 +413,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  QImage Exporter::Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex) {
+  QImage Renderer::Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex) {
     std::string imagePath = movie->GetFramePath(frameIndex);
     QImage currentImage(QString::fromStdString(imagePath));
 

@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_EXPORTDIALOG_H
-#define NUCLEX_FRAMEFIXER_EXPORTDIALOG_H
+#ifndef NUCLEX_FRAMEFIXER_RENDERDIALOG_H
+#define NUCLEX_FRAMEFIXER_RENDERDIALOG_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -27,6 +27,16 @@ along with this library
 #include <memory> // for std::unique_ptr
 #include <optional> // for std::optional
 #include <map> // for std::pair
+
+namespace Ui {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class RenderDialog;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
 
 namespace Nuclex::FrameFixer::Services {
 
@@ -36,38 +46,39 @@ namespace Nuclex::FrameFixer::Services {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Services
+}
 
-namespace Ui {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class ExportDialog;
+namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Ui
+  class DeinterlaceItemModel;
+  class InterpolatorItemModel;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
 
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Dialog that asks the user for the range of frames to export</summary>
-  class ExportDialog : public QDialog {
+  class RenderDialog : public QDialog {
     Q_OBJECT
 
     /// <summary>Initializes a new settings dialog</summary>
     /// <param name="parent">Outer dialog that is displaying this dialog</param>
-    public: explicit ExportDialog(QWidget *parent = nullptr);
+    public: explicit RenderDialog(QWidget *parent = nullptr);
 
     /// <summary>Frees all memory used by the dialog</summary>
-    public: ~ExportDialog();
+    public: ~RenderDialog();
 
-    public: void SetInitialExportDirectory(const QString &directory);
+    public: void SetInitialRenderDirectory(const QString &directory);
     public: void SetMaximumFrameCount(std::size_t frameCount);
     public: void SetInitialframeCount(std::size_t frameCount);
 
-    public: std::string GetExportDirectory() const;
+    public: std::string GetRenderDirectory() const;
     public: std::optional<std::pair<std::size_t, std::size_t>> GetInputFrameRange() const;
     public: std::optional<std::pair<std::size_t, std::size_t>> GetOutputFrameRange() const;
 
@@ -99,7 +110,7 @@ namespace Nuclex::FrameFixer {
     private: void exportOutputFrameRangeChosen(bool checked);
 
     /// <summary>Opens the directory browser when the user clicks on the browse button</summary>
-    private: void browseExportDirectoryClicked();
+    private: void browseRenderDirectoryClicked();
 
     /// <summary>
     ///   Verifies the current settings and generates a message indicating the problem
@@ -123,7 +134,10 @@ namespace Nuclex::FrameFixer {
     );
 
     /// <summary>The user interface arrangement generated from the .ui file</summary>
-    private: std::unique_ptr<Ui::ExportDialog> ui;
+    private: std::unique_ptr<Ui::RenderDialog> ui;
+
+    private: std::shared_ptr<DeinterlaceItemModel> deinterlacerModel;
+    private: std::shared_ptr<InterpolatorItemModel> interpolatorModel; 
 #if 0
     /// <summary>Service provider the dialog has been bound to, can be null</summary>
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;

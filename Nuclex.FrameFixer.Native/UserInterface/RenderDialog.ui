@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ExportDialog</class>
- <widget class="QDialog" name="ExportDialog">
+ <class>RenderDialog</class>
+ <widget class="QDialog" name="RenderDialog">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
@@ -14,16 +14,16 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Export Frames</string>
+   <string>Render Frames</string>
   </property>
   <property name="modal">
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="6" column="0" colspan="9">
-    <widget class="QRadioButton" name="exportInputRangeChoice">
+    <widget class="QRadioButton" name="renderInputRangeChoice">
      <property name="text">
-      <string>Export only output frames generated from input frames in range:</string>
+      <string>Render only output frames generated from input frames in range:</string>
      </property>
     </widget>
    </item>
@@ -44,7 +44,7 @@
     </spacer>
    </item>
    <item row="0" column="2" colspan="6">
-    <widget class="QLineEdit" name="exportDirectoryText">
+    <widget class="QLineEdit" name="targetDirectoryText">
      <property name="toolTip">
       <string>Directory holding all files the process modifies, including the output log. Saved with each snapshot.</string>
      </property>
@@ -183,7 +183,7 @@
     </widget>
    </item>
    <item row="0" column="8">
-    <widget class="QPushButton" name="browseExportDirectoryButton">
+    <widget class="QPushButton" name="browseTargetDirectoryButton">
      <property name="text">
       <string>Browse...</string>
      </property>
@@ -238,7 +238,7 @@
     </spacer>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="exportDirectoryLabel">
+    <widget class="QLabel" name="targetDirectoryLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -246,7 +246,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Export Directory</string>
+      <string>Target Directory</string>
      </property>
     </widget>
    </item>
@@ -301,9 +301,9 @@
     </spacer>
    </item>
    <item row="8" column="0" colspan="9">
-    <widget class="QRadioButton" name="exportOutputRangeChoice">
+    <widget class="QRadioButton" name="renderOutputRangeChoice">
      <property name="text">
-      <string>Export only output frames in range:</string>
+      <string>Render only output frames in range:</string>
      </property>
     </widget>
    </item>
@@ -315,9 +315,9 @@
     </widget>
    </item>
    <item row="5" column="0" colspan="9">
-    <widget class="QRadioButton" name="exportAllChoice">
+    <widget class="QRadioButton" name="renderAllChoice">
      <property name="text">
-      <string>Export all frames</string>
+      <string>Render all frames</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -341,7 +341,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ExportDialog</receiver>
+   <receiver>RenderDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -357,7 +357,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ExportDialog</receiver>
+   <receiver>RenderDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>808</width>
+    <width>813</width>
     <height>888</height>
    </rect>
   </property>
@@ -63,7 +63,7 @@
       <item>
        <widget class="QPushButton" name="exportButton">
         <property name="text">
-         <string>Export...</string>
+         <string>Render...</string>
         </property>
        </widget>
       </item>

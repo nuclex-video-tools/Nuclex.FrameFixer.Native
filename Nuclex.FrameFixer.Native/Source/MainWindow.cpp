@@ -22,7 +22,7 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./MainWindow.h"
-#include "./ExportDialog.h"
+#include "./RenderDialog.h"
 #include "ui_MainWindow.h"
 
 #include "./Model/Movie.h"
@@ -30,7 +30,7 @@ along with this library
 #include "./FrameThumbnailPaintDelegate.h"
 #include "./DeinterlacerItemModel.h"
 #include "./Algorithm/Analysis/InterlaceDetector.h"
-#include "./Exporter.h"
+#include "./Renderer.h"
 
 #include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
 #include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
@@ -440,14 +440,14 @@ namespace Nuclex::FrameFixer {
       QImage frameImage;
 
       if(this->ui->previewOption->isChecked()) {
-        Exporter movieExporter;
-        movieExporter.SetDeinterlacer(this->deinterlacer);
+        Renderer movieRenderer;
+        movieRenderer.SetDeinterlacer(this->deinterlacer);
         
         if(this->ui->swapFieldsOption->isChecked()) {
-          movieExporter.FlipTopAndBottomField();
+          movieRenderer.FlipTopAndBottomField();
         }
 
-        frameImage = movieExporter.Preview(this->currentMovie, frame.Index);
+        frameImage = movieRenderer.Preview(this->currentMovie, frame.Index);
       } else {
         std::string imagePath = this->currentMovie->GetFramePath(frame.Index);
         frameImage.load(QString::fromStdString(imagePath));
@@ -524,8 +524,8 @@ namespace Nuclex::FrameFixer {
 
   void MainWindow::exportClicked() {
     if(static_cast<bool>(this->currentMovie)) {
-      std::unique_ptr<ExportDialog> exportDialog = (
-        std::make_unique<ExportDialog>(this)
+      std::unique_ptr<RenderDialog> exportDialog = (
+        std::make_unique<RenderDialog>(this)
       );
 
       // Stuff that I should be able to remove if I add a proper model class
@@ -539,7 +539,7 @@ namespace Nuclex::FrameFixer {
         } else {
           exportPath = this->currentMovie->FrameDirectory + u8".export/";
         }
-        exportDialog->SetInitialExportDirectory(QString::fromStdString(exportPath));
+        exportDialog->SetInitialRenderDirectory(QString::fromStdString(exportPath));
 
         exportDialog->SetMaximumFrameCount(this->currentMovie->Frames.size());
 
@@ -558,7 +558,7 @@ namespace Nuclex::FrameFixer {
       int result = exportDialog->exec();
       if(result == QDialog::DialogCode::Accepted) {
         exportDetelecinedFrames(
-          exportDialog->GetExportDirectory(),
+          exportDialog->GetRenderDirectory(),
           exportDialog->GetInputFrameRange(),
           exportDialog->GetOutputFrameRange()
         );
@@ -577,24 +577,24 @@ namespace Nuclex::FrameFixer {
       std::optional<std::pair<std::size_t, std::size_t>>()
     ) */
   ) {
-    Exporter movieExporter;
-    movieExporter.SetDeinterlacer(this->deinterlacer);
+    Renderer movieRenderer;
+    movieRenderer.SetDeinterlacer(this->deinterlacer);
     
     if(this->ui->swapFieldsOption->isChecked()) {
-      movieExporter.FlipTopAndBottomField();
+      movieRenderer.FlipTopAndBottomField();
     }
 
     if(inputFrameRange.has_value()) {
-      movieExporter.RestrictRangeOfInputFrames(
+      movieRenderer.RestrictRangeOfInputFrames(
         inputFrameRange.value().first, inputFrameRange.value().second
       );
     }
     if(outputFrameRange.has_value()) {
-      movieExporter.RestrictRangeOfOutputFrames(
+      movieRenderer.RestrictRangeOfOutputFrames(
         outputFrameRange.value().first, outputFrameRange.value().second
       );
     }
-    movieExporter.Export(this->currentMovie, directory);
+    movieRenderer.Render(this->currentMovie, directory);
   }
 
   // ------------------------------------------------------------------------------------------- //

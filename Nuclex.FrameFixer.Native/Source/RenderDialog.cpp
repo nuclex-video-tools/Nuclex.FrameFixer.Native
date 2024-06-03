@@ -21,8 +21,8 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./ExportDialog.h"
-#include "ui_ExportDialog.h"
+#include "./RenderDialog.h"
+#include "ui_RenderDialog.h"
 
 #include "./DeinterlacerItemModel.h"
 #include "./InterpolatorItemModel.h"
@@ -38,27 +38,27 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ExportDialog::ExportDialog(QWidget *parent) :
+  RenderDialog::RenderDialog(QWidget *parent) :
     QDialog(parent),
-    ui(std::make_unique<Ui::ExportDialog>()) {
+    ui(std::make_unique<Ui::RenderDialog>()) {
 
     this->ui->setupUi(this);
 
     connect(
-      this->ui->browseExportDirectoryButton, &QPushButton::clicked,
-      this, &ExportDialog::browseExportDirectoryClicked
+      this->ui->browseTargetDirectoryButton, &QPushButton::clicked,
+      this, &RenderDialog::browseRenderDirectoryClicked
     );
     connect(
-      this->ui->exportAllChoice, &QRadioButton::toggled,
-      this, &ExportDialog::exportAllChosen
+      this->ui->renderAllChoice, &QRadioButton::toggled,
+      this, &RenderDialog::exportAllChosen
     );
     connect(
-      this->ui->exportInputRangeChoice, &QRadioButton::toggled,
-      this, &ExportDialog::exportInputFrameRangeChosen
+      this->ui->renderInputRangeChoice, &QRadioButton::toggled,
+      this, &RenderDialog::exportInputFrameRangeChosen
     );
     connect(
-      this->ui->exportOutputRangeChoice, &QRadioButton::toggled,
-      this, &ExportDialog::exportOutputFrameRangeChosen
+      this->ui->renderOutputRangeChoice, &QRadioButton::toggled,
+      this, &RenderDialog::exportOutputFrameRangeChosen
     );
 
     exportAllChosen(true);
@@ -66,17 +66,17 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ExportDialog::~ExportDialog() {}
+  RenderDialog::~RenderDialog() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::SetInitialExportDirectory(const QString &directory) {
-    this->ui->exportDirectoryText->setText(directory);
+  void RenderDialog::SetInitialRenderDirectory(const QString &directory) {
+    this->ui->targetDirectoryText->setText(directory);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::SetMaximumFrameCount(std::size_t frameCount) {
+  void RenderDialog::SetMaximumFrameCount(std::size_t frameCount) {
     this->ui->inputStartFrameNumber->setMaximum(static_cast<int>(frameCount));
     this->ui->inputEndFrameNumber->setMaximum(static_cast<int>(frameCount));    
     this->ui->inputEndFrameNumber->setValue(static_cast<int>(frameCount));    
@@ -84,8 +84,8 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetInputFrameRange() const {
-    if(this->ui->exportInputRangeChoice->isChecked()) {
+  std::optional<std::pair<std::size_t, std::size_t>> RenderDialog::GetInputFrameRange() const {
+    if(this->ui->renderInputRangeChoice->isChecked()) {
       return std::pair<std::size_t, std::size_t>(
         this->ui->inputStartFrameNumber->value(),
         this->ui->inputEndFrameNumber->value()
@@ -97,8 +97,8 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::optional<std::pair<std::size_t, std::size_t>> ExportDialog::GetOutputFrameRange() const {
-    if(this->ui->exportOutputRangeChoice->isChecked()) {
+  std::optional<std::pair<std::size_t, std::size_t>> RenderDialog::GetOutputFrameRange() const {
+    if(this->ui->renderOutputRangeChoice->isChecked()) {
       return std::pair<std::size_t, std::size_t>(
         this->ui->outputStartFrameNumber->value(),
         this->ui->outputEndFrameNumber->value()
@@ -110,19 +110,19 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::SetInitialframeCount(std::size_t frameCount) {
+  void RenderDialog::SetInitialframeCount(std::size_t frameCount) {
     this->ui->inputEndFrameNumber->setValue(static_cast<int>(frameCount));
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::string ExportDialog::GetExportDirectory() const {
-    return this->ui->exportDirectoryText->text().toStdString();
+  std::string RenderDialog::GetRenderDirectory() const {
+    return this->ui->targetDirectoryText->text().toStdString();
   }
 
   // ------------------------------------------------------------------------------------------- //
 #if 0
-  void ExportDialog::BindToServicesRoot(
+  void RenderDialog::BindToServicesRoot(
     const std::shared_ptr<Services::ServicesRoot> &servicesRoot
   ) {
     this->servicesRoot = servicesRoot;
@@ -139,7 +139,7 @@ namespace Nuclex::FrameFixer {
 #endif
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::accept() {
+  void RenderDialog::accept() {
     QString issuesPreventingClose = verifySettingsOrStateProblem();
     if(issuesPreventingClose.isEmpty()) {
       //if(static_cast<bool>(this->servicesRoot)) {
@@ -162,7 +162,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::exportAllChosen(bool checked) {
+  void RenderDialog::exportAllChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(!checked);
     this->ui->inputStartFrameNumber->setEnabled(!checked);
     this->ui->inputEndFrameLabel->setEnabled(!checked);
@@ -176,7 +176,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::exportInputFrameRangeChosen(bool checked) {
+  void RenderDialog::exportInputFrameRangeChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(checked);
     this->ui->inputStartFrameNumber->setEnabled(checked);
     this->ui->inputEndFrameLabel->setEnabled(checked);
@@ -190,7 +190,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::exportOutputFrameRangeChosen(bool checked) {
+  void RenderDialog::exportOutputFrameRangeChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(!checked);
     this->ui->inputStartFrameNumber->setEnabled(!checked);
     this->ui->inputEndFrameLabel->setEnabled(!checked);
@@ -204,7 +204,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void ExportDialog::browseExportDirectoryClicked() {
+  void RenderDialog::browseRenderDirectoryClicked() {
     std::unique_ptr<QFileDialog> selectDirectoryDialog = (
       std::make_unique<QFileDialog>(this)
     );
@@ -216,7 +216,7 @@ namespace Nuclex::FrameFixer {
       QString(u8"Select directory to export deinterlaced frames to")
     );
 
-    selectDirectoryDialog->setDirectory(this->ui->exportDirectoryText->text());
+    selectDirectoryDialog->setDirectory(this->ui->targetDirectoryText->text());
 
     // Display the dialog, the user can select a directory or hit cancel
     int result = selectDirectoryDialog->exec();
@@ -226,14 +226,14 @@ namespace Nuclex::FrameFixer {
     if(result == QDialog::Accepted) {
       QStringList selectedFiles = selectDirectoryDialog->selectedFiles();
       if(!selectedFiles.empty()) {
-        this->ui->exportDirectoryText->setText(selectedFiles[0]);
+        this->ui->targetDirectoryText->setText(selectedFiles[0]);
       }
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  QString ExportDialog::verifySettingsOrStateProblem() {
+  QString RenderDialog::verifySettingsOrStateProblem() {
     //if(this->ui->stateDirectoryText->text().isEmpty()) {
     //  return QString(u8"No state directory has been selected");
     //}
