@@ -109,7 +109,7 @@ namespace Nuclex::FrameFixer {
     /// <summary>
     ///   Detelecines the entire movie using the currently assigned frame types
     /// </summary>
-    private: void exportClicked();
+    private: void renderClicked();
 
     /// <summary>Marks the current frame to be discarded</param>
     private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }

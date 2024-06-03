@@ -25,27 +25,29 @@ along with this library
 #include "./RenderDialog.h"
 #include "ui_MainWindow.h"
 
+#include "./Services/ServicesRoot.h"
+#include "./Services/DeinterlacerRepository.h"
 #include "./Model/Movie.h"
-#include "./FrameThumbnailItemModel.h"
-#include "./FrameThumbnailPaintDelegate.h"
-#include "./DeinterlacerItemModel.h"
-#include "./Algorithm/Analysis/InterlaceDetector.h"
 #include "./Renderer.h"
 
-#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
-#include "./Algorithm/Filter.h"
+#include "./DeinterlacerItemModel.h"
+#include "./FrameThumbnailItemModel.h"
+#include "./FrameThumbnailPaintDelegate.h"
 
-#include "./Database/FrameDatabase.h"
+#include <Nuclex/Support/Text/LexicalCast.h>
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
 #include <QThread>
 #include <QComboBox>
 
-#include <Nuclex/Support/Text/LexicalCast.h>
+#include "./Algorithm/Analysis/InterlaceDetector.h"
+#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
+#include "./Algorithm/Filter.h"
+
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
 
 namespace {
@@ -83,9 +85,9 @@ namespace Nuclex::FrameFixer {
   MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(std::make_unique<Ui::MainWindow>()),
-    thumbnailItemModel(),
-    thumbnailPaintDelegate(),
-    deinterlacerItemModel(),
+    thumbnailItemModel(std::make_unique<FrameThumbnailItemModel>()),
+    thumbnailPaintDelegate(std::make_unique<FrameThumbnailPaintDelegate>()),
+    deinterlacerItemModel(std::make_unique<DeinterlacerItemModel>()),
     servicesRoot(),
     currentMovie(),
     deinterlacer(),
@@ -117,23 +119,9 @@ namespace Nuclex::FrameFixer {
     // Set up our thumbnail item view model, which will tell the QListView how many items
     // there are and load as well as cache the thumbnail images as needed. Without this,
     // performance would absolutely tank (average movies have between 150'000 frames).
-    this->thumbnailItemModel.reset(new FrameThumbnailItemModel());
     this->ui->thumbnailList->setModel(this->thumbnailItemModel.get());
-
-    this->thumbnailPaintDelegate.reset(new FrameThumbnailPaintDelegate());
     this->ui->thumbnailList->setItemDelegate(this->thumbnailPaintDelegate.get());
-
-    this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
-    DeinterlacerItemModel::DeinterlacerList deinterlacers;
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvNNedi3Deinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(false));
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(true));
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvEstdifDeinterlacer>());
-    this->deinterlacerItemModel->SetDeinterlacers(deinterlacers);
-
     this->ui->deinterlacerCombo->setModel(this->deinterlacerItemModel.get());
-    selectedDeinterlacerChanged(0); // Make sure deinterlace instance is set up
 
     connectUiSignals();
   }
@@ -149,9 +137,13 @@ namespace Nuclex::FrameFixer {
   ) {
     this->servicesRoot = servicesRoot;
 
-    //if(static_cast<bool>(this->servicesRoot)) {
-    //  updateProcessList();
-    //}
+    if(static_cast<bool>(this->servicesRoot)) {
+      this->deinterlacerItemModel->SetDeinterlacers(
+        servicesRoot->Deinterlacers()->GetDeinterlacers()
+      );
+    
+      selectedDeinterlacerChanged(0); // Make sure deinterlace instance is set up
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -236,7 +228,7 @@ namespace Nuclex::FrameFixer {
 
     connect(
       this->ui->exportButton, &QPushButton::clicked,
-      this, &MainWindow::exportClicked
+      this, &MainWindow::renderClicked
     );
     connect(
       this->ui->showStatisticsButton, &QPushButton::clicked,
@@ -522,11 +514,14 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::exportClicked() {
+  void MainWindow::renderClicked() {
     if(static_cast<bool>(this->currentMovie)) {
-      std::unique_ptr<RenderDialog> exportDialog = (
+      std::unique_ptr<RenderDialog> renderDialog = (
         std::make_unique<RenderDialog>(this)
       );
+      if(static_cast<bool>(this->servicesRoot)) {
+        renderDialog->BindToServicesRoot(this->servicesRoot);
+      }
 
       // Stuff that I should be able to remove if I add a proper model class
       // that will manage the data shoveling properly.
@@ -539,28 +534,24 @@ namespace Nuclex::FrameFixer {
         } else {
           exportPath = this->currentMovie->FrameDirectory + u8".export/";
         }
-        exportDialog->SetInitialRenderDirectory(QString::fromStdString(exportPath));
+        renderDialog->SetInitialTargetDirectory(QString::fromStdString(exportPath));
 
-        exportDialog->SetMaximumFrameCount(this->currentMovie->Frames.size());
+        renderDialog->SetMaximumFrameCount(this->currentMovie->Frames.size());
 
         std::size_t lastTaggedFrameIndex = getLastTaggedFrameIndex();
         if(lastTaggedFrameIndex != std::size_t(-1)) {
-          exportDialog->SetInitialframeCount(lastTaggedFrameIndex);
+          renderDialog->SetInitialframeCount(lastTaggedFrameIndex);
         } else {
-          exportDialog->SetInitialframeCount(this->currentMovie->Frames.size());
+          renderDialog->SetInitialframeCount(this->currentMovie->Frames.size());
         }
       }
 
-      //if(static_cast<bool>(this->servicesRoot)) {
-      //  exportDialog->BindToServicesRoot(this->servicesRoot);
-      //}
-
-      int result = exportDialog->exec();
+      int result = renderDialog->exec();
       if(result == QDialog::DialogCode::Accepted) {
         exportDetelecinedFrames(
-          exportDialog->GetRenderDirectory(),
-          exportDialog->GetInputFrameRange(),
-          exportDialog->GetOutputFrameRange()
+          renderDialog->GetTargetDirectory(),
+          renderDialog->GetInputFrameRange(),
+          renderDialog->GetOutputFrameRange()
         );
       }
     }

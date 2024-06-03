@@ -48,11 +48,31 @@ namespace Nuclex::FrameFixer::Services {
 
 }
 
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class Deinterlacer;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
+namespace Nuclex::FrameFixer::Algorithm::Interpolation {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class FrameInterpolator;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class DeinterlaceItemModel;
+  class DeinterlacerItemModel;
   class InterpolatorItemModel;
 
   // ------------------------------------------------------------------------------------------- //
@@ -74,19 +94,39 @@ namespace Nuclex::FrameFixer {
     /// <summary>Frees all memory used by the dialog</summary>
     public: ~RenderDialog();
 
-    public: void SetInitialRenderDirectory(const QString &directory);
-    public: void SetMaximumFrameCount(std::size_t frameCount);
-    public: void SetInitialframeCount(std::size_t frameCount);
-
-    public: std::string GetRenderDirectory() const;
-    public: std::optional<std::pair<std::size_t, std::size_t>> GetInputFrameRange() const;
-    public: std::optional<std::pair<std::size_t, std::size_t>> GetOutputFrameRange() const;
-
-#if 0
     /// <summary>Binds the dialog to the specified service provide</summary>
     /// <param name="servicesRoot">Application service provider to bind to</param>
     public: void BindToServicesRoot(const std::shared_ptr<Services::ServicesRoot> &servicesRoot);
-#endif
+
+    // These could be fetched from a service (through services root) later
+    // (most recently used target directory, most revent export range or movie)
+    public: void SetInitialTargetDirectory(const QString &directory);
+    public: void SetMaximumFrameCount(std::size_t frameCount);
+    public: void SetInitialframeCount(std::size_t frameCount);
+
+    /// <summary>Returns the target directory selected by the user</summary>
+    /// <returns>The target directory the user has selected or entered</returns>
+    public: std::string GetTargetDirectory() const;
+
+    /// <summary>Returns the range of input frames the user wants to render</summary>
+    /// <returns>The range of input frames the user wishes to render</returns>
+    public: std::optional<std::pair<std::size_t, std::size_t>> GetInputFrameRange() const;
+
+    /// <summary>Returns the range of output frames the user wants to render</summary>
+    /// <returns>The range of output frames the user wishes to render</returns>
+    public: std::optional<std::pair<std::size_t, std::size_t>> GetOutputFrameRange() const;
+
+    /// <summary>Returns the deinterlacer that should be used for rendering</summary>
+    /// <returns>The deinterlacer selected by the user</returns>
+    public: std::shared_ptr<
+      Algorithm::Deinterlacing::Deinterlacer
+    > GetSelectedDeinterlacer() const;
+
+    /// <summary>Returns the interpolator that should be used for rendering</summary>
+    /// <returns>The interpolator selected by the user</returns>
+    public: std::shared_ptr<
+      Algorithm::Interpolation::FrameInterpolator
+    > GetSelectedInterpolator() const;
 
     /// <summary>Verifies the settings when the dialog is closed via the okay button</summary>
     protected: void accept() override;
@@ -95,22 +135,22 @@ namespace Nuclex::FrameFixer {
     /// <param name="checked">
     ///   True if the export all option is selected, false otherwise
     /// </param>
-    private: void exportAllChosen(bool checked);
+    private: void everythingChosen(bool checked);
 
     /// <summary>Enables or disables some controls when export input frames is chosen</summary>
     /// <param name="checked">
     ///   True if the export input frame range option is selected, false otherwise
     /// </param>
-    private: void exportInputFrameRangeChosen(bool checked);
+    private: void inputFrameRangeChosen(bool checked);
 
     /// <summary>Enables or disables some controls when export output frames is chosen</summary>
     /// <param name="checked">
     ///   True if the export output frame range option is selected, false otherwise
     /// </param>
-    private: void exportOutputFrameRangeChosen(bool checked);
+    private: void outputFrameRangeChosen(bool checked);
 
     /// <summary>Opens the directory browser when the user clicks on the browse button</summary>
-    private: void browseRenderDirectoryClicked();
+    private: void browseTargetDirectoryClicked();
 
     /// <summary>
     ///   Verifies the current settings and generates a message indicating the problem
@@ -136,12 +176,13 @@ namespace Nuclex::FrameFixer {
     /// <summary>The user interface arrangement generated from the .ui file</summary>
     private: std::unique_ptr<Ui::RenderDialog> ui;
 
-    private: std::shared_ptr<DeinterlaceItemModel> deinterlacerModel;
-    private: std::shared_ptr<InterpolatorItemModel> interpolatorModel; 
-#if 0
     /// <summary>Service provider the dialog has been bound to, can be null</summary>
     private: std::shared_ptr<Services::ServicesRoot> servicesRoot;
-#endif
+
+    /// <summary>Item model for the deinterlacer selection</summary>
+    private: std::unique_ptr<DeinterlacerItemModel> deinterlacerModel;
+    /// <summary>Item model for the inerpolator selection</summary>
+    private: std::unique_ptr<InterpolatorItemModel> interpolatorModel; 
 
   };
 

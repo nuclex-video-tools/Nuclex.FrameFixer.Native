@@ -27,7 +27,9 @@ along with this library
 #include "./DeinterlacerItemModel.h"
 #include "./InterpolatorItemModel.h"
 
-//#include "./Services/ServicesRoot.h" // for ServicesRoot
+#include "./Services/ServicesRoot.h" // for ServicesRoot
+#include "./Services/DeinterlacerRepository.h"
+#include "./Services/InterpolatorRepository.h"
 
 #include <QFileDialog> // for QFileDialog, shows file and folder selection dialogs
 #include <QCloseEvent> // for QCloseEvent
@@ -40,28 +42,34 @@ namespace Nuclex::FrameFixer {
 
   RenderDialog::RenderDialog(QWidget *parent) :
     QDialog(parent),
-    ui(std::make_unique<Ui::RenderDialog>()) {
+    ui(std::make_unique<Ui::RenderDialog>()),
+    servicesRoot(),
+    deinterlacerModel(std::make_unique<DeinterlacerItemModel>()),
+    interpolatorModel(std::make_unique<InterpolatorItemModel>()) {
 
     this->ui->setupUi(this);
 
     connect(
       this->ui->browseTargetDirectoryButton, &QPushButton::clicked,
-      this, &RenderDialog::browseRenderDirectoryClicked
+      this, &RenderDialog::browseTargetDirectoryClicked
     );
     connect(
       this->ui->renderAllChoice, &QRadioButton::toggled,
-      this, &RenderDialog::exportAllChosen
+      this, &RenderDialog::everythingChosen
     );
     connect(
       this->ui->renderInputRangeChoice, &QRadioButton::toggled,
-      this, &RenderDialog::exportInputFrameRangeChosen
+      this, &RenderDialog::inputFrameRangeChosen
     );
     connect(
       this->ui->renderOutputRangeChoice, &QRadioButton::toggled,
-      this, &RenderDialog::exportOutputFrameRangeChosen
+      this, &RenderDialog::outputFrameRangeChosen
     );
 
-    exportAllChosen(true);
+    this->ui->deinterlacerCombo->setModel(this->deinterlacerModel.get());
+    this->ui->interpolatorCombo->setModel(this->interpolatorModel.get());
+
+    everythingChosen(true);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -70,7 +78,24 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void RenderDialog::SetInitialRenderDirectory(const QString &directory) {
+  void RenderDialog::BindToServicesRoot(
+    const std::shared_ptr<Services::ServicesRoot> &servicesRoot
+  ) {
+    this->servicesRoot = servicesRoot;
+
+    if(static_cast<bool>(servicesRoot)) {
+      this->deinterlacerModel->SetDeinterlacers(
+        servicesRoot->Deinterlacers()->GetDeinterlacers()
+      );
+      this->interpolatorModel->SetInterpolators(
+        servicesRoot->Interpolators()->GetInterpolators()
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void RenderDialog::SetInitialTargetDirectory(const QString &directory) {
     this->ui->targetDirectoryText->setText(directory);
   }
 
@@ -116,27 +141,10 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::string RenderDialog::GetRenderDirectory() const {
+  std::string RenderDialog::GetTargetDirectory() const {
     return this->ui->targetDirectoryText->text().toStdString();
   }
 
-  // ------------------------------------------------------------------------------------------- //
-#if 0
-  void RenderDialog::BindToServicesRoot(
-    const std::shared_ptr<Services::ServicesRoot> &servicesRoot
-  ) {
-    this->servicesRoot = servicesRoot;
-
-    if(static_cast<bool>(servicesRoot)) {
-      const std::shared_ptr<Services::Settings> &settings = servicesRoot->GetSettings();
-      this->ui->stateDirectoryText->setText(
-        QString::fromStdString(settings->GetStateDirectory())
-      );
-    }
-
-    this->changed = false;
-  }
-#endif
   // ------------------------------------------------------------------------------------------- //
 
   void RenderDialog::accept() {
@@ -162,7 +170,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void RenderDialog::exportAllChosen(bool checked) {
+  void RenderDialog::everythingChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(!checked);
     this->ui->inputStartFrameNumber->setEnabled(!checked);
     this->ui->inputEndFrameLabel->setEnabled(!checked);
@@ -176,7 +184,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void RenderDialog::exportInputFrameRangeChosen(bool checked) {
+  void RenderDialog::inputFrameRangeChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(checked);
     this->ui->inputStartFrameNumber->setEnabled(checked);
     this->ui->inputEndFrameLabel->setEnabled(checked);
@@ -190,7 +198,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void RenderDialog::exportOutputFrameRangeChosen(bool checked) {
+  void RenderDialog::outputFrameRangeChosen(bool checked) {
     this->ui->inputStartFrameLabel->setEnabled(!checked);
     this->ui->inputStartFrameNumber->setEnabled(!checked);
     this->ui->inputEndFrameLabel->setEnabled(!checked);
@@ -204,7 +212,7 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void RenderDialog::browseRenderDirectoryClicked() {
+  void RenderDialog::browseTargetDirectoryClicked() {
     std::unique_ptr<QFileDialog> selectDirectoryDialog = (
       std::make_unique<QFileDialog>(this)
     );
