@@ -21,60 +21,46 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./DeinterlacerRepository.h"
-#include "../Algorithm/Deinterlacing/Deinterlacer.h"
-
-#include "../Algorithm/Deinterlacing/BasicDeinterlacer.h"
-#include "../Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
-#include "../Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
-#include "../Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
+#include "./InterpolatorRepository.h"
+#include "../Algorithm/Interpolation/FrameInterpolator.h"
 
 namespace Nuclex::FrameFixer::Services {
 
   // ------------------------------------------------------------------------------------------- //
 
-  DeinterlacerRepository::DeinterlacerRepository() {}
+  InterpolatorRepository::InterpolatorRepository() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  DeinterlacerRepository::~DeinterlacerRepository() {}
+  InterpolatorRepository::~InterpolatorRepository() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  void DeinterlacerRepository::RegisterBuiltInDeinterlacers() {
+  void InterpolatorRepository::RegisterBuiltInInterpolators() {
+    /*
     this->deinterlacers.push_back(
       std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>()
     );
+    */
   }
 
   // ------------------------------------------------------------------------------------------- //
-#if defined(NUCLEX_FRAMEFIXER_ENABLE_LIBAV)
-  void DeinterlacerRepository::RegisterLibAvDeinterlacers() {
-    this->deinterlacers.push_back(
-      std::make_shared<Algorithm::Deinterlacing::LibAvNNedi3Deinterlacer>()
-    );
-    this->deinterlacers.push_back(
-      std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(false)
-    );
-    this->deinterlacers.push_back(
-      std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(true)
-    );
-    this->deinterlacers.push_back(
-      std::make_shared<Algorithm::Deinterlacing::LibAvEstdifDeinterlacer>()
-    );
+#if defined(NUCLEX_FRAMEFIXER_ENABLE_CLI_INTERPOLATORS)
+  void InterpolatorRepository::RegisterCliInterpolators() {
   }
 #endif
   // ------------------------------------------------------------------------------------------- //
 
-  const DeinterlacerRepository::DeinterlacerList &DeinterlacerRepository::GetDeinterlacers() const {
-    return this->deinterlacers;
+  const InterpolatorRepository::InterpolatorList &InterpolatorRepository::GetInterpolators() const {
+    return this->interpolators;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<
-    Algorithm::Deinterlacing::Deinterlacer
-  > DeinterlacerRepository::GetBasicDeinterlacer() const {
+    Algorithm::Interpolation::FrameInterpolator
+  > InterpolatorRepository::GetNullInterpolator() const {
+#if 0
     std::size_t count = this->deinterlacers.size();
     for(std::size_t index = 0; index < count; ++index) {
       Algorithm::Deinterlacing::Deinterlacer *deinterlacer = this->deinterlacers[index].get();
@@ -84,14 +70,15 @@ namespace Nuclex::FrameFixer::Services {
     }
 
     return std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>();
+#endif
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<
-    Algorithm::Deinterlacing::Deinterlacer
-  > DeinterlacerRepository::GetDeinterlacer(std::size_t index) const {
-    return this->deinterlacers.at(index);
+    Algorithm::Interpolation::FrameInterpolator
+  > InterpolatorRepository::GetInterpolator(std::size_t index) const {
+    return this->interpolators.at(index);
   }
 
   // ------------------------------------------------------------------------------------------- //
