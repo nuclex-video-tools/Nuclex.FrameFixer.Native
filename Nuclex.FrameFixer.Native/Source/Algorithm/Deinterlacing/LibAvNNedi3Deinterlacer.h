@@ -18,24 +18,23 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYADIFDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYADIFDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_LIBAVNNEDI3DEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_LIBAVNNEDI3DEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./LibAvDeinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Deinterlacer that uses libav's Yadif filter to deinterlace</summary>
-  class LibAvYadifDeinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
+  /// <summary>Deinterlacer that uses libav's NNedi3 filter to deinterlace</summary>
+  class LibAvNNedi3Deinterlacer : public LibAvDeinterlacer<DefaultFilterParameters> {
 
-    /// <summary>Initializes the Yadif via libav deinterlacer</summary>
-    /// <param name="bwDifMode">Whether to use bwdif instead</param>
-    public: LibAvYadifDeinterlacer(bool bwDifMode);
+    /// <summary>Initializes the NNedi3 via libav deinterlacer</summary>
+    public: LibAvNNedi3Deinterlacer();
     /// <summary>Frees all resources used by the deinterlacer</summary>
-    public: virtual ~LibAvYadifDeinterlacer() = default;
+    public: virtual ~LibAvNNedi3Deinterlacer() = default;
 
     /// <summary>Called when the deinterlacer is deselected for the time being</summary>
     public: void CoolDown() override;
@@ -43,28 +42,21 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
     public: std::string GetName() const override {
-      if(this->bwDifMode) {
-        return u8"BWDif-libav: Yadif with w3dif and cubic interpolation";
-      } else {
-        return u8"Yadif-libav: Adaptive temporal and spatial interpolation";
-      }
+      return u8"NNEdi3-libav: Predict missing fields via AI";
     }
 
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
     /// <returns>True if the deinterlacer needs the previous frame to work with</returns>
     public: bool NeedsPriorFrame() const override { return true; }
 
-    /// <summary>Whether this deinterlacer needs to know the next frame</summary>
-    /// <returns>True if the deinterlacer needs the next frame to work with</returns>
-    public: bool NeedsNextFrame() const override { return true; }
-
     /// <summary>Assigns the prior frame to the deinterlacer</summary>
     /// <param name="priorFrame">QImage containing the previous frame</param>
+    /// <remarks>
+    ///   This can either always be called (if the prior frame is available anyway),
+    ///   using the <see cref="NeedsPriorFrame" /> method, can potentially be omitted
+    ///   depending on the actual deinterlacer implementation.
+    /// </remarks>
     public: void SetPriorFrame(const QImage &priorFrame) override;
-
-    /// <summary>Assigns the next frame to the deinterlacer</summary>
-    /// <param name="priorFrame">QImage containing the next frame</param>
-    public: void SetNextFrame(const QImage &nextFrame) override;
 
     /// <summary>Deinterlaces the specified frame</summary>
     /// <param name="target">Frame that will be deinterlaced</param>
@@ -81,17 +73,13 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
       const DefaultFilterParameters &filterParameters
     ) override;
 
-    /// <summary>Whether BWDif is used instead of Yadif</summary>
-    private: bool bwDifMode;
     /// <summary>The frame preceding the current one</summary>
     private: QImage priorFrame;
-    /// <summary>The frame succeeding the current one</summary>
-    private: QImage nextFrame;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlacing
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_LIBAVYADIFDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_LIBAVNNEDI3DEINTERLACER_H

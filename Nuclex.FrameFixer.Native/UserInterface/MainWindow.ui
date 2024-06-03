@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>808</width>
-    <height>831</height>
+    <height>888</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,35 +15,6 @@
   </property>
   <widget class="QWidget" name="centralLayoutGrid">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0" colspan="3">
-     <widget class="QListView" name="thumbnailList">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>120</height>
-       </size>
-      </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2" colspan="2">
-     <widget class="QPushButton" name="browseButton">
-      <property name="text">
-       <string>Browse...</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0">
      <widget class="QLabel" name="frameDirectoryLabel">
       <property name="text">
@@ -51,238 +22,7 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0" colspan="4">
-     <spacer name="bottomGapSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="frameDirectoryText"/>
-    </item>
-    <item row="2" column="0" colspan="3">
-     <widget class="QZoomableGraphicsView" name="frameInspectionImage"/>
-    </item>
-    <item row="2" column="3" rowspan="3">
-     <layout class="QVBoxLayout" name="rightButtonLayout">
-      <item>
-       <widget class="QPushButton" name="markDiscardButton">
-        <property name="text">
-         <string>DIS</string>
-        </property>
-        <property name="shortcut">
-         <string>X</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markProgressiveButton">
-        <property name="text">
-         <string>PR</string>
-        </property>
-        <property name="shortcut">
-         <string>`</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markAverageButton">
-        <property name="text">
-         <string>AVG</string>
-        </property>
-        <property name="shortcut">
-         <string>A</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markDuplicateButton">
-        <property name="text">
-         <string>DUP</string>
-        </property>
-        <property name="shortcut">
-         <string>D</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markTriplicateButton">
-        <property name="text">
-         <string>TRIP</string>
-        </property>
-        <property name="shortcut">
-         <string>S</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markTopFieldFirstButton">
-        <property name="text">
-         <string>TF -&gt; BF</string>
-        </property>
-        <property name="shortcut">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markBottomFieldFirstButton">
-        <property name="text">
-         <string>BF -&gt; TF</string>
-        </property>
-        <property name="shortcut">
-         <string>2</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markTopFieldOnlyButton">
-        <property name="text">
-         <string>TF</string>
-        </property>
-        <property name="shortcut">
-         <string>3</string>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markBottomFieldOnlyButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>BF</string>
-        </property>
-        <property name="shortcut">
-         <string>4</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>10</width>
-          <height>10</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="markBlendedButton">
-        <property name="text">
-         <string>BL</string>
-        </property>
-        <property name="shortcut">
-         <string>B</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="rightButtonSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="frameStatusLabel">
-        <property name="text">
-         <string>Shortcuts:
-~: Progressive
-1: Top-&gt;Bottom
-2: Bottom-&gt;Top
-3: Top Only
-4: Bottom Only
-A: Average
-D: Duplicate
-X: Discard
-
-P: Preview
-Space: Statistics</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="swapFieldsOption">
-        <property name="text">
-         <string>Swap Fields</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="enhanceOption">
-        <property name="text">
-         <string>Enhance</string>
-        </property>
-        <property name="shortcut">
-         <string>E</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="previewOption">
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Preview</string>
-        </property>
-        <property name="shortcut">
-         <string>P</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="9" column="0" colspan="4">
+    <item row="10" column="0" colspan="4">
      <layout class="QHBoxLayout" name="bottomButtonLayout">
       <item>
        <widget class="QComboBox" name="deinterlacerCombo">
@@ -338,6 +78,336 @@ Space: Statistics</string>
        <widget class="QPushButton" name="quitButton">
         <property name="text">
          <string>Quit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QListView" name="thumbnailList">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>120</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" colspan="2">
+     <widget class="QPushButton" name="browseButton">
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="QZoomableGraphicsView" name="frameInspectionImage"/>
+    </item>
+    <item row="7" column="0" colspan="4">
+     <spacer name="bottomGapSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>10</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="3" rowspan="3">
+     <layout class="QVBoxLayout" name="rightButtonLayout">
+      <item>
+       <widget class="QPushButton" name="markDiscardButton">
+        <property name="toolTip">
+         <string>Marks the current frame for the trash can. If you are reversing a telecine, for example, one in every 5 frames should be discarded.</string>
+        </property>
+        <property name="text">
+         <string>Discard</string>
+        </property>
+        <property name="shortcut">
+         <string>X</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markAverageButton">
+        <property name="toolTip">
+         <string>Marks the frame to be averaged with the previous frame. Both frames will be emitted and both will be the average of each other. If multiple frames in a row are marked for averaging, all of them will be averaged with each other.</string>
+        </property>
+        <property name="text">
+         <string>Average</string>
+        </property>
+        <property name="shortcut">
+         <string>A</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markDuplicateButton">
+        <property name="toolTip">
+         <string>Emits the frame twice. For anime, the underlying animation often only updates at 9 or 12 fps, so if one frame has interlace artifacts but another, identical frame, hasn't, you can discard the former and duplicate the latter.</string>
+        </property>
+        <property name="text">
+         <string>Duplicate</string>
+        </property>
+        <property name="shortcut">
+         <string>D</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markTriplicateButton">
+        <property name="toolTip">
+         <string>Emits the frame thrice. For anime, the underlying animation often only updates at 9 or 12 fps, so if two frames have interlace artifacts but another, identical frame, hasn't, you can discard the former two and triplicate the latter.</string>
+        </property>
+        <property name="text">
+         <string>Triplicate</string>
+        </property>
+        <property name="shortcut">
+         <string>S</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markProgressiveButton">
+        <property name="toolTip">
+         <string>Marks the frame as progressive. The behavior is the same as an unmarked frame, meaning the frame will be emitted as-is, but you can use this to keep track of the telecine pattern.</string>
+        </property>
+        <property name="text">
+         <string>Progressive</string>
+        </property>
+        <property name="shortcut">
+         <string>`</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markTopFieldFirstButton">
+        <property name="toolTip">
+         <string>Marks the frame  as interlaced, using the top field first (and the bottom field from the previous frame).</string>
+        </property>
+        <property name="text">
+         <string>TF -&gt; BF</string>
+        </property>
+        <property name="shortcut">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBottomFieldFirstButton">
+        <property name="toolTip">
+         <string>Marks the frame  as interlaced, using the bottom field first (and the top field from the previous frame).</string>
+        </property>
+        <property name="text">
+         <string>BF -&gt; TF</string>
+        </property>
+        <property name="shortcut">
+         <string>2</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markTopFieldOnlyButton">
+        <property name="toolTip">
+         <string>Marks the frame as interlaced, using only the top field and inteprolated the missing lines. Use this if the previous frame containing the bottom field is lost or looks worse than interpolating it.</string>
+        </property>
+        <property name="text">
+         <string>TF</string>
+        </property>
+        <property name="shortcut">
+         <string>3</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBottomFieldOnlyButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Marks the frame as interlaced, using only the bottom field and inteprolated the missing lines. Use this if the previous frame containing the top field is lost or looks worse than interpolating it.</string>
+        </property>
+        <property name="text">
+         <string>BF</string>
+        </property>
+        <property name="shortcut">
+         <string>4</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>10</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markBlendedButton">
+        <property name="toolTip">
+         <string>Marks the frame as blended. Currently it's only an informal tag and the frame will be emitted as-is, but blend recovery is an idea I'm working on.</string>
+        </property>
+        <property name="text">
+         <string>Deblend</string>
+        </property>
+        <property name="shortcut">
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markInterpolated1Button">
+        <property name="text">
+         <string>Interpolate 1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markInteprolated2Button">
+        <property name="text">
+         <string>Interpolate 2</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="rightButtonSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="frameStatusLabel">
+        <property name="text">
+         <string>Shortcuts:
+~: Progressive
+1: Top-&gt;Bottom
+2: Bottom-&gt;Top
+3: Top Only
+4: Bottom Only
+A: Average
+D: Duplicate
+X: Discard
+
+P: Preview
+Space: Statistics</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="frameDirectoryText"/>
+    </item>
+    <item row="8" column="0" colspan="4">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="swapFieldsOption">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="text">
+         <string>Swap Fields</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="enhanceOption">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="text">
+         <string>Enhance</string>
+        </property>
+        <property name="shortcut">
+         <string>E</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="previewOption">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Preview</string>
+        </property>
+        <property name="shortcut">
+         <string>P</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

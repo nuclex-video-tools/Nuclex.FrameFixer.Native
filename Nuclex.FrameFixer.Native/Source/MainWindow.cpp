@@ -32,10 +32,10 @@ along with this library
 #include "./Algorithm/Analysis/InterlaceDetector.h"
 #include "./Exporter.h"
 
-#include "./Algorithm/Deinterlace/PreviewDeinterlacer.h"
-#include "./Algorithm/Deinterlace/LibAvNNedi3Deinterlacer.h"
-#include "./Algorithm/Deinterlace/LibAvYadifDeinterlacer.h"
-#include "./Algorithm/Deinterlace/LibAvEstdifDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/PreviewDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
 #include "./Algorithm/Deblend/GradientMatrix.h"
 
@@ -106,6 +106,13 @@ namespace Nuclex::FrameFixer {
       QAbstractItemView::SelectionMode::SingleSelection
     );
 
+    // Prevent the check boxes from taking input focus. This helps keep the focus on
+    // the thumbnail list rather than forcing the user to reach for the mouse after
+    // each time they toggle preview and/or enhance.
+    this->ui->enhanceOption->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    this->ui->previewOption->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    this->ui->swapFieldsOption->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
     // Set up our thumbnail item view model, which will tell the QListView how many items
     // there are and load as well as cache the thumbnail images as needed. Without this,
     // performance would absolutely tank (average movies have between 150'000 frames).
@@ -117,11 +124,11 @@ namespace Nuclex::FrameFixer {
 
     this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
     DeinterlacerItemModel::DeinterlacerList deinterlacers;
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::PreviewDeinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvNNedi3Deinterlacer>());
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvYadifDeinterlacer>(false));
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvYadifDeinterlacer>(true));
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlace::LibAvEstdifDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::PreviewDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvNNedi3Deinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(false));
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(true));
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvEstdifDeinterlacer>());
     this->deinterlacerItemModel->SetDeinterlacers(deinterlacers);
 
     this->ui->deinterlacerCombo->setModel(this->deinterlacerItemModel.get());

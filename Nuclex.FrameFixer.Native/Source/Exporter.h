@@ -40,7 +40,7 @@ namespace Nuclex::FrameFixer {
 
 }
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -65,7 +65,7 @@ namespace Nuclex::FrameFixer {
     /// <summary>Selects the deinterlacer the exporter should use</summary>
     /// <param name="deinterlacer">Deinterlacer the exporter will be using</param>
     public: void SetDeinterlacer(
-      const std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> &deinterlacer
+      const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer
     );
 
     // <summary>Disables the deinterlacer
@@ -108,7 +108,7 @@ namespace Nuclex::FrameFixer {
     public: QImage Preview(const std::shared_ptr<Movie> &movie, const std::size_t frameIndex);
 
     /// <summary>Deinterlacer the exporter is using on the input frames</summary>
-    private: std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> deinterlacer;
+    private: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> deinterlacer;
     /// <summary>Range of input frames the exporter should process</summary>
     private: std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange;
     /// <summary>Range of resulting output frames the exporter should save</summary>

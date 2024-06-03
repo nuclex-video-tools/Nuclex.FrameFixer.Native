@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./LibAvEstdifDeinterlacer.h"
+#include "./LibAvYadifDeinterlacer.h"
 
 #include <Nuclex/Support/Text/LexicalAppend.h>
 
@@ -38,33 +38,77 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void LibAvEstdifDeinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+  LibAvYadifDeinterlacer::LibAvYadifDeinterlacer(bool bwDifMode) :
+    priorFrame(),
+    nextFrame(),
+    bwDifMode(bwDifMode) {}
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void LibAvYadifDeinterlacer::CoolDown() {
+    LibAvDeinterlacerBase::CoolDown();
+
+    QImage emptyImage;
+    this->priorFrame.swap(emptyImage);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void LibAvYadifDeinterlacer::SetPriorFrame(const QImage &priorFrame) {
+    this->priorFrame = priorFrame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void LibAvYadifDeinterlacer::SetNextFrame(const QImage &nextFrame) {
+    this->nextFrame = nextFrame;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void LibAvYadifDeinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
     DefaultFilterParameters parameters = MakeFilterParameters(target, mode);
     //std::shared_ptr<::AVFilterGraph> filterGraph = GetOrCreateFilterGraph(parameters);
     std::shared_ptr<::AVFilterGraph> filterGraph = ConstructFilterGraph(parameters);
 
     // Yadif can use three frames. Re-feeding the same AV frame instance does
     // not work, so we'll construct three independent frames
-    std::shared_ptr<::AVFrame> priorFrame = AvFrameFromQImage(target);
+    std::shared_ptr<::AVFrame> priorFrame;
+    if(this->priorFrame.isNull()) {
+      priorFrame = AvFrameFromQImage(target);
+    } else {
+      priorFrame = AvFrameFromQImage(this->priorFrame);
+    }
+    std::shared_ptr<::AVFrame> nextFrame;
+    if(this->nextFrame.isNull()) {
+      nextFrame = AvFrameFromQImage(target);
+    } else {
+      nextFrame = AvFrameFromQImage(this->priorFrame);
+    }
+
     std::shared_ptr<::AVFrame> inputFrame = AvFrameFromQImage(target);
 
     priorFrame->interlaced_frame = 1;
     inputFrame->interlaced_frame = 1;
+    nextFrame->interlaced_frame = 1;
     if(mode == DeinterlaceMode::TopFieldFirst) {
       priorFrame->top_field_first = 0;
       inputFrame->top_field_first = 1;
+      nextFrame->top_field_first = 0;
     } else {
       priorFrame->top_field_first = 1;
       inputFrame->top_field_first = 0;
+      nextFrame->top_field_first = 1;
     }
 
     // Put both frames into the filter graph's input buffer
     Platform::LibAvApi::PushFrameIntoFilterGraph(filterGraph, priorFrame);
     Platform::LibAvApi::PushFrameIntoFilterGraph(filterGraph, inputFrame);
+    Platform::LibAvApi::PushFrameIntoFilterGraph(filterGraph, nextFrame);
 
     // Finally, read a frame out of the filter graph. I'm not sure if
     // the filter graph starts executing as soon as there is work that can
@@ -75,9 +119,14 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
     std::shared_ptr<::AVFrame> outputFrame2 = ( // From 2 onwards outputs 2 frames...
       Platform::LibAvApi::ReadFrameFromFilterGraph(filterGraph)
     );
+    std::shared_ptr<::AVFrame> outputFrame3 = ( // From 2 onwards outputs 2 frames...
+      Platform::LibAvApi::ReadFrameFromFilterGraph(filterGraph)
+    );
 
     // Finally, put the processed frame back into the QImage
-    if(static_cast<bool>(outputFrame2)) {
+    if(static_cast<bool>(outputFrame3)) {
+      CopyAvFrameToQImage(outputFrame3, target);
+    } else if(static_cast<bool>(outputFrame2)) {
       CopyAvFrameToQImage(outputFrame2, target);
     } else {
       CopyAvFrameToQImage(outputFrame1, target);
@@ -86,7 +135,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<::AVFilterGraph> LibAvEstdifDeinterlacer::ConstructFilterGraph(
+  std::shared_ptr<::AVFilterGraph> LibAvYadifDeinterlacer::ConstructFilterGraph(
     const DefaultFilterParameters &filterParameters
   ) {
     using Nuclex::FrameFixer::Platform::LibAvApi;
@@ -106,22 +155,20 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
     // Parameters for the NNedi filter. We'll try to configure it for maximum
     // quality and force it to process only the field the user desired.
-    std::string estdifArguments(u8"deint=all", 9);
-    estdifArguments.append(u8":rslope=2", 9);
-    estdifArguments.append(u8":interp=6p", 11);
+    std::string yadifArguments(u8"deint=all", 9);
     
     if(filterParameters.Mode == DeinterlaceMode::TopFieldFirst) {
-      estdifArguments.append(":mode=frame", 7); // end_frame
-      estdifArguments.append(":parity=tff", 11); // assume top field is first
+      yadifArguments.append(":mode=0", 7); // end_frame
+      yadifArguments.append(":parity=0", 9); // assume top field is first
     } else if(filterParameters.Mode == DeinterlaceMode::BottomFieldFirst) {
-      estdifArguments.append(":mode=frame", 7); // send_frame
-      estdifArguments.append(":parity=bff", 11); // assume bottom field is first
+      yadifArguments.append(":mode=0", 7); // send_frame
+      yadifArguments.append(":parity=1", 9); // assume bottom field is first
     } else if(filterParameters.Mode == DeinterlaceMode::TopFieldOnly) {
-      estdifArguments.append(":mode=field", 7); // send_field
-      estdifArguments.append(":parity=tff", 11); // assume top field is first
+      yadifArguments.append(":mode=1", 7); // send_field
+      yadifArguments.append(":parity=0", 9); // assume top field is first
     } else if(filterParameters.Mode == DeinterlaceMode::TopFieldOnly) {
-      estdifArguments.append(":mode=field", 7); // send_field
-      estdifArguments.append(":parity=bff", 11); // assume bottom field is first
+      yadifArguments.append(":mode=1", 7); // send_field
+      yadifArguments.append(":parity=1", 9); // assume bottom field is first
     }
 
     // Create the filter contexts that will be linked together
@@ -131,11 +178,11 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
       u8"in",
       inputBufferArguments
     );
-    ::AVFilterContext *estdifFilterContext = LibAvApi::NewAvFilterContext(
+    ::AVFilterContext *yadifFilterContext = LibAvApi::NewAvFilterContext(
       filterGraph,
-      ::avfilter_get_by_name(u8"estdif"),
+      ::avfilter_get_by_name(this->bwDifMode ? u8"bwdif" : u8"yadif"),
       u8"deinterlace",
-      estdifArguments
+      yadifArguments
     );
     ::AVFilterContext *outputFilterContext = LibAvApi::NewAvFilterContext(
       filterGraph,
@@ -145,8 +192,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
     // Now build a pipeline using the three filter contexts by connection
     // their output pads to the input pads of the filter contexts following them
-    LibAvApi::LinkAvFilterContexts(inputFilterContext, estdifFilterContext);
-    LibAvApi::LinkAvFilterContexts(estdifFilterContext, outputFilterContext);
+    LibAvApi::LinkAvFilterContexts(inputFilterContext, yadifFilterContext);
+    LibAvApi::LinkAvFilterContexts(yadifFilterContext, outputFilterContext);
 
     // Unclear what this does. I assume it verifies and pre-loads resources.
     LibAvApi::ConfigureAvFilterGraph(filterGraph);
@@ -156,4 +203,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlacing

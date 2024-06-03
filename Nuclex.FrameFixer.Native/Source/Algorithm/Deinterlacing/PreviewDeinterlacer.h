@@ -18,13 +18,13 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./Deinterlacer.h"
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -84,4 +84,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
 } // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H

@@ -29,7 +29,7 @@ along with this library
 #include <memory> // for std::shared_ptr
 #include <vector> // for std::vector
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -49,7 +49,7 @@ namespace Nuclex::FrameFixer {
 
     // List of deinterlacers
     public: typedef std::vector<std::shared_ptr<
-      Algorithm::Deinterlace::Deinterlacer>
+      Algorithm::Deinterlacing::Deinterlacer>
     > DeinterlacerList;
 
     /// <summary>Initializes a new item model for deinterlacers</summary>
@@ -66,7 +66,7 @@ namespace Nuclex::FrameFixer {
     /// <summary>Retrieves a deinterlacer by its index</summary>
     /// <param name="index">Index of the deinterlacer that will be retrieved</param>
     /// <returns>The deinterlacer wit hthe specified index</returns>
-    public: std::shared_ptr<Algorithm::Deinterlace::Deinterlacer> GetDeinterlacer(
+    public: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> GetDeinterlacer(
       std::size_t index
     ) const;
 

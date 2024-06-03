@@ -18,19 +18,19 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_ANIMEDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_ANIMEDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_YADIFMOD2DEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_YADIFMOD2DEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
 #include <QImage>
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Deinterlacer that uses some tricks that mostly work on anime only</summary>
-  class AnimeDeinterlacer {
+  /// <summaryDeinterlacer that integrates the Yadif algorithm</summary>
+  class YadifMod2Deinterlacer {
 
     /// <summary>Cheaply deinterlaces the specified image</summary>
     /// <param name="previousImage">
@@ -53,4 +53,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
 } // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACE_ANIMEDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_YADIFMOD2DEINTERLACER_H

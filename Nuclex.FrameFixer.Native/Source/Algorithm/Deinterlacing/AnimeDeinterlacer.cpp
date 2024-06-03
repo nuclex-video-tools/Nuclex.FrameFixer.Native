@@ -52,7 +52,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -64,4 +64,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlace {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlacing
