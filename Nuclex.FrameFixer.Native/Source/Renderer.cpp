@@ -204,6 +204,9 @@ namespace Nuclex::FrameFixer {
       FrameType currentFrameType = getFrameType(currentFrame, this->flipFields);
 
       // Figure out if we're still far from the export range. If so, do quick skip mode.
+      // TODO: this is currently running in danger of entering a long averaging block without
+      //       a start frame. Scan for the start frame before or just assume nobody will
+      //       find more than 10 exactly equal frames in a row to average?
       bool skip = false;
       if(this->inputFrameRange.has_value()) {
         skip = (frameIndex + 10) < this->inputFrameRange.value().first;
@@ -218,11 +221,10 @@ namespace Nuclex::FrameFixer {
           case FrameType::Triplicate: { outputFrameIndex += 3; break; }
           default: { ++outputFrameIndex; break; }
         }
-        continue; // Skip procesing and loop here!
+        continue; // Skip processing and loop here!
       }
 
-      // If the frame type is set to 'average', queue the image up as an
-      // averaging sample
+      // If the frame type is 'average', queue the image up as an averaging sample
       if(currentFrameType == FrameType::Average) {
         if(nextImage.isNull()) {
           std::string imagePath = movie->GetFramePath(frameIndex);

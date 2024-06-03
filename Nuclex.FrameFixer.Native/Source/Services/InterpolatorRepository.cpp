@@ -22,7 +22,9 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./InterpolatorRepository.h"
-#include "../Algorithm/Interpolation/FrameInterpolator.h"
+
+#include "../Algorithm/Interpolation/NullFrameInterpolator.h"
+#include "../Algorithm/Interpolation/ExternalRifeFrameInterpolator.h"
 
 namespace Nuclex::FrameFixer::Services {
 
@@ -37,16 +39,17 @@ namespace Nuclex::FrameFixer::Services {
   // ------------------------------------------------------------------------------------------- //
 
   void InterpolatorRepository::RegisterBuiltInInterpolators() {
-    /*
-    this->deinterlacers.push_back(
-      std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>()
+    this->interpolators.push_back(
+      std::make_shared<Algorithm::Interpolation::NullFrameInterpolator>()
     );
-    */
   }
 
   // ------------------------------------------------------------------------------------------- //
 #if defined(NUCLEX_FRAMEFIXER_ENABLE_CLI_INTERPOLATORS)
   void InterpolatorRepository::RegisterCliInterpolators() {
+    this->interpolators.push_back(
+      std::make_shared<Algorithm::Interpolation::ExternalRifeFrameInterpolator>()
+    );
   }
 #endif
   // ------------------------------------------------------------------------------------------- //
@@ -60,17 +63,17 @@ namespace Nuclex::FrameFixer::Services {
   std::shared_ptr<
     Algorithm::Interpolation::FrameInterpolator
   > InterpolatorRepository::GetNullInterpolator() const {
-#if 0
-    std::size_t count = this->deinterlacers.size();
+    std::size_t count = this->interpolators.size();
     for(std::size_t index = 0; index < count; ++index) {
-      Algorithm::Deinterlacing::Deinterlacer *deinterlacer = this->deinterlacers[index].get();
-      if(typeid(*deinterlacer) == typeid(Algorithm::Deinterlacing::BasicDeinterlacer)) {
-        return this->deinterlacers[index];
+      Algorithm::Interpolation::FrameInterpolator *interpolator = (
+        this->interpolators[index].get()
+      );
+      if(typeid(*interpolator) == typeid(Algorithm::Interpolation::NullFrameInterpolator)) {
+        return this->interpolators[index];
       }
     }
 
-    return std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>();
-#endif
+    return std::make_shared<Algorithm::Interpolation::NullFrameInterpolator>();
   }
 
   // ------------------------------------------------------------------------------------------- //

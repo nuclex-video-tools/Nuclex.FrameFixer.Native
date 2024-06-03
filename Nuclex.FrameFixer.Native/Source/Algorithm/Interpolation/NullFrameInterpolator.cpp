@@ -21,10 +21,9 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./ExternalRifeFrameInterpolator.h"
-#include <Nuclex/Support/Threading/Process.h> // for Process
+#include "./NullFrameInterpolator.h"
 
-#include <vector> // for std::vector
+#include <stdexcept>
 
 namespace {
 
@@ -38,38 +37,12 @@ namespace Nuclex::FrameFixer::Algorithm::Interpolation {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ExternalRifeFrameInterpolator::ExternalRifeFrameInterpolator() {}
+  NullFrameInterpolator::NullFrameInterpolator() {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  QImage ExternalRifeFrameInterpolator::Interpolate(const QImage &prior, const QImage &after) {
-    std::unique_ptr<Nuclex::Support::Threading::Process> encoderProcess = (
-      std::make_unique<Nuclex::Support::Threading::Process>(
-        u8"/opt/rife-ncnn-vulkan-2022.10.29/rife-ncnn-vulkan-2"
-      )
-    );
-
-    prior.save(u8"/tmp/hacky-prior.png", u8"PNG");
-    after.save(u8"/tmp/hacky-after.png", u8"PNG");
-
-    encoderProcess->SetWorkingDirectory(u8"/tmp");
-    encoderProcess->Start(
-      {
-        u8"-m", u8"/opt/rife-ncnn-vulkan-2022.10.29/rife-anime",
-        u8"-x",
-        u8"-z",
-        u8"-v",
-        u8"-0", u8"/tmp/hacky-prior.png",
-        u8"-1", u8"/tmp/hacky-after.png",
-        u8"-o", u8"/tmp/hacky-out.png"
-      }
-    );
-    int exitCode = encoderProcess->Join();
-    if(exitCode != 0) {
-      throw std::runtime_error(u8"rife-ncnn-vulkan failed.");
-    }
-
-    return QImage(u8"/tmp/hacky-out.png");
+  QImage NullFrameInterpolator::Interpolate(const QImage &prior, const QImage &after) {
+    throw std::runtime_error(u8"Null interpolator cannot interpolate.");
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -28,7 +28,13 @@ namespace Nuclex::FrameFixer::Algorithm::Interpolation {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Generates intermediate frames using frame interpolation techniques</summary>
+  /// <summary>Calls the external rife-nccn-vulkan executable to interpolate frames</summary>
+  /// <remarks>
+  ///   Yes, this is slow and loads the interpolation model from scratch each time a frame
+  ///   is to be interpolated. It's a stop-gap measure until I'm willing to integrate
+  ///   the codebases behind rife-ncnn-vulkan, dain-ncnn-vulkan and cain-ncnn-vulkan into
+  ///   this application with proper WarmUp() and CoolDown() handling to speed things up.
+  /// </remarks>
   class ExternalRifeFrameInterpolator : public FrameInterpolator {
 
     /// <summary>Initializes a new frame interpolator</summary>
