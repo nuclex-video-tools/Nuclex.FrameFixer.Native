@@ -82,6 +82,6 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deinterlace
+} // namespace Nuclex::FrameFixer::Algorithm::Deinterlacing
 
 #endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H

@@ -74,7 +74,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
   class Deinterlacer {
 
     /// <summary>Frees all resources used by the instance</summary>
-    public: ~Deinterlacer() = default;
+    public: virtual ~Deinterlacer() = default;
 
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
@@ -94,7 +94,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
     ///   deinterlacers should do so on first use or when <see cref="WarmUp" /> is called.
     ///   Similarly, when the user picks another deinterlacer in the application, this
     ///   method is called where the deinterlacer should drop any larger resources it is
-    ///   holding onto in order to not waste memory will it is not being used.
+    ///   holding onto in order to not waste memory while it is not being used.
     /// </remarks>
     public: virtual void CoolDown() {}
 
