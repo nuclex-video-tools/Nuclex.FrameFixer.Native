@@ -37,7 +37,6 @@ along with this library
 #include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
 #include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
-#include "./Algorithm/Deblend/GradientMatrix.h"
 
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>

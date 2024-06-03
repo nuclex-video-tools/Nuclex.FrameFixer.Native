@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEBLEND_GRADIENTMATRIX_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEBLEND_GRADIENTMATRIX_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENTMATRIX_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENTMATRIX_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -29,7 +29,7 @@ along with this library
 #include <cstdint> // for std::uint8_t
 #include <memory> // for std::shared_ptr
 
-namespace Nuclex::FrameFixer::Algorithm::Deblend {
+namespace Nuclex::FrameFixer::Algorithm::Deblending {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -107,6 +107,6 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deblend
+} // namespace Nuclex::FrameFixer::Algorithm::Deblending
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEBLEND_GRADIENTMATRIX_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENTMATRIX_H

@@ -40,7 +40,7 @@ namespace {
   constexpr std::size_t getRowArrayOffset() {
     constexpr std::size_t extraByteCount = (
       sizeof(TGradientMatrix) %
-      alignof(Nuclex::FrameFixer::Algorithm::Deblend::Gradient *)
+      alignof(Nuclex::FrameFixer::Algorithm::Deblending::Gradient *)
     );
     return (
       sizeof(TGradientMatrix) + (
@@ -64,7 +64,7 @@ namespace {
   constexpr std::size_t getMatrixElementsOffset(std::size_t rowArrayEndOffset) {
     std::size_t extraByteCount = (
       rowArrayEndOffset %
-      alignof(Nuclex::FrameFixer::Algorithm::Deblend::Gradient)
+      alignof(Nuclex::FrameFixer::Algorithm::Deblending::Gradient)
     );
     return (
       rowArrayEndOffset + (
@@ -116,7 +116,7 @@ namespace {
     /// <param name="count">Number of elements to allocate memory for (must be 1)</param>
     /// <returns>The allocated (but not initialized) memory for the requested type</returns>
     public: TGradientMatrix *allocate(std::size_t count) {
-      using Nuclex::FrameFixer::Algorithm::Deblend::Gradient;
+      using Nuclex::FrameFixer::Algorithm::Deblending::Gradient;
 
       NUCLEX_FRAMEFIXER_NDEBUG_UNUSED(count);
       assert(count == 1);
@@ -155,7 +155,7 @@ namespace {
   ///   via std::allocate_shared()
   /// </summary>
   class DefaultConstructibleGradientMatrix :
-    public Nuclex::FrameFixer::Algorithm::Deblend::GradientMatrix {
+    public Nuclex::FrameFixer::Algorithm::Deblending::GradientMatrix {
     /// <summary>Leaves the gradient with uninitialized attributes</summary>
     public: DefaultConstructibleGradientMatrix() = default;
   };
@@ -164,7 +164,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex::FrameFixer::Algorithm::Deblend {
+namespace Nuclex::FrameFixer::Algorithm::Deblending {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -291,4 +291,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deblend {
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deblend
+} // namespace Nuclex::FrameFixer::Algorithm::Deblending
