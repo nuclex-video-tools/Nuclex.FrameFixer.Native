@@ -43,6 +43,13 @@ option(
 	ON
 )
 
+option(
+	ENABLE_CLI_INTERPOLATORS
+	"Whether to support external AI frame interpolators that are invoked \
+	from the command line. Slow, inefficient but very easy to set up."
+	ON
+)
+
 # -------------------------------------------------------------------------------------------------
 
 # Qt: automatically run the "Meta-Object Compiler" which reads C++ header files and
@@ -203,6 +210,13 @@ function(add_third_party_libraries target_name)
     PRIVATE Qt5::Sql
 		PRIVATE Threads::Threads
   )
+
+	if(ENABLE_CLI_INTERPOLATORS)
+		target_compile_definitions(
+			${target_name}
+			PUBLIC NUCLEX_FRAMEFIXER_ENABLE_CLI_INTERPOLATORS
+		)
+	endif()
 
 	if(ENABLE_LIBAV)
 		target_compile_definitions(

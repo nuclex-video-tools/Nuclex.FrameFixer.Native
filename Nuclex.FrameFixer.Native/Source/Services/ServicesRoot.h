@@ -25,15 +25,16 @@ along with this library
 
 #include <memory> // for std::unique_ptr
 
-namespace Nuclex::FrameFixer::Algorithm {
+namespace Nuclex::FrameFixer::Services {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class Deinterlacer;
+  class DeinterlacerRepository;
+  class InterpolatorRepository;
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm
+}
 
 namespace Nuclex::FrameFixer::Services {
 
@@ -48,6 +49,23 @@ namespace Nuclex::FrameFixer::Services {
     public: ServicesRoot();
     /// <summary>Frees the resources and drops all provided services</summary>
     public: ~ServicesRoot();
+
+    /// <summary>Accesses the repository of knwon deinterlacers</summary>
+    /// <returns>The application's deinterlacer repository</returns>
+    public: const std::shared_ptr<DeinterlacerRepository> &Deinterlacers() const {
+      return this->deinterlacers;
+    }
+
+    /// <summary>Accesses the repository of knwon interpolators</summary>
+    /// <returns>The application's interpolator repository</returns>
+    public: const std::shared_ptr<InterpolatorRepository> &Interpolators() const {
+      return this->interpolators;
+    }
+
+    /// <summary>Manages the deinterlacers available for use by the application<?summary>
+    private: std::shared_ptr<DeinterlacerRepository> deinterlacers;
+    /// <summary>Manages the interpolators available for use by the application</summary>
+    private: std::shared_ptr<InterpolatorRepository> interpolators;
 
   };
 

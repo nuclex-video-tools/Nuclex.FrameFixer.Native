@@ -23,6 +23,9 @@ along with this library
 
 #include "Nuclex/FrameFixer/Config.h"
 
+#include "./Services/ServicesRoot.h"
+#include "./Services/DeinterlacerRepository.h"
+#include "./Services/InterpolatorRepository.h"
 #include "./MainWindow.h"
 
 #include <QApplication>
@@ -43,7 +46,16 @@ int main(int argc, char *argv[]) {
     // together instead of a full-blown IoC container to keep things simple).
     std::shared_ptr<Nuclex::FrameFixer::Services::ServicesRoot> servicesRoot;
     try {
-      //servicesRoot = std::make_shared<Nuclex::CriuGui::Services::ServicesRoot>();
+      servicesRoot = std::make_shared<Nuclex::FrameFixer::Services::ServicesRoot>();
+      servicesRoot->Deinterlacers()->RegisterBuiltInDeinterlacers();
+#if defined(NUCLEX_FRAMEFIXER_ENABLE_LIBAV)
+      servicesRoot->Deinterlacers()->RegisterLibAvDeinterlacers();
+#endif
+      servicesRoot->Interpolators()->RegisterBuiltInInterpolators();
+#if defined(NUCLEX_FRAMEFIXER_ENABLE_CLI_INTERPOLATORS)
+      servicesRoot->Interpolators()->RegisterCliInterpolators();
+#endif
+      
       //servicesRoot->GetSettings()->LoadOrUseDefaults();
 
       //std::string snapshotDatabasePath = (

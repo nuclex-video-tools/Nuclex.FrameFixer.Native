@@ -22,6 +22,8 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./ServicesRoot.h"
+#include "./DeinterlacerRepository.h"
+#include "./InterpolatorRepository.h"
 
 #include <string> // for std::string
 
@@ -43,7 +45,9 @@ namespace Nuclex::FrameFixer::Services {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ServicesRoot::ServicesRoot() {}
+  ServicesRoot::ServicesRoot() :
+    deinterlacers(std::make_shared<DeinterlacerRepository>()),
+    interpolators(std::make_shared<InterpolatorRepository>()) {}
 
   // ------------------------------------------------------------------------------------------- //
 
