@@ -221,6 +221,8 @@ namespace Nuclex::FrameFixer {
                 (sourceIndices.second > frameIndex) &&
                 (checkedFrameIndex < frameIndex)
               );
+              isLeftSourceFrame |= (sourceIndices.first == frameIndex);
+              isRightSourceFrame |= (sourceIndices.second == frameIndex);
             }
           }
         }
@@ -234,6 +236,32 @@ namespace Nuclex::FrameFixer {
         QPoint upperRight = option.rect.topRight();
         upperRight.setY(upperRight.y() + 2);
         painter->drawLine(upperLeft, upperRight);
+        painter->restore();    
+      } else if(isLeftSourceFrame) {
+        painter->save();
+        painter->setPen(QPen(Qt::GlobalColor::white));
+        QPoint upperLeft = option.rect.topLeft();
+        upperLeft.setY(upperLeft.y() + 2);
+        QPoint upperRight = option.rect.topRight();
+        upperRight.setY(upperRight.y() + 2);
+        QPoint center = (upperLeft + upperRight) / 2;
+        QPoint down(center.x(), center.y() + 10);
+        center.setX(center.x() + 10);
+        painter->drawLine(down, center);
+        painter->drawLine(center, upperRight);
+        painter->restore();    
+      } else if(isRightSourceFrame) {
+        painter->save();
+        painter->setPen(QPen(Qt::GlobalColor::white));
+        QPoint upperLeft = option.rect.topLeft();
+        upperLeft.setY(upperLeft.y() + 2);
+        QPoint upperRight = option.rect.topRight();
+        upperRight.setY(upperRight.y() + 2);
+        QPoint center = (upperLeft + upperRight) / 2;
+        QPoint down(center.x(), center.y() + 10);
+        center.setX(center.x() - 10);
+        painter->drawLine(upperLeft, center);
+        painter->drawLine(center, down);
         painter->restore();    
       }
     }
