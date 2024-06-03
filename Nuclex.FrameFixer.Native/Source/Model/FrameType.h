@@ -139,20 +139,15 @@ namespace Nuclex::FrameFixer {
     /// </remarks>
     Deblend,
     
-    /// <summary>Interpolate frame from its two neighbouring frames</summary>
+    /// <summary>Interpolate frame from two neighbouring frames</summary>
     /// <remarks>
-    ///   This is mostly an option for restoring broken frames. It uses the interpolator
-    ///   to generate this frame using the contents of the frames before and after it.
+    ///   Uses an interpolator to generate this frame using the contents of the frames
+    ///   before and after it. This is either an option for restoring broken frames,
+    ///   or to selectively increase the frame rate in anime shows where individual
+    ///   scenes use an especially low animation frame rate (anime shows are usually
+    ///   animated at 12 fps and some parts may even update at 9 fps). 
     /// </remarks>
-    InterpolateNear,
-
-    /// <summary>Interpolate frame from its two far neighbouring frames</summary>
-    /// <remarks>
-    ///   This uses the fr
-    ///   This is mostly an option for restoring broken frames. It uses the interpolator
-    ///   to generate this frame using the contents of the frames before and after it.
-    /// </remarks>
-    InterpolateFar
+    Interpolate
 
   };
 

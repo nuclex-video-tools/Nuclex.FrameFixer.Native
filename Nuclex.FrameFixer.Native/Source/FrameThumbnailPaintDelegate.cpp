@@ -171,21 +171,12 @@ namespace Nuclex::FrameFixer {
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
-      } else if(frame.Type == FrameType::InterpolateNear) {
+      } else if(frame.Type == FrameType::Interpolate) {
         painter->save();
-        painter->setBrush(QBrush(Qt::GlobalColor::magenta));
+        painter->setBrush(QBrush(Qt::GlobalColor::green));
         painter->drawEllipse(decorationRect);
         painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "]  [");
-        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
-        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
-        painter->restore();    
-      } else if(frame.Type == FrameType::InterpolateFar) {
-        painter->save();
-        painter->setBrush(QBrush(Qt::GlobalColor::magenta));
-        painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::GlobalColor::white));
-        painter->drawText(decorationRect, Qt::AlignCenter, "}  {");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    

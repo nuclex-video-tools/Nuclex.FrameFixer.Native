@@ -370,6 +370,20 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::setupInterpolation(int distance) {
+    if(static_cast<bool>(this->currentMovie)) {
+      std::size_t selectedFrameIndex = getSelectedFrameIndex();
+      if(selectedFrameIndex != std::size_t(-1)) {
+        Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
+        selectedFrame.InterpolationSourceIndices = std::pair<std::size_t, std::size_t>(
+          selectedFrameIndex - distance, selectedFrameIndex + distance
+        );
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::swapFieldsOptionToggled(bool checked) {
     (void)checked;
     if(static_cast<bool>(this->currentMovie)) {
@@ -550,6 +564,8 @@ namespace Nuclex::FrameFixer {
       if(result == QDialog::DialogCode::Accepted) {
         exportDetelecinedFrames(
           renderDialog->GetTargetDirectory(),
+          renderDialog->GetSelectedDeinterlacer(),
+          renderDialog->GetSelectedInterpolator(),
           renderDialog->GetInputFrameRange(),
           renderDialog->GetOutputFrameRange()
         );
@@ -561,6 +577,8 @@ namespace Nuclex::FrameFixer {
 
   void MainWindow::exportDetelecinedFrames(
     const std::string &directory,
+    const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer,
+    const std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> &interpolator,
     std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange /* = (
       std::optional<std::pair<std::size_t, std::size_t>>()
     ) */,
@@ -569,7 +587,8 @@ namespace Nuclex::FrameFixer {
     ) */
   ) {
     Renderer movieRenderer;
-    movieRenderer.SetDeinterlacer(this->deinterlacer);
+    movieRenderer.SetDeinterlacer(deinterlacer);
+    movieRenderer.SetInterpolator(interpolator);
     
     if(this->ui->swapFieldsOption->isChecked()) {
       movieRenderer.FlipTopAndBottomField();

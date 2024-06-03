@@ -54,7 +54,7 @@ namespace Nuclex::FrameFixer::Algorithm::Interpolation {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class Interpolator;
+  class FrameInterpolator;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -78,8 +78,11 @@ namespace Nuclex::FrameFixer {
       const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer
     );
 
-    // <summary>Disables the deinterlacer
-    //public: void BypassDeinterlacer(bool bypass = true);
+    /// <summary>Selects the interpolator the renderer should use</summary>
+    /// <param name="interpolator">Interpolator the renderer will be using</param>
+    public: void SetInterpolator(
+      const std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> &interpolator
+    );
 
     /// <summary>Enables or disables flipping of the top and bottom fields</summary>
     /// <param name="flip">True to flip the top and bottom fields</param>
@@ -127,6 +130,8 @@ namespace Nuclex::FrameFixer {
 
     /// <summary>Deinterlacer the renderer is using on the input frames</summary>
     private: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> deinterlacer;
+    /// <summary>Interpolator the renderer is using on the input frames</summary>
+    private: std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> interpolator;
     /// <summary>Range of input frames the renderer should process</summary>
     private: std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange;
     /// <summary>Range of resulting output frames the rendere should save</summary>

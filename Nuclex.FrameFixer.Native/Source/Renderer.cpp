@@ -25,6 +25,7 @@ along with this library
 
 #include "./Model/Movie.h"
 #include "./Algorithm/Deinterlacing/Deinterlacer.h"
+#include "./Algorithm/Interpolation/FrameInterpolator.h"
 #include "./Algorithm/Averager.h"
 
 #include <Nuclex/Support/Text/LexicalCast.h>
@@ -158,6 +159,14 @@ namespace Nuclex::FrameFixer {
     const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer
   ) {
     this->deinterlacer = deinterlacer;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void Renderer::SetInterpolator(
+    const std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> &interpolator
+  ) {
+    this->interpolator = interpolator;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -353,6 +362,23 @@ namespace Nuclex::FrameFixer {
         this->deinterlacer->Deinterlace(
           currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldOnly
         );
+      } else if(currentFrameType == FrameType::Interpolate) {
+        if(static_cast<bool>(this->interpolator)) {
+          if(this->interpolator->CanInterpolateMiddleFrame()) {
+            std::pair<std::size_t, std::size_t> sourceIndices = (
+              movie->Frames[frameIndex].InterpolationSourceIndices.value()
+            );
+
+            std::string imagePath = movie->GetFramePath(sourceIndices.first);
+            QImage prior(QString::fromStdString(imagePath));
+
+            imagePath = movie->GetFramePath(sourceIndices.second);
+            QImage after(QString::fromStdString(imagePath));
+            
+            QImage interpolated = this->interpolator->Interpolate(prior, after);
+            currentImage.swap(interpolated);
+          }
+        }
       }
 
       // Figure out if the frame that follows uses averaging

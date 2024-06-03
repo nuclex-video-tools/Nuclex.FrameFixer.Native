@@ -193,8 +193,7 @@ namespace Nuclex::FrameFixer::Database {
       u8"  (:progressiveEnumValue, 'Progressive'),"
       u8"  (:replaceEnumValue, 'ReplaceWithOtherFrame'),"
       u8"  (:deblendEnumValue, 'Deblend'),"
-      u8"  (:interpolateNearEnumValue, 'InterpolateNear'),"
-      u8"  (:interpolateFarEnumValue, 'InterpolateFar')"
+      u8"  (:interpolateEnumValue, 'Interpolate')"
       u8";"
     );
     if(!successfullyPrepared) {
@@ -220,8 +219,7 @@ namespace Nuclex::FrameFixer::Database {
     query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
     query.bindValue(u8":replaceEnumValue", static_cast<int>(FrameType::Replace));
     query.bindValue(u8":deblendEnumValue", static_cast<int>(FrameType::Deblend));
-    query.bindValue(u8":interpolateNearEnumValue", static_cast<int>(FrameType::InterpolateNear));
-    query.bindValue(u8":interpolateFarEnumValue", static_cast<int>(FrameType::InterpolateFar));
+    query.bindValue(u8":interpolateEnumValue", static_cast<int>(FrameType::Interpolate));
 
     // Query is set up and all parameters are bound, now we can execute it
     bool successfullyExecuted = query.exec();

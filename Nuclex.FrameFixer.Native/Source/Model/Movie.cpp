@@ -132,10 +132,23 @@ namespace Nuclex::FrameFixer {
             movie->Frames[frameIndex].Type = FrameType::Triplicate;
           } else if((typeAsString == u8"Blended") || (typeAsString == u8"Deblend")) {
             movie->Frames[frameIndex].Type = FrameType::Deblend;
-          } else if(typeAsString == u8"InterpolateNear") {
-            movie->Frames[frameIndex].Type = FrameType::InterpolateNear;
-          } else if(typeAsString == u8"InterpolateFar") {
-            movie->Frames[frameIndex].Type = FrameType::InterpolateFar;
+          } else if(typeAsString.startsWith(u8"InterpolateFrom(")) {
+            int firstEndIndex = typeAsString.indexOf(u8'+', 16);
+            if((firstEndIndex != -1) && (firstEndIndex > 16)) {
+              int secondEndIndex = typeAsString.indexOf(u8')', firstEndIndex + 1);
+              if((secondEndIndex != -1) && (secondEndIndex > (firstEndIndex + 1))) {
+                std::size_t leftFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
+                  typeAsString.mid(16, firstEndIndex - 16).toStdString()
+                );
+                std::size_t rightFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
+                  typeAsString.mid(firstEndIndex + 1, secondEndIndex - (firstEndIndex + 1)).toStdString()
+                );
+                movie->Frames[frameIndex].Type = FrameType::Interpolate;
+                movie->Frames[frameIndex].InterpolationSourceIndices = (
+                  std::pair<std::size_t, std::size_t>(leftFrameIndex, rightFrameIndex)
+                );
+              }
+            }
           } else if(typeAsString.startsWith(u8"ReplaceWith(")) {
             int endIndex = typeAsString.indexOf(u8')', 12);
             if((endIndex != -1) && (endIndex > 12)) {
@@ -183,8 +196,22 @@ namespace Nuclex::FrameFixer {
           case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }
           case FrameType::Triplicate: { line.append(u8"Triplicate"); break; }
           case FrameType::Deblend: { line.append(u8"Deblend"); break; }
-          case FrameType::InterpolateNear: { line.append(u8"InterpolateNear"); break; }
-          case FrameType::InterpolateFar: { line.append(u8"InterpolateFar"); break; }
+          case FrameType::Interpolate: {
+            line.append(u8"InterpolateFrom(");
+            line.append(
+              Nuclex::Support::Text::lexical_cast<std::string>(
+                this->Frames[index].InterpolationSourceIndices.value().first
+              )
+            );
+            line.append(u8"+");
+            line.append(
+              Nuclex::Support::Text::lexical_cast<std::string>(
+                this->Frames[index].InterpolationSourceIndices.value().second
+              )
+            );
+            line.append(u8")");
+            break;
+          }
           case FrameType::Replace: {
             line.append(u8"ReplaceWith(");
             line.append(

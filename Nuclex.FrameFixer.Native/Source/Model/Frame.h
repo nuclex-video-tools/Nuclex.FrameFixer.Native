@@ -26,6 +26,7 @@ along with this library
 
 #include <cstddef> // for std::size_t
 #include <string> // for std::string
+#include <map> // for std::pair
 #include <optional> // for std::optional
 
 namespace Nuclex::FrameFixer {
@@ -41,6 +42,7 @@ namespace Nuclex::FrameFixer {
       Index(std::size_t(-1)),
       Filename(filename),
       Type(FrameType::Unknown),
+      InterpolationSourceIndices(),
       ReplaceWithIndex(),
       Combedness(),
       MixFactor(),
@@ -52,6 +54,9 @@ namespace Nuclex::FrameFixer {
     public: std::string Filename;
     /// <summary>Type of this frame in the framefixer sequence</summary>
     public: FrameType Type;
+
+    /// <summary>Frames which will be interpolated to form this one</summary>
+    public: std::optional<std::pair<std::size_t, std::size_t>> InterpolationSourceIndices;
 
     /// <summary>Frame with which this one should be replaced</summary>
     public: std::optional<std::size_t> ReplaceWithIndex;

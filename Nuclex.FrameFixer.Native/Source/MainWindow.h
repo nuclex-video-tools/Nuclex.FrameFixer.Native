@@ -44,6 +44,26 @@ namespace Nuclex::FrameFixer::Services {
 
 }
 
+namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class Deinterlacer;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
+namespace Nuclex::FrameFixer::Algorithm::Interpolation{
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class FrameInterpolator;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}
+
 namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
@@ -132,9 +152,15 @@ namespace Nuclex::FrameFixer {
     /// <summary>Marks the current frame for deblending</param>
     private: void markDeblendClicked() { toggleFrameType(FrameType::Deblend); }
     /// <summary>Marks the current frame for neighbor interpolation</param>
-    private: void markInterpolateNearClicked() { toggleFrameType(FrameType::InterpolateNear); }
+    private: void markInterpolateNearClicked() {
+      setupInterpolation(1);
+      toggleFrameType(FrameType::Interpolate);
+    }
     /// <summary>Marks the current frame for far neighbor interpolation</param>
-    private: void markInterpolateFarClicked() { toggleFrameType(FrameType::InterpolateFar); }
+    private: void markInterpolateFarClicked() {
+      setupInterpolation(2);
+      toggleFrameType(FrameType::Interpolate);
+    }
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
     private: void showStatisticsClicked();
@@ -142,6 +168,10 @@ namespace Nuclex::FrameFixer {
     /// <summary>Toggles the current frame between the specified type and none</summary>
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
     private: void toggleFrameType(FrameType frameType);
+
+    /// <summary>Sets the current frame's interpolation source frames</summary>
+    /// <param name="distance">Distance of the interpolation source frames</param>
+    private: void setupInterpolation(int distance);
 
     /// <summary>Updates the preview image when the swap fields option is toggled</summary>
     /// <param name="checked">Whether the swap fields option is on or off</param>
@@ -174,6 +204,8 @@ namespace Nuclex::FrameFixer {
 
     private: void exportDetelecinedFrames(
       const std::string &directory,
+      const std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> &deinterlacer,
+      const std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> &interpolator,
       std::optional<std::pair<std::size_t, std::size_t>> inputFrameRange = (
         std::optional<std::pair<std::size_t, std::size_t>>()
       ),

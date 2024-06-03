@@ -135,6 +135,36 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::shared_ptr<
+    Algorithm::Deinterlacing::Deinterlacer
+  > RenderDialog::GetSelectedDeinterlacer() const {
+    int selectedDeinterlacerIndex = this->ui->deinterlacerCombo->currentIndex();
+    if(selectedDeinterlacerIndex != -1) {
+      if(static_cast<bool>(this->servicesRoot)) {
+        return this->servicesRoot->Deinterlacers()->GetDeinterlacer(selectedDeinterlacerIndex);
+      }
+    }
+
+    return std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer>();
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<
+    Algorithm::Interpolation::FrameInterpolator
+  > RenderDialog::GetSelectedInterpolator() const {
+    int selectedInterpolatorIndex = this->ui->interpolatorCombo->currentIndex();
+    if(selectedInterpolatorIndex != -1) {
+      if(static_cast<bool>(this->servicesRoot)) {
+        return this->servicesRoot->Interpolators()->GetInterpolator(selectedInterpolatorIndex);
+      }
+    }
+
+    return std::shared_ptr<Algorithm::Interpolation::FrameInterpolator>();
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void RenderDialog::SetInitialframeCount(std::size_t frameCount) {
     this->ui->inputEndFrameNumber->setValue(static_cast<int>(frameCount));
   }
