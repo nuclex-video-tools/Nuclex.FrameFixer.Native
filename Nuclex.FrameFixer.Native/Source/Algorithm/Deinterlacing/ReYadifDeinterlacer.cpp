@@ -22,7 +22,7 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./ReYadifDeinterlacer.h"
-#include "./PreviewDeinterlacer.h"
+#include "./BasicDeinterlacer.h"
 
 #include <vector> // for std::vector
 
@@ -70,7 +70,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
     }
 
     if((mode == DeinterlaceMode::TopFieldOnly) || (mode == DeinterlaceMode::BottomFieldOnly)) {
-      PreviewDeinterlacer::Deinterlace(
+      BasicDeinterlacer::Deinterlace(
         nullptr, target, (mode == DeinterlaceMode::TopFieldOnly)
       );
     } else if(mode != DeinterlaceMode::Dont) {

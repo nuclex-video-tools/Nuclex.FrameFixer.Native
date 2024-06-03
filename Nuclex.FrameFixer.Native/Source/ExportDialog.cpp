@@ -24,12 +24,15 @@ along with this library
 #include "./ExportDialog.h"
 #include "ui_ExportDialog.h"
 
+#include "./DeinterlacerItemModel.h"
+#include "./InterpolatorItemModel.h"
+
 //#include "./Services/ServicesRoot.h" // for ServicesRoot
 
 #include <QFileDialog> // for QFileDialog, shows file and folder selection dialogs
 #include <QCloseEvent> // for QCloseEvent
 #include <QMessageBox> // for QMessageBox
-#include <QRadioButton>
+#include <QRadioButton> // for QRadioButton
 
 namespace Nuclex::FrameFixer {
 

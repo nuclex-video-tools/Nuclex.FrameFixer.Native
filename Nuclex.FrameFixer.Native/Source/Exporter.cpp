@@ -23,7 +23,7 @@ along with this library
 
 #include "./Exporter.h"
 #include "./Model/Movie.h"
-#include "./Algorithm/Deinterlacing/PreviewDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
 #include "./Algorithm/Averager.h"
 
 #include <Nuclex/Support/Text/LexicalCast.h>
@@ -142,7 +142,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   Exporter::Exporter() :
-    deinterlacer(std::make_shared<Algorithm::Deinterlacing::PreviewDeinterlacer>()),
+    deinterlacer(std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>()),
     inputFrameRange(),
     outputFrameRange(),
     flipFields(false) {}

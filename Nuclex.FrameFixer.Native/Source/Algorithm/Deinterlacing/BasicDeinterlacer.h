@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_BASICDEINTERLACER_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_BASICDEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
 #include "./Deinterlacer.h"
@@ -29,15 +29,17 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Cheapest possible deinterlacer that simply interpolates a field</summary>
-  class PreviewDeinterlacer : public Deinterlacer {
+  class BasicDeinterlacer : public Deinterlacer {
 
+    /// <summary>Initializes the basic deinterlacer</summary>
+    public: BasicDeinterlacer() = default;
     /// <summary>Frees all resources used by the instance</summary>
-    public: virtual ~PreviewDeinterlacer() = default;
+    public: virtual ~BasicDeinterlacer() = default;
 
     /// <summary>Returns a name by which the deinterlacer can be displayed</summary>
     /// <returns>A short, human-readable name for the deinterlacer</returns>
     public: std::string GetName() const override {
-      return u8"Preview: copy or interpolate missing fields";
+      return u8"Basic: copy or interpolate missing fields";
     }
 
     /// <summary>Whether this deinterlacer needs to know the previous frame</summary>
@@ -84,4 +86,4 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
 } // namespace Nuclex::FrameFixer::Algorithm::Deinterlacing
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_PREVIEWDEINTERLACER_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_BASICDEINTERLACER_H

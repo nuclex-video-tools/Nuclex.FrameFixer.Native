@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./PreviewDeinterlacer.h"
+#include "./BasicDeinterlacer.h"
 
 #include <vector> // for std::vector
 
@@ -37,13 +37,13 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void PreviewDeinterlacer::SetPriorFrame(const QImage &priorFrame) {
+  void BasicDeinterlacer::SetPriorFrame(const QImage &priorFrame) {
     this->priorFrame = priorFrame;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void PreviewDeinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
+  void BasicDeinterlacer::Deinterlace(QImage &target, DeinterlaceMode mode) {
     if(mode == DeinterlaceMode::TopFieldFirst)  {
       if(this->priorFrame.isNull()) {
         Deinterlace(nullptr, target, true);
@@ -65,7 +65,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void PreviewDeinterlacer::Deinterlace(
+  void BasicDeinterlacer::Deinterlace(
     QImage *previousImage, QImage &image, bool topField /* = true */
   ) {
     std::size_t lineCount = image.height();

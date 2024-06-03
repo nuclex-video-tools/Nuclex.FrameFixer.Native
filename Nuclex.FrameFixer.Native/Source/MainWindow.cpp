@@ -32,7 +32,7 @@ along with this library
 #include "./Algorithm/Analysis/InterlaceDetector.h"
 #include "./Exporter.h"
 
-#include "./Algorithm/Deinterlacing/PreviewDeinterlacer.h"
+#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
 #include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
 #include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
 #include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
@@ -125,7 +125,7 @@ namespace Nuclex::FrameFixer {
 
     this->deinterlacerItemModel.reset(new DeinterlacerItemModel());
     DeinterlacerItemModel::DeinterlacerList deinterlacers;
-    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::PreviewDeinterlacer>());
+    deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::BasicDeinterlacer>());
     deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvNNedi3Deinterlacer>());
     deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(false));
     deinterlacers.push_back(std::make_shared<Algorithm::Deinterlacing::LibAvYadifDeinterlacer>(true));
