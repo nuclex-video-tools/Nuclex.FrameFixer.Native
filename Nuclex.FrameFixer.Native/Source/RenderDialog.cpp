@@ -31,6 +31,9 @@ along with this library
 #include "./Services/DeinterlacerRepository.h"
 #include "./Services/InterpolatorRepository.h"
 
+#include "./Algorithm/Deinterlacing/Deinterlacer.h"
+#include "./Algorithm/Interpolation/FrameInterpolator.h"
+
 #include <QFileDialog> // for QFileDialog, shows file and folder selection dialogs
 #include <QCloseEvent> // for QCloseEvent
 #include <QMessageBox> // for QMessageBox
@@ -84,12 +87,28 @@ namespace Nuclex::FrameFixer {
     this->servicesRoot = servicesRoot;
 
     if(static_cast<bool>(servicesRoot)) {
-      this->deinterlacerModel->SetDeinterlacers(
-        servicesRoot->Deinterlacers()->GetDeinterlacers()
-      );
-      this->interpolatorModel->SetInterpolators(
-        servicesRoot->Interpolators()->GetInterpolators()
-      );
+      const std::vector<
+        std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer>
+      > &deinterlacers = servicesRoot->Deinterlacers()->GetDeinterlacers();
+      this->deinterlacerModel->SetDeinterlacers(deinterlacers);
+
+      const std::vector<
+        std::shared_ptr<Algorithm::Interpolation::FrameInterpolator>
+      > &interpolators = servicesRoot->Interpolators()->GetInterpolators();
+      this->interpolatorModel->SetInterpolators(interpolators);
+
+      // Little hackety hack so I don't have to always pick my favorite
+      // deinterlacer and interpolator when exporting... remove later.
+      for(std::size_t index = 0; index < deinterlacers.size(); ++index) {
+        if(deinterlacers[index]->GetName().find(u8"BWDif") != std::string::npos) {
+          this->ui->deinterlacerCombo->setCurrentIndex(index);
+        }
+      }
+      for(std::size_t index = 0; index < interpolators.size(); ++index) {
+        if(interpolators[index]->GetName().find(u8"rife-nccn-vulkan") != std::string::npos) {
+          this->ui->interpolatorCombo->setCurrentIndex(index);
+        }
+      }
     }
   }
 

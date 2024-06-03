@@ -45,7 +45,7 @@ namespace Nuclex::FrameFixer::Algorithm::Interpolation {
     /// <summary>Returns a name by which the interpolator can be displayed</summary>
     /// <returns>A short, human-readable name for the interpolator</returns>
     public: std::string GetName() const override {
-      return u8"Interpolate calling rife-nccn-vulkan (slow)";
+      return u8"Interpolate via rife-nccn-vulkan CLI tool (slow)";
     }
 
     /// <summary>
