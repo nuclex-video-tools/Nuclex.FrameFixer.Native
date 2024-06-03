@@ -319,7 +319,6 @@ namespace Nuclex::FrameFixer::Algorithm::Analysis {
           double vertical = std::get<1>(combedness);
           currentLine[x] = horizontal - vertical;
         }
-
       }
 
       for(std::size_t x = margin + 1; x < memory.Width - margin - 2; ++x) {

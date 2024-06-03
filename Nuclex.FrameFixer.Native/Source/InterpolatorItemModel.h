@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
-#define NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
+#ifndef NUCLEX_FRAMEFIXER_INTERPOLATORITEMMODEL_H
+#define NUCLEX_FRAMEFIXER_INTERPOLATORITEMMODEL_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -29,11 +29,11 @@ along with this library
 #include <memory> // for std::shared_ptr
 #include <vector> // for std::vector
 
-namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
+namespace Nuclex::FrameFixer::Algorithm::Interpolation {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class Deinterlacer;
+  class FrameInterpolator;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -44,29 +44,29 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Presents a list of deinterlacers with human-readable names</summary>
-  class DeinterlacerItemModel : public QAbstractListModel {
+  class InterpolatorItemModel : public QAbstractListModel {
     Q_OBJECT
 
-    // List of deinterlacers
+    // List of interpolators
     public: typedef std::vector<
-      std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer>
-    > DeinterlacerList;
+      std::shared_ptr<Algorithm::Interpolation::FrameInterpolator>
+    > FrameInterpolatorList;
 
-    /// <summary>Initializes a new item model for deinterlacers</summary>
+    /// <summary>Initializes a new item model for interpolators</summary>
     /// <param name="parent">Always null</param>
-    public: explicit DeinterlacerItemModel(QObject *parent = nullptr);
+    public: explicit InterpolatorItemModel(QObject *parent = nullptr);
 
     /// <summary>Stops all background processing and frees all memory</summary>
-    public: ~DeinterlacerItemModel() override;
+    public: ~InterpolatorItemModel() override;
 
-    /// <summary>Sets the list of deinterlacers that will be exposed for Qt</summary>
-    /// <param name="deinterlacers">Deinterlacers the item model will expose</param>
-    public: void SetDeinterlacers(const DeinterlacerList &deinterlacers);
+    /// <summary>Sets the list of interpolators that will be exposed for Qt</summary>
+    /// <param name="interpolators">Interpolators the item model will expose</param>
+    public: void SetInterpolators(const FrameInterpolatorList &interpolators);
 
-    /// <summary>Retrieves a deinterlacer by its index</summary>
-    /// <param name="index">Index of the deinterlacer that will be retrieved</param>
-    /// <returns>The deinterlacer with the specified index</returns>
-    public: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> GetDeinterlacer(
+    /// <summary>Retrieves an interpolator by its index</summary>
+    /// <param name="index">Index of the interpolator that will be retrieved</param>
+    /// <returns>The interpolator with the specified index</returns>
+    public: std::shared_ptr<Algorithm::Interpolation::FrameInterpolator> GetInterpolator(
       std::size_t index
     ) const;
 
@@ -83,8 +83,8 @@ namespace Nuclex::FrameFixer {
       const QModelIndex &index, int role = Qt::DisplayRole
     ) const override;
 
-    /// <summary>Deinterlacers whose names will be provided as an item model</summary>
-    private: DeinterlacerList deinterlacers;
+    /// <summary>Interpolators whose names will be provided as an item model</summary>
+    private: FrameInterpolatorList interpolators;
 
   };
 
@@ -92,4 +92,4 @@ namespace Nuclex::FrameFixer {
 
 } // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_FRAMEFIXER_DEINTERLACERITEMMODEL_H
+#endif // NUCLEX_FRAMEFIXER_INTERPOLATORITEMMODEL_H
