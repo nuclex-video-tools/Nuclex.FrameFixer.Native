@@ -292,7 +292,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="markBlendedButton">
+       <widget class="QPushButton" name="markDeblendButton">
         <property name="toolTip">
          <string>Marks the frame as blended. Currently it's only an informal tag and the frame will be emitted as-is, but blend recovery is an idea I'm working on.</string>
         </property>
@@ -305,16 +305,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markInterpolated1Button">
+       <widget class="QPushButton" name="markInterpolateNearButton">
         <property name="text">
-         <string>Interpolate 1</string>
+         <string>Interpolate Near</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="markInteprolated2Button">
+       <widget class="QPushButton" name="markInterpolateFarButton">
         <property name="text">
-         <string>Interpolate 2</string>
+         <string>Interpolate Far</string>
         </property>
        </widget>
       </item>

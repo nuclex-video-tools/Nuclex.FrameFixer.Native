@@ -38,6 +38,8 @@ along with this library
 #include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
 
+#include "./Database/FrameDatabase.h"
+
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
 #include <QThread>
@@ -197,8 +199,16 @@ namespace Nuclex::FrameFixer {
       this, &MainWindow::markTriplicateClicked
     );
     connect(
-      this->ui->markBlendedButton, &QPushButton::clicked,
-      this, &MainWindow::markBlendedClicked
+      this->ui->markDeblendButton, &QPushButton::clicked,
+      this, &MainWindow::markDeblendClicked
+    );
+    connect(
+      this->ui->markInterpolateNearButton, &QPushButton::clicked,
+      this, &MainWindow::markInterpolateNearClicked
+    );
+    connect(
+      this->ui->markInterpolateFarButton, &QPushButton::clicked,
+      this, &MainWindow::markInterpolateFarClicked
     );
 
     connect(

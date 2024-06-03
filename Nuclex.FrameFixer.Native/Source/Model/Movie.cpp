@@ -130,15 +130,19 @@ namespace Nuclex::FrameFixer {
             movie->Frames[frameIndex].Type = FrameType::Duplicate;
           } else if(typeAsString == u8"Triplicate") {
             movie->Frames[frameIndex].Type = FrameType::Triplicate;
-          } else if(typeAsString == u8"Blended") {
-            movie->Frames[frameIndex].Type = FrameType::Blended;
+          } else if((typeAsString == u8"Blended") || (typeAsString == u8"Deblend")) {
+            movie->Frames[frameIndex].Type = FrameType::Deblend;
+          } else if(typeAsString == u8"InterpolateNear") {
+            movie->Frames[frameIndex].Type = FrameType::InterpolateNear;
+          } else if(typeAsString == u8"InterpolateFar") {
+            movie->Frames[frameIndex].Type = FrameType::InterpolateFar;
           } else if(typeAsString.startsWith(u8"ReplaceWith(")) {
             int endIndex = typeAsString.indexOf(u8')', 12);
             if((endIndex != -1) && (endIndex > 12)) {
               std::size_t replacementFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
                 typeAsString.mid(12, endIndex - 12).toStdString()
               );
-              movie->Frames[frameIndex].Type = FrameType::Replaced;
+              movie->Frames[frameIndex].Type = FrameType::Replace;
               movie->Frames[frameIndex].ReplaceWithIndex = replacementFrameIndex;
             }
           }
@@ -178,8 +182,10 @@ namespace Nuclex::FrameFixer {
           case FrameType::Average: { line.append(u8"Average"); break; }
           case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }
           case FrameType::Triplicate: { line.append(u8"Triplicate"); break; }
-          case FrameType::Blended: { line.append(u8"Blended"); break; }
-          case FrameType::Replaced: {
+          case FrameType::Deblend: { line.append(u8"Deblend"); break; }
+          case FrameType::InterpolateNear: { line.append(u8"InterpolateNear"); break; }
+          case FrameType::InterpolateFar: { line.append(u8"InterpolateFar"); break; }
+          case FrameType::Replace: {
             line.append(u8"ReplaceWith(");
             line.append(
               Nuclex::Support::Text::lexical_cast<std::string>(

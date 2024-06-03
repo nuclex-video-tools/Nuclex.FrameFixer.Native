@@ -129,8 +129,12 @@ namespace Nuclex::FrameFixer {
     private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
     /// <summary>Marks the current frame for triplication</param>
     private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
-    /// <summary>Marks the current frame for triplication</param>
-    private: void markBlendedClicked() { toggleFrameType(FrameType::Blended); }
+    /// <summary>Marks the current frame for deblending</param>
+    private: void markDeblendClicked() { toggleFrameType(FrameType::Deblend); }
+    /// <summary>Marks the current frame for neighbor interpolation</param>
+    private: void markInterpolateNearClicked() { toggleFrameType(FrameType::InterpolateNear); }
+    /// <summary>Marks the current frame for far neighbor interpolation</param>
+    private: void markInterpolateFarClicked() { toggleFrameType(FrameType::InterpolateFar); }
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
     private: void showStatisticsClicked();

@@ -456,7 +456,7 @@ namespace Nuclex::FrameFixer {
       this->deinterlacer->Deinterlace(
         currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldOnly
       );
-    } else if(currentFrameType == FrameType::Replaced) {
+    } else if(currentFrameType == FrameType::Replace) {
       imagePath = movie->GetFramePath(movie->Frames[frameIndex].ReplaceWithIndex.value());
       QImage replacementImage(QString::fromStdString(imagePath));
       currentImage.swap(replacementImage);

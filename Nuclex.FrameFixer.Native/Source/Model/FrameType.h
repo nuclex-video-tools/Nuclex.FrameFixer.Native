@@ -128,7 +128,7 @@ namespace Nuclex::FrameFixer {
     Progressive,
 
     /// <summary>Frame is being replaced with another frame from the movie</summary>
-    Replaced,
+    Replace,
 
     /// <summary>Frame is a mix between other frames (same behavior as progressive)</summary>
     /// <remarks>
@@ -137,7 +137,22 @@ namespace Nuclex::FrameFixer {
     ///   the surrounding frames (which this application current can't do, so you can
     ///   at least tag the frames as blended for later fixing)
     /// </remarks>
-    Blended
+    Deblend,
+    
+    /// <summary>Interpolate frame from its two neighbouring frames</summary>
+    /// <remarks>
+    ///   This is mostly an option for restoring broken frames. It uses the interpolator
+    ///   to generate this frame using the contents of the frames before and after it.
+    /// </remarks>
+    InterpolateNear,
+
+    /// <summary>Interpolate frame from its two far neighbouring frames</summary>
+    /// <remarks>
+    ///   This uses the fr
+    ///   This is mostly an option for restoring broken frames. It uses the interpolator
+    ///   to generate this frame using the contents of the frames before and after it.
+    /// </remarks>
+    InterpolateFar
 
   };
 

@@ -74,7 +74,7 @@ find_package(Threads REQUIRED)
 
 # Locate Qt, the cross-platform User Interface and base API abstraction library
 # we're using for all UI stuff
-find_package(Qt5 COMPONENTS REQUIRED Widgets)
+find_package(Qt5 COMPONENTS REQUIRED Widgets Sql)
 
 # Add Nuclex.Support.Native as a sub-project, we link it for utility methods.
 if(NOT (TARGET NuclexSupportNative))
@@ -200,6 +200,7 @@ function(add_third_party_libraries target_name)
     PUBLIC NuclexPlatformNative
     PUBLIC NuclexPixelsNative
     PRIVATE Qt5::Widgets
+    PRIVATE Qt5::Sql
 		PRIVATE Threads::Threads
   )
 

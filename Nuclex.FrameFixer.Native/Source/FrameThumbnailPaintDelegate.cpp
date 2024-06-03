@@ -86,88 +86,106 @@ namespace Nuclex::FrameFixer {
 
       if(frame.Type == FrameType::Discard) {
         painter->save();
-        painter->setBrush(QBrush(Qt::red));
+        painter->setBrush(QBrush(Qt::GlobalColor::red));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "X");
         painter->restore();    
       } else if(frame.Type == FrameType::TopFieldFirst) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkBlue));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkBlue));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "TB");
         painter->restore();    
       } else if(frame.Type == FrameType::BottomFieldFirst) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkGreen));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkGreen));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "BT");
         painter->restore();    
       } else if(frame.Type == FrameType::TopFieldOnly) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkBlue));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkBlue));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "T▲");
         painter->restore();    
       } else if(frame.Type == FrameType::BottomFieldOnly) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkGreen));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkGreen));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "B▼");
         painter->restore();    
       } else if(frame.Type == FrameType::Progressive) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkGray));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkGray));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "PR");
         painter->restore();    
       } else if(frame.Type == FrameType::Average) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkMagenta));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkMagenta));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "A");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
       } else if(frame.Type == FrameType::Duplicate) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkYellow));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkYellow));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "I  I");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
       } else if(frame.Type == FrameType::Triplicate) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkYellow));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkYellow));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "I II");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
-      } else if(frame.Type == FrameType::Replaced) {
+      } else if(frame.Type == FrameType::Replace) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkRed));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkRed));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "X*");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
-      } else if(frame.Type == FrameType::Blended) {
+      } else if(frame.Type == FrameType::Deblend) {
         painter->save();
-        painter->setBrush(QBrush(Qt::darkRed));
+        painter->setBrush(QBrush(Qt::GlobalColor::darkRed));
         painter->drawEllipse(decorationRect);
-        painter->setPen(QPen(Qt::white));
+        painter->setPen(QPen(Qt::GlobalColor::white));
         painter->drawText(decorationRect, Qt::AlignCenter, "<>");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
+        painter->restore();    
+      } else if(frame.Type == FrameType::InterpolateNear) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::GlobalColor::magenta));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::GlobalColor::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "]  [");
+        decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
+        painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
+        painter->restore();    
+      } else if(frame.Type == FrameType::InterpolateFar) {
+        painter->save();
+        painter->setBrush(QBrush(Qt::GlobalColor::magenta));
+        painter->drawEllipse(decorationRect);
+        painter->setPen(QPen(Qt::GlobalColor::white));
+        painter->drawText(decorationRect, Qt::AlignCenter, "}  {");
         decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
         painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
         painter->restore();    
