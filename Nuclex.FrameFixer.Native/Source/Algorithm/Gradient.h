@@ -18,35 +18,27 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENT_H
-#define NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENT_H
+#ifndef NUCLEX_FRAMEFIXER_ALGORITHM_GRADIENT_H
+#define NUCLEX_FRAMEFIXER_ALGORITHM_GRADIENT_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
-namespace Nuclex::FrameFixer::Algorithm::Deblending {
+namespace Nuclex::FrameFixer::Algorithm {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Gradient of a pixel in six dimensions</summary>
   struct Gradient {
 
-    /// <summary>Horizontal gradient of the red channel</summary>
-    public: float RedHorizontal;
-    /// <summary>Vertical gradient of the red channel</summary>
-    public: float RedVertical;
-    /// <summary>Horizontal gradient of the green channel</summary>
-    public: float GreenHorizontal;
-    /// <summary>Vertical gradient of the green channel</summary>
-    public: float GreenVertical;
-    /// <summary>Horizontal gradient of the blue channel</summary>
-    public: float BlueHorizontal;
-    /// <summary>Vertical gradient of the blue channel</summary>
-    public: float BlueVertical;
+    /// <summary>Horizontal gradient</summary>
+    public: float Horizontal;
+    /// <summary>Vertical gradient</summary>
+    public: float Vertical;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-} // namespace Nuclex::FrameFixer::Algorithm::Deblending
+} // namespace Nuclex::FrameFixer::Algorithm
 
-#endif // NUCLEX_FRAMEFIXER_ALGORITHM_DEBLENDING_GRADIENT_H
+#endif // NUCLEX_FRAMEFIXER_ALGORITHM_GRADIENT_H
