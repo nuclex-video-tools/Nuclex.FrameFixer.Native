@@ -59,6 +59,20 @@ namespace Nuclex::FrameFixer {
       QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index
     ) const override;
 
+    /// <summary>Draws an overlay in the frame that crosses the frame out</summary>
+    /// <param name="painter">Painter that will be used to draw the overlay</param>
+    /// <param name="option">Contains active style options and item rectangle</param>
+    private: void paintCrossedOutOverlay(
+      QPainter &painter, const QStyleOptionViewItem &option
+    ) const;
+
+    /// <summary>Draws an overlay that indicates a single field being used</summary>
+    /// <param name="painter">Painter that will be used to draw the overlay</param>
+    /// <param name="option">Contains active style options and item rectangle</param>
+    private: void paintSingleFieldOverlay(
+      QPainter &painter, const QStyleOptionViewItem &option, bool topFieldFilled
+    ) const;
+
     /// <summary>The movie for which the model provides thumbnails</summary>
     private: std::shared_ptr<Movie> movie;
 

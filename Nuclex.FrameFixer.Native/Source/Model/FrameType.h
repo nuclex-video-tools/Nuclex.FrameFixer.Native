@@ -138,7 +138,17 @@ namespace Nuclex::FrameFixer {
     ///   at least tag the frames as blended for later fixing)
     /// </remarks>
     Deblend,
-    
+#if 0
+    /// <summary>Generate an extra frame by interpolating with the predecessor</summary>
+    /// <remarks>
+    ///   This always uses the current and the predecessor frame to synthesize an additional
+    ///   frame and insert it before the current frame. This is the simplest form of frame
+    ///   interpolation and can be used, for example, to replace a damaged frame or if
+    ///   some anime scroller animates not at 24 but at 18 fps, so instead of pushing
+    ///   a stutter every fourth frame, you can instead generate an intermediate frame.
+    /// </remarks>
+    InsertInterpolatedBefore,
+#endif
     /// <summary>Interpolate frame from two neighbouring frames</summary>
     /// <remarks>
     ///   Uses an interpolator to generate this frame using the contents of the frames

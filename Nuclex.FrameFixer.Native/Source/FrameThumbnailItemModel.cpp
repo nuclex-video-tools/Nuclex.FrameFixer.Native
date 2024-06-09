@@ -108,7 +108,7 @@ namespace Nuclex::FrameFixer {
 
       // Load the image, resize it to thumbnail format and return it for the 
       QPixmap bitmap(QString::fromStdString(frameImagePath));
-      thumbnail = bitmap.scaled(100, 100, Qt::KeepAspectRatio);
+      thumbnail = bitmap.scaled(80, 80, Qt::KeepAspectRatio);
 
       this->thumbnailCache->Insert(rowIndex, thumbnail);
       this->thumbnailCache->EvictDownTo(1024);

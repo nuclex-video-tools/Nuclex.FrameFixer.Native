@@ -87,10 +87,7 @@ namespace Nuclex::FrameFixer {
         decorationRect.adjust(0, -20, 0, -20);
         if(frame.Type == FrameType::Discard) {
           painter->save();
-          painter->setBrush(QBrush(Qt::GlobalColor::red));
-          painter->drawEllipse(decorationRect);
-          painter->setPen(QPen(Qt::GlobalColor::white));
-          painter->drawText(decorationRect, Qt::AlignCenter, "X");
+          paintCrossedOutOverlay(*painter, option);
           painter->restore();    
         } else if(frame.Type == FrameType::TopFieldFirst) {
           painter->save();
@@ -108,10 +105,13 @@ namespace Nuclex::FrameFixer {
           painter->restore();    
         } else if(frame.Type == FrameType::TopFieldOnly) {
           painter->save();
+          //paintSingleFieldOverlay(*painter, option, true);
+
           painter->setBrush(QBrush(Qt::GlobalColor::darkBlue));
           painter->drawEllipse(decorationRect);
           painter->setPen(QPen(Qt::GlobalColor::white));
           painter->drawText(decorationRect, Qt::AlignCenter, "T▲");
+
           painter->restore();    
         } else if(frame.Type == FrameType::BottomFieldOnly) {
           painter->save();
@@ -201,6 +201,14 @@ namespace Nuclex::FrameFixer {
         painter->drawLine(center, centerRight);
         painter->restore();    
       }
+      if(frame.AlsoInsertInterpolatedAfter.has_value()) {
+        painter->save();
+        painter->setPen(QPen(Qt::GlobalColor::white));
+        QPoint upperLeft = option.rect.topLeft();
+        QPoint bottomRight = option.rect.bottomRight();
+        painter->drawLine(upperLeft, bottomRight);
+        painter->restore();    
+      }
 
       bool isBridgedFrame = false;
       bool isLeftSourceFrame = false;
@@ -265,6 +273,50 @@ namespace Nuclex::FrameFixer {
         painter->restore();    
       }
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FrameThumbnailPaintDelegate::paintCrossedOutOverlay(
+    QPainter &painter, const QStyleOptionViewItem &option
+  ) const {
+    QPen whitePen(Qt::GlobalColor::white, qreal(4.0));
+    QPen redPen(Qt::GlobalColor::red, qreal(3.0));
+
+    int centerX = (option.rect.left() + option.rect.right()) / 2;
+    int bottomY = option.rect.bottom();
+
+    painter.setPen(whitePen);
+    painter.drawLine(centerX - 8, bottomY - 21, centerX + 8, bottomY - 5);
+    painter.drawLine(centerX - 8, bottomY - 5, centerX + 8, bottomY - 21);
+      
+    painter.setPen(redPen);
+    painter.drawLine(centerX - 8, bottomY - 21, centerX + 8, bottomY - 5);
+    painter.drawLine(centerX - 8, bottomY - 5, centerX + 8, bottomY - 21);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FrameThumbnailPaintDelegate::paintSingleFieldOverlay(
+    QPainter &painter, const QStyleOptionViewItem &option, bool topFieldFilled
+  ) const {
+    int centerX = (option.rect.left() + option.rect.right()) / 2;
+    int bottomY = option.rect.bottom();
+
+    QPen whitePen(Qt::GlobalColor::white, qreal(4.0));
+    QPen greenPen(Qt::GlobalColor::green, qreal(3.0));
+
+    QBrush whiteBrush(Qt::GlobalColor::white, Qt::BrushStyle::SolidPattern);
+    QBrush greenBrush(Qt::GlobalColor::darkRed, Qt::BrushStyle::SolidPattern);
+    //QPen greenPen(Qt::GlobalColor::darkGreen, qreal(3.0));
+
+    //painter.fillRect(centerX - 11, bottomY - 23, 22, 20, whiteBrush);
+    //painter.setPen(greenPen);
+    painter.setPen(whitePen);
+    painter.drawRect(centerX - 8, bottomY - 21, 16, 16);
+    painter.setPen(greenPen);
+    painter.drawRect(centerX - 8, bottomY - 21, 16, 16);
+    //painter.fillRect(centerX - 6, bottomY - 19, 11, 12, greenBrush);
   }
 
   // ------------------------------------------------------------------------------------------- //

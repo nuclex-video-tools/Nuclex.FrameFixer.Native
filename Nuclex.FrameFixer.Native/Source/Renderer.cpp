@@ -199,9 +199,13 @@ namespace Nuclex::FrameFixer {
 
   void Renderer::Render(const std::shared_ptr<Movie> &movie, const std::string &directory) {
     std::size_t outputFrameIndex = 0;
-
+    bool collapseAverageFrames = false;
     bool needsNextFrame = this->deinterlacer->NeedsNextFrame();
     bool needsPriorImage = this->deinterlacer->NeedsPriorFrame();
+
+    QImage lastInterpolatedImage;
+    std::size_t lastInterpolationPriorIndex = std::size_t(-1);
+    std::size_t lastInterpolationAfterIndex = std::size_t(-1);
     
     QImage priorImage, currentImage, nextImage;
     std::vector<QImage> imagesToAverage;
@@ -280,11 +284,13 @@ namespace Nuclex::FrameFixer {
 
         // Each frame that was tagged to be averaged also needs to result in
         // one output image being saved each.
-        for(std::size_t index = 0; index < imagesToAverage.size(); ++index) {
-          saveImage(
-            currentImage, directory, frameIndex, outputFrameIndex++,
-            this->inputFrameRange, this->outputFrameRange
-          );
+        if(!collapseAverageFrames) {
+          for(std::size_t index = 0; index < imagesToAverage.size(); ++index) {
+            saveImage(
+              currentImage, directory, frameIndex, outputFrameIndex++,
+              this->inputFrameRange, this->outputFrameRange
+            );
+          }
         }
 
         imagesToAverage.clear();
@@ -305,18 +311,19 @@ namespace Nuclex::FrameFixer {
       // the current image. Otherwise, load the file for the current frame.
       if(!nextImage.isNull()) {
         nextImage.swap(currentImage);
+      } else if(movie->Frames[frameIndex].ReplaceWithIndex.has_value()) {
+        std::string imagePath = movie->GetFramePath(
+          movie->Frames[frameIndex].ReplaceWithIndex.value()
+        );
+        currentImage.load(QString::fromStdString(imagePath));
       } else {
-        if(movie->Frames[frameIndex].ReplaceWithIndex.has_value()) {
-          std::string imagePath = movie->GetFramePath(
-            movie->Frames[frameIndex].ReplaceWithIndex.value()
-          );
-          currentImage.load(QString::fromStdString(imagePath));
-        } else {
-          std::string imagePath = movie->GetFramePath(frameIndex);
-          currentImage.load(QString::fromStdString(imagePath));
-        }
+        std::string imagePath = movie->GetFramePath(frameIndex);
+        currentImage.load(QString::fromStdString(imagePath));
       }
-      if(needsNextFrame && (frameIndex < frameCount)) {
+
+      // If the deinterlacer needs a next frame, also load the image that
+      // follows the current one
+      if(needsNextFrame && ((frameIndex + 1) < frameCount)) {
         if(movie->Frames[frameIndex + 1].ReplaceWithIndex.has_value()) {
           std::string imagePath = movie->GetFramePath(
             movie->Frames[frameIndex + 1].ReplaceWithIndex.value()
@@ -331,6 +338,7 @@ namespace Nuclex::FrameFixer {
         nextImage.swap(emptyImage);
       }
 
+      // Now give the deinterlacer the images it needs to work
       if(needsPriorImage) {
         if(priorImage.isNull()) {
           this->deinterlacer->SetPriorFrame(currentImage);
@@ -368,15 +376,25 @@ namespace Nuclex::FrameFixer {
             std::pair<std::size_t, std::size_t> sourceIndices = (
               movie->Frames[frameIndex].InterpolationSourceIndices.value()
             );
+            bool alreadyInterpolated = (
+              (!lastInterpolatedImage.isNull()) &&
+              (sourceIndices.first == lastInterpolationPriorIndex) &&
+              (sourceIndices.second == lastInterpolationAfterIndex)
+            );
+            if(!alreadyInterpolated) {
+              std::string imagePath = movie->GetFramePath(sourceIndices.first);
+              QImage prior(QString::fromStdString(imagePath));
 
-            std::string imagePath = movie->GetFramePath(sourceIndices.first);
-            QImage prior(QString::fromStdString(imagePath));
+              imagePath = movie->GetFramePath(sourceIndices.second);
+              QImage after(QString::fromStdString(imagePath));
+              
+              QImage interpolatedImage = this->interpolator->Interpolate(prior, after);
+              lastInterpolatedImage.swap(interpolatedImage);
+              lastInterpolationPriorIndex = sourceIndices.first;
+              lastInterpolationAfterIndex = sourceIndices.second;
+            }
 
-            imagePath = movie->GetFramePath(sourceIndices.second);
-            QImage after(QString::fromStdString(imagePath));
-            
-            QImage interpolated = this->interpolator->Interpolate(prior, after);
-            currentImage.swap(interpolated);
+            currentImage = lastInterpolatedImage.copy();
           }
         }
       }
@@ -421,6 +439,20 @@ namespace Nuclex::FrameFixer {
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
+        }
+
+        if(movie->Frames[frameIndex].AlsoInsertInterpolatedAfter.has_value()) {
+          if(movie->Frames[frameIndex].AlsoInsertInterpolatedAfter.value()) {
+            QImage tempNextImage = Preview(movie, frameIndex + 1);
+
+            QImage interpolatedImage = this->interpolator->Interpolate(
+              currentImage, tempNextImage
+            );
+            saveImage(
+              interpolatedImage, directory, frameIndex, outputFrameIndex++,
+              this->inputFrameRange, this->outputFrameRange
+            );
+          }
         }
 
         // Stop if we produced all the requested frames

@@ -159,6 +159,13 @@ namespace Nuclex::FrameFixer {
               movie->Frames[frameIndex].ReplaceWithIndex = replacementFrameIndex;
             }
           }
+
+          if(tokens.size() > 3) {
+            QString interpolationType = tokens[3].trimmed();
+            if(interpolationType == u8"AlsoInsertInterpolatedFrameAfter") {
+              movie->Frames[frameIndex].AlsoInsertInterpolatedAfter = true;
+            }
+          }
         }
       }
     }
@@ -223,6 +230,10 @@ namespace Nuclex::FrameFixer {
             break;
           }
           default: { break; } // Others are not manually assignable and not saved
+        }
+        if(this->Frames[index].AlsoInsertInterpolatedAfter.has_value()) {
+          line.append(u8", ");
+          line.append(u8"AlsoInsertInterpolatedFrameAfter");
         }
         line.append(u8"\n");
 

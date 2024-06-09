@@ -306,6 +306,13 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void MainWindow::markRepeatClicked() {
+    if(static_cast<bool>(this->currentMovie)) {
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void MainWindow::showStatisticsClicked() {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t lastMatchingIndex = 0;
@@ -324,6 +331,11 @@ namespace Nuclex::FrameFixer {
           emittedFrameCount += 2;
         } else if(frameType != FrameType::Discard) {
           ++emittedFrameCount;
+        }
+        if(this->currentMovie->Frames[index].AlsoInsertInterpolatedAfter.has_value()) {
+          if(this->currentMovie->Frames[index].AlsoInsertInterpolatedAfter.value()) {
+            ++emittedFrameCount;
+          }
         }
 
         if(emittedFrameCount == ((index + 2) * 4 / 5)) {
@@ -378,6 +390,9 @@ namespace Nuclex::FrameFixer {
         selectedFrame.InterpolationSourceIndices = std::pair<std::size_t, std::size_t>(
           selectedFrameIndex - distance, selectedFrameIndex + distance
         );
+
+        // TODO: Remove! Temporary for editing!
+        selectedFrame.AlsoInsertInterpolatedAfter = true;
       }
     }
   }

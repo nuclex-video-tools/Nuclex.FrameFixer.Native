@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>813</width>
-    <height>888</height>
+    <width>861</width>
+    <height>927</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -315,6 +315,13 @@
        <widget class="QPushButton" name="markInterpolateFarButton">
         <property name="text">
          <string>Interpolate Far</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="markRepeatButton">
+        <property name="text">
+         <string>Repeat</string>
         </property>
        </widget>
       </item>

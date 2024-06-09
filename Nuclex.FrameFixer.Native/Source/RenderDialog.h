@@ -190,4 +190,4 @@ namespace Nuclex::FrameFixer {
 
 } // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_FRAMEFIXER_EXPORTDIALOG_H
+#endif // NUCLEX_FRAMEFIXER_RENDERDIALOG_H

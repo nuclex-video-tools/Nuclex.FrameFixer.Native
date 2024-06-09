@@ -161,6 +161,8 @@ namespace Nuclex::FrameFixer {
       setupInterpolation(2);
       toggleFrameType(FrameType::Interpolate);
     }
+    /// <summary>Marks the current frame to repeat the most recent interpolation</param>
+    private: void markRepeatClicked();
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
     private: void showStatisticsClicked();

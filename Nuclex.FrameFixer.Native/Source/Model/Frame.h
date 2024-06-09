@@ -55,11 +55,17 @@ namespace Nuclex::FrameFixer {
     /// <summary>Type of this frame in the framefixer sequence</summary>
     public: FrameType Type;
 
-    /// <summary>Frames which will be interpolated to form this one</summary>
-    public: std::optional<std::pair<std::size_t, std::size_t>> InterpolationSourceIndices;
+    // TODO: Combine ReplaceWithIndex and InterpolationSourceIndices
+    //   1 index = use that frame
+    //   2 indices = interpolate between those frames
 
     /// <summary>Frame with which this one should be replaced</summary>
     public: std::optional<std::size_t> ReplaceWithIndex;
+    /// <summary>Frames which will be interpolated to form this one</summary>
+    public: std::optional<std::pair<std::size_t, std::size_t>> InterpolationSourceIndices;
+    /// <summary>Whether to also insert an interpolated frame after this one</summary>
+    public: std::optional<bool> AlsoInsertInterpolatedAfter;
+
     /// <summary>Amount of combing that was detected in the frame</summary>
     public: std::optional<double> Combedness; 
     /// <summary>Extrapolation point between previous and this frame</summary>
