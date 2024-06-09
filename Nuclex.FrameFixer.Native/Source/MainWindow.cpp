@@ -23,6 +23,7 @@ along with this library
 
 #include "./MainWindow.h"
 #include "./RenderDialog.h"
+#include "./RenderProgressDialog.h"
 #include "ui_MainWindow.h"
 
 #include "./Services/ServicesRoot.h"
@@ -41,11 +42,6 @@ along with this library
 #include <QThread>
 #include <QComboBox>
 
-#include "./Algorithm/Analysis/InterlaceDetector.h"
-#include "./Algorithm/Deinterlacing/BasicDeinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvNNedi3Deinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvYadifDeinterlacer.h"
-#include "./Algorithm/Deinterlacing/LibAvEstdifDeinterlacer.h"
 #include "./Algorithm/Filter.h"
 
 #include <Nuclex/Pixels/Storage/BitmapSerializer.h>
@@ -90,9 +86,7 @@ namespace Nuclex::FrameFixer {
     deinterlacerItemModel(std::make_unique<DeinterlacerItemModel>()),
     servicesRoot(),
     currentMovie(),
-    deinterlacer(),
-    analysisThread(),
-    analysisThreadMutex(new QMutex()) {
+    deinterlacer() {
 
     this->ui->setupUi(this);
 
@@ -601,25 +595,36 @@ namespace Nuclex::FrameFixer {
       std::optional<std::pair<std::size_t, std::size_t>>()
     ) */
   ) {
-    Renderer movieRenderer;
-    movieRenderer.SetDeinterlacer(deinterlacer);
-    movieRenderer.SetInterpolator(interpolator);
+    std::shared_ptr<Renderer> movieRenderer = std::make_shared<Renderer>();
+    movieRenderer->SetDeinterlacer(deinterlacer);
+    movieRenderer->SetInterpolator(interpolator);
     
     if(this->ui->swapFieldsOption->isChecked()) {
-      movieRenderer.FlipTopAndBottomField();
+      movieRenderer->FlipTopAndBottomField();
     }
 
     if(inputFrameRange.has_value()) {
-      movieRenderer.RestrictRangeOfInputFrames(
+      movieRenderer->RestrictRangeOfInputFrames(
         inputFrameRange.value().first, inputFrameRange.value().second
       );
     }
     if(outputFrameRange.has_value()) {
-      movieRenderer.RestrictRangeOfOutputFrames(
+      movieRenderer->RestrictRangeOfOutputFrames(
         outputFrameRange.value().first, outputFrameRange.value().second
       );
     }
-    movieRenderer.Render(this->currentMovie, directory);
+
+    std::unique_ptr<RenderProgressDialog> progressDialog = (
+      std::make_unique<RenderProgressDialog>(this)
+    );
+    if(static_cast<bool>(this->servicesRoot)) {
+      progressDialog->BindToServicesRoot(this->servicesRoot);
+    }
+    progressDialog->SetRenderer(movieRenderer);
+
+    progressDialog->Start(this->currentMovie, directory);
+    progressDialog->exec();
+    //movieRenderer.Render(this->currentMovie, directory);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -637,42 +642,6 @@ namespace Nuclex::FrameFixer {
 
     // Another option, but I read it's akin to calling exit(0), aka crash and burn.
     //QApplication::quit();
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void MainWindow::analyzeMovieFramesInThread() {
-    Nuclex::Pixels::Storage::BitmapSerializer serializer;
-
-    for(std::size_t index = 0; index < this->currentMovie->Frames.size(); ++index) {
-      Frame &frame = this->currentMovie->Frames[index];
-      if(!frame.Combedness.has_value()) {
-        std::string framePath = this->currentMovie->GetFramePath(index);
-        Nuclex::Pixels::Bitmap frameBitmap = serializer.Load(framePath);
-
-        double combedness = Algorithm::Analysis::InterlaceDetector::GetInterlaceProbability(frameBitmap);
-        frame.Combedness = combedness;
-      }
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void MainWindow::stopAnalysisThread() {
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void MainWindow::startAnaylsisThread() {
-    if(static_cast<bool>(this->currentMovie)) {
-      QMutexLocker locker(this->analysisThreadMutex.get());
-      if(!static_cast<bool>(this->analysisThread)) {
-        this->analysisThread.reset(
-          QThread::create(&MainWindow::callAnalyzeMovieFramesInThread, this)
-        );
-        this->analysisThread->start();
-      }
-    }
   }
 
   // ------------------------------------------------------------------------------------------- //

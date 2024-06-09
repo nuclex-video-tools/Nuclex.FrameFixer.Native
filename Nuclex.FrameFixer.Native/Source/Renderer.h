@@ -27,8 +27,11 @@ along with this library
 #include <cstddef> // for std::size_t
 #include <string> // for std::string
 #include <optional> // for std::optional
+#include <atomic> // for std::atomic
 
 #include <QImage>
+
+#include <Nuclex/Platform/Tasks/CancellationWatcher.h>
 
 namespace Nuclex::FrameFixer {
 
@@ -88,6 +91,10 @@ namespace Nuclex::FrameFixer {
     /// <param name="flip">True to flip the top and bottom fields</param>
     public: void FlipTopAndBottomField(bool flip = true);
 
+    /// <summary>Toggles whether successive averaged frames are collapsed into one</summary>
+    /// <param name="flip">True to collapse successive averaged frames</param>
+    public: void CollapseAverageFrames(bool collapse = true);
+
     /// <summary>
     ///   Limits the frames being rendered to those produced by the specified input frames
     /// </summary>
@@ -111,10 +118,25 @@ namespace Nuclex::FrameFixer {
       std::size_t startFrameIndex, std::size_t endFrameIndex
     );
 
+    /// <summary>Returns the numebr of frames the renderer has processed so far</summary>
+    /// <returns>The number of processed frames</returns>
+    public: std::size_t GetCompletedFrameCount() const {
+      return this->completedFrameCount.load(std::memory_order::memory_order_relaxed);
+    }
+
+    public: std::size_t GetTotalFrameCount(const std::shared_ptr<Movie> &movie) const;
+
     /// <summary>Processes and saves a movie's frames into the specified directory</summary>
     /// <param name="movie">Movie that will be processed (deinterlaced) and saved</param>
     /// <param name="directory">Directory in which the processed frames will be saved</param>
-    public: void Render(const std::shared_ptr<Movie> &movie, const std::string &directory);
+    /// <param name="canceller">Allows the render process ot be cancelled</param>
+    public: void Render(
+      const std::shared_ptr<Movie> &movie,
+      const std::string &directory,
+      const std::shared_ptr<const Nuclex::Platform::Tasks::CancellationWatcher> &canceller = (
+        std::shared_ptr<const Nuclex::Platform::Tasks::CancellationWatcher>()
+      )
+    );
 
     /// <summary>Generates a preview image of a single frame without saving it</summary>
     /// <param name="movie">Movie of which a preview frame will be rendered</param>
@@ -138,6 +160,10 @@ namespace Nuclex::FrameFixer {
     private: std::optional<std::pair<std::size_t, std::size_t>> outputFrameRange;
     /// <summary>Whether the top and bottom fields should be flipped</summary>
     private: bool flipFields;
+    /// <summary>Whether to collapse successive frames being averaged into one</summary>
+    private: bool collapseAverageFrames;
+    /// <summary>The number of frames the renderer has completed so far</summary>
+    private: std::atomic<std::size_t> completedFrameCount;
 
   };
 

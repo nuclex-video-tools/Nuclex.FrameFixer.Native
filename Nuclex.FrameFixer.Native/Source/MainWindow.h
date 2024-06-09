@@ -216,13 +216,6 @@ namespace Nuclex::FrameFixer {
       )
     );
 
-    private: void stopAnalysisThread();
-    private: void startAnaylsisThread();
-    private: void analyzeMovieFramesInThread();
-    private: static void callAnalyzeMovieFramesInThread(MainWindow *self) {
-      self->analyzeMovieFramesInThread();
-    }
-
     /// <summary>Saves the status of all frames when the user clicks on save</summary>
     private: void saveClicked();
     /// <summary>Quits the application when the user clicks the quit button</summary>
@@ -242,11 +235,6 @@ namespace Nuclex::FrameFixer {
     private: std::shared_ptr<Movie> currentMovie;
     /// <summary>The currently selected deinterlacer</summary>
     private: std::shared_ptr<Algorithm::Deinterlacing::Deinterlacer> deinterlacer;
-
-    /// <summary>Thread that analyzes the combiness of frames</summary>
-    private: std::unique_ptr<QThread> analysisThread;
-    /// <summary>Mutex controlling access to the analysis thread</summary>
-    private: std::unique_ptr<QMutex> analysisThreadMutex;
 
   };
 

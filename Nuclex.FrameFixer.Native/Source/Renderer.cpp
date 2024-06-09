@@ -147,7 +147,9 @@ namespace Nuclex::FrameFixer {
     deinterlacer(),
     inputFrameRange(),
     outputFrameRange(),
-    flipFields(false) {}
+    flipFields(false),
+    collapseAverageFrames(false),
+    completedFrameCount(0) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -177,6 +179,12 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void Renderer::CollapseAverageFrames(bool collapse /* = true */) {
+    this->collapseAverageFrames = collapse;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void Renderer::RestrictRangeOfInputFrames(
     std::size_t startFrameIndex, std::size_t endFrameIndex
   ) {
@@ -197,9 +205,82 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void Renderer::Render(const std::shared_ptr<Movie> &movie, const std::string &directory) {
-    std::size_t outputFrameIndex = 0;
-    bool collapseAverageFrames = false;
+  std::size_t Renderer::GetTotalFrameCount(
+    const std::shared_ptr<Movie> &movie
+  ) const {
+    std::size_t outputFrameIndex = 1;
+    std::size_t totalFrameCount = 0;
+
+    std::size_t frameCount = movie->Frames.size();
+    for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+      const Frame &currentFrame = movie->Frames[frameIndex];
+      FrameType currentFrameType = getFrameType(currentFrame, this->flipFields);
+
+      bool render = true;
+      if(this->inputFrameRange.has_value()) {
+        render &= (
+          (frameIndex >= this->inputFrameRange.value().first) &&
+          (frameIndex < this->inputFrameRange.value().second)
+        );
+      }
+      if(this->outputFrameRange.has_value()) {
+        render &= (
+          (outputFrameIndex >= this->outputFrameRange.value().first) &&
+          (outputFrameIndex < this->outputFrameRange.value().second)
+        );
+      }
+      if(!render) {
+        int mooh = 3;
+        std::string shit = u8"everything";
+      }
+
+      switch(currentFrameType) {
+        case FrameType::Discard: { break; }
+        case FrameType::Duplicate: {
+          outputFrameIndex += 2;
+          if(render) {
+            totalFrameCount += 2;
+          }
+          break;
+        }
+        case FrameType::Triplicate: {
+          outputFrameIndex += 3;
+          if(render) {
+            totalFrameCount += 3;
+          }
+          break;
+        }
+        default: {
+          ++outputFrameIndex;
+          if(render) {
+            ++totalFrameCount;
+          }
+          break;
+        }
+      }
+      if(currentFrame.AlsoInsertInterpolatedAfter.has_value()) {
+        if(currentFrame.AlsoInsertInterpolatedAfter.value()) {
+          ++outputFrameIndex;
+          if(render) {
+            ++totalFrameCount;
+          }
+        }
+      }
+    }
+
+    return totalFrameCount;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void Renderer::Render(
+    const std::shared_ptr<Movie> &movie,
+    const std::string &directory,
+    const std::shared_ptr<const Nuclex::Platform::Tasks::CancellationWatcher> &canceller /* = (
+      std::shared_ptr<Nuclex::Platform::Tasks::CancellationWatcher>()
+    ) */
+  ) {
+    std::size_t outputFrameIndex = 1;
     bool needsNextFrame = this->deinterlacer->NeedsNextFrame();
     bool needsPriorImage = this->deinterlacer->NeedsPriorFrame();
 
@@ -234,8 +315,27 @@ namespace Nuclex::FrameFixer {
           case FrameType::Triplicate: { outputFrameIndex += 3; break; }
           default: { ++outputFrameIndex; break; }
         }
+        if(currentFrame.AlsoInsertInterpolatedAfter.has_value()) {
+          if(currentFrame.AlsoInsertInterpolatedAfter.value()) {
+            ++outputFrameIndex;
+          }
+        }
         continue; // Skip processing and loop here!
       }
+
+      if(this->outputFrameRange.has_value()) {
+        if(outputFrameIndex > this->outputFrameRange.value().first) {
+          this->completedFrameCount.store(
+            outputFrameIndex - this->outputFrameRange.value().first,
+            std::memory_order::memory_order_release
+          );
+        }
+      } else {
+        this->completedFrameCount.store(
+          outputFrameIndex, std::memory_order::memory_order_release
+        );
+      }
+      canceller->ThrowIfCanceled();
 
       // If the frame type is 'average', queue the image up as an averaging sample
       if(currentFrameType == FrameType::Average) {
@@ -284,7 +384,7 @@ namespace Nuclex::FrameFixer {
 
         // Each frame that was tagged to be averaged also needs to result in
         // one output image being saved each.
-        if(!collapseAverageFrames) {
+        if(!this->collapseAverageFrames) {
           for(std::size_t index = 0; index < imagesToAverage.size(); ++index) {
             saveImage(
               currentImage, directory, frameIndex, outputFrameIndex++,

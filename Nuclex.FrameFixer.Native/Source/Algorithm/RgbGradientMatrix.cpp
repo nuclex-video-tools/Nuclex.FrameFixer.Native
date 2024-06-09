@@ -265,7 +265,7 @@ namespace Nuclex::FrameFixer::Algorithm {
       (this->height == other.height)
     );
     if(!dimensionsMath) {
-      throw std::invalid_argument(u8"RgbGradient matrices have to be the same size");
+      throw std::invalid_argument(u8"Gradient matrices must have the same size");
     }
 
     
