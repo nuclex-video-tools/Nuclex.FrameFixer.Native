@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "Nuclex.Support.Native"
+		},
+		{
+			"path": "Nuclex.Platform.Native"
+		},
+		{
+			"path": "Nuclex.FrameFixer.Native"
+		}
+	]
+}
