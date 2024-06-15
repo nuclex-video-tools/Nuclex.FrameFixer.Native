@@ -22,51 +22,11 @@ along with this library
 #define NUCLEX_FRAMEFIXER_ALGORITHM_DEINTERLACING_DEINTERLACER_H
 
 #include "Nuclex/FrameFixer/Config.h"
+#include "../../Model/DeinterlaceMode.h"
 
 #include <QImage>
 
 namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Method by which a frame should be deinterlaced</summary>
-  enum class DeinterlaceMode {
-
-    /// <summary>Don't deinterlace at all, i.e. frame is progressive</summary>
-    Dont = -1,
-
-    /// <summary>Deinterlace by only using the lines from the top field</summary>
-    /// <remarks>
-    ///   This should be used if the already interlaced video was cut or otherwise processed
-    ///   in a way that left it without a matching bottom field. It may also produce a cleaner
-    ///   image when video was encoded in YUV-422 or lower without interlace awareness.
-    /// </remarks>
-    TopFieldOnly,
-
-    /// <summary>Deinterlace by only using the lines from the bottom field</summary>
-    /// <remarks>
-    ///   This should be used if the already interlaced video was cut or otherwise processed
-    ///   in a way that left it without a matching bottom field. It may also produce a cleaner
-    ///   image when video was encoded in YUV-422 or lower without interlace awareness.
-    /// </remarks>
-    BottomFieldOnly,
-
-    /// <summary>Even lines from current frame, odd lines from preceding frame</summary>
-    /// <remarks>
-    ///   The normal interlace process for frames with an even index, assuming the content
-    ///   is top-field-first and there are no skips/jumps in the interlace rhythm.
-    ///   This is where most deinterlacers can shine, i.e. Yadif
-    /// </remarks>
-    TopFieldFirst,
-
-    /// <summary>Odd lines from current frame, even lines from preceding frame</summary>
-    /// <remarks>
-    ///   The normal interlace process for frames with an even index, assuming the content
-    ///   is top-field-first and there are no skips/jumps in the interlace rhythm.
-    /// </remarks>
-    BottomFieldFirst
-
-  };
 
   // ------------------------------------------------------------------------------------------- //
 

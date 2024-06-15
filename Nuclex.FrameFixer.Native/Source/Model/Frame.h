@@ -42,20 +42,24 @@ namespace Nuclex::FrameFixer {
     public: Frame(const std::string &filename) :
       Index(std::size_t(-1)),
       Filename(filename),
-      Type(FrameType::Unknown),
+      Mode(),
+      Action(FrameAction::Unknown),
       ReplaceWithIndex(),
       InterpolationSourceIndices(),
       AlsoInsertInterpolatedAfter(),
       Combedness(),
       MixFactor(),
-      ProvisionalType(FrameType::Unknown) {}
+      ProvisionalType(FrameAction::Unknown) {}
 
     /// <summary>Absolute index of the frame from the beginning of the movie</summary>
     public: std::size_t Index;
     /// <summary>Name of the image file to which the frame has been extracted</summary>
     public: std::string Filename;
+
+    /// <summary>How the deinterlacer should treat this frame</summary>
+    public: std::optional<DeinterlaceMode> Mode;
     /// <summary>Type of this frame in the framefixer sequence</summary>
-    public: FrameType Type;
+    public: FrameAction Action;
 
     // TODO: Combine ReplaceWithIndex and InterpolationSourceIndices
     //   1 index = use that frame
@@ -74,7 +78,7 @@ namespace Nuclex::FrameFixer {
     public: std::optional<double> MixFactor; 
 
     /// <summary>Type according to the telecine pattern</summary>
-    public: FrameType ProvisionalType;
+    public: FrameAction ProvisionalType;
 
   };
 

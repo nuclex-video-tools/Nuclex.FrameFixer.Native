@@ -249,7 +249,7 @@ namespace Nuclex::FrameFixer {
 
     std::size_t frameCount = this->currentMovie->Frames.size();
     for(std::size_t index = 0; index < frameCount; ++index) {
-      if(this->currentMovie->Frames[index].Type != FrameType::Unknown) {
+      if(this->currentMovie->Frames[index].Action != FrameAction::Unknown) {
         lastTaggedFrameIndex = index;
       }
     }
@@ -312,12 +312,12 @@ namespace Nuclex::FrameFixer {
 
       std::size_t emittedFrameCount = 0;
       for(std::size_t index = 0; index <= selectedFrameIndex; ++index) {
-        FrameType frameType = this->currentMovie->Frames[index].Type;
-        if(frameType == FrameType::Triplicate) {
+        FrameAction frameType = this->currentMovie->Frames[index].Action;
+        if(frameType == FrameAction::Triplicate) {
           emittedFrameCount += 3;
-        } else if(frameType == FrameType::Duplicate) {
+        } else if(frameType == FrameAction::Duplicate) {
           emittedFrameCount += 2;
-        } else if(frameType != FrameType::Discard) {
+        } else if(frameType != FrameAction::Discard) {
           ++emittedFrameCount;
         }
         if(this->currentMovie->Frames[index].AlsoInsertInterpolatedAfter.has_value()) {
@@ -349,15 +349,15 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::toggleFrameType(FrameType frameType) {
+  void MainWindow::toggleFrameType(FrameAction frameType) {
     if(static_cast<bool>(this->currentMovie)) {
       std::size_t selectedFrameIndex = getSelectedFrameIndex();
       if(selectedFrameIndex != std::size_t(-1)) {
         Frame &selectedFrame = this->currentMovie->Frames[selectedFrameIndex];
-        if(selectedFrame.Type == frameType) {
-          selectedFrame.Type = FrameType::Unknown;
+        if(selectedFrame.Action == frameType) {
+          selectedFrame.Action = FrameAction::Unknown;
         } else {
-          selectedFrame.Type = frameType;
+          selectedFrame.Action = frameType;
         }
 
         this->ui->thumbnailList->update();

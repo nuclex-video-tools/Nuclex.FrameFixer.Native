@@ -40,26 +40,26 @@ namespace {
   /// <param name="frame">Frame whose type will be determined</param>
   /// <param name="flip">Whether the flip field order option is turned on</param>
   /// <returns>The frame type of the specified frame</returns>
-  Nuclex::FrameFixer::FrameType getFrameType(
+  Nuclex::FrameFixer::FrameAction getFrameType(
     const Nuclex::FrameFixer::Frame &frame, bool flip = false
   ) {
-    using Nuclex::FrameFixer::FrameType;
+    using Nuclex::FrameFixer::FrameAction;
 
     // Use the assigned frame type. If none was assigned, use the determined frame type
     // which is calculated by other parts of the application by either detecting combing
     // patterns or repeating the most recent 5-frame cycle.
-    FrameType frameType = frame.Type;
-    if(frameType == FrameType::Unknown) {
+    FrameAction frameType = frame.Action;
+    if(frameType == FrameAction::Unknown) {
       frameType = frame.ProvisionalType;
     }
 
     // Swap top and bottom field enum values if the field order is set to flipped.
     if(flip) {
       switch(frameType) {
-        case FrameType::TopFieldFirst: { frameType = FrameType::BottomFieldFirst; break; }
-        case FrameType::BottomFieldFirst: { frameType = FrameType::TopFieldFirst; break; }
-        case FrameType::TopFieldOnly: { frameType = FrameType::BottomFieldOnly; break; }
-        case FrameType::BottomFieldOnly: { frameType = FrameType::TopFieldOnly; break; }
+        case FrameAction::TopFieldFirst: { frameType = FrameAction::BottomFieldFirst; break; }
+        case FrameAction::BottomFieldFirst: { frameType = FrameAction::TopFieldFirst; break; }
+        case FrameAction::TopFieldOnly: { frameType = FrameAction::BottomFieldOnly; break; }
+        case FrameAction::BottomFieldOnly: { frameType = FrameAction::TopFieldOnly; break; }
         default: { break; }
       }
     }
@@ -214,7 +214,7 @@ namespace Nuclex::FrameFixer {
     std::size_t frameCount = movie->Frames.size();
     for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
       const Frame &currentFrame = movie->Frames[frameIndex];
-      FrameType currentFrameType = getFrameType(currentFrame, this->flipFields);
+      FrameAction currentFrameType = getFrameType(currentFrame, this->flipFields);
 
       bool render = true;
       if(this->inputFrameRange.has_value()) {
@@ -229,21 +229,17 @@ namespace Nuclex::FrameFixer {
           (outputFrameIndex < this->outputFrameRange.value().second)
         );
       }
-      if(!render) {
-        int mooh = 3;
-        std::string shit = u8"everything";
-      }
 
       switch(currentFrameType) {
-        case FrameType::Discard: { break; }
-        case FrameType::Duplicate: {
+        case FrameAction::Discard: { break; }
+        case FrameAction::Duplicate: {
           outputFrameIndex += 2;
           if(render) {
             totalFrameCount += 2;
           }
           break;
         }
-        case FrameType::Triplicate: {
+        case FrameAction::Triplicate: {
           outputFrameIndex += 3;
           if(render) {
             totalFrameCount += 3;
@@ -290,12 +286,12 @@ namespace Nuclex::FrameFixer {
     
     QImage priorImage, currentImage, nextImage;
     std::vector<QImage> imagesToAverage;
-    FrameType firstImageToAverageType = FrameType::Unknown;
+    FrameAction firstImageToAverageType = FrameAction::Unknown;
 
     std::size_t frameCount = movie->Frames.size();
     for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
       const Frame &currentFrame = movie->Frames[frameIndex];
-      FrameType currentFrameType = getFrameType(currentFrame, this->flipFields);
+      FrameAction currentFrameType = getFrameType(currentFrame, this->flipFields);
 
       // Figure out if we're still far from the export range. If so, do quick skip mode.
       // TODO: this is currently running in danger of entering a long averaging block without
@@ -310,9 +306,9 @@ namespace Nuclex::FrameFixer {
       }
       if(skip) {
         switch(currentFrameType) {
-          case FrameType::Discard: { break; }
-          case FrameType::Duplicate: { outputFrameIndex += 2; break; }
-          case FrameType::Triplicate: { outputFrameIndex += 3; break; }
+          case FrameAction::Discard: { break; }
+          case FrameAction::Duplicate: { outputFrameIndex += 2; break; }
+          case FrameAction::Triplicate: { outputFrameIndex += 3; break; }
           default: { ++outputFrameIndex; break; }
         }
         if(currentFrame.AlsoInsertInterpolatedAfter.has_value()) {
@@ -338,7 +334,7 @@ namespace Nuclex::FrameFixer {
       canceller->ThrowIfCanceled();
 
       // If the frame type is 'average', queue the image up as an averaging sample
-      if(currentFrameType == FrameType::Average) {
+      if(currentFrameType == FrameAction::Average) {
         if(nextImage.isNull()) {
           std::string imagePath = movie->GetFramePath(frameIndex);
           imagesToAverage.emplace_back(QString::fromStdString(imagePath));
@@ -362,7 +358,7 @@ namespace Nuclex::FrameFixer {
 
         // First, save the very first frame prior to the one or more frames tagged
         // for averaging. Save it to multiple outputs if it is tagged for duplication.
-        if(firstImageToAverageType == FrameType::Triplicate) {
+        if(firstImageToAverageType == FrameAction::Triplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
@@ -371,7 +367,7 @@ namespace Nuclex::FrameFixer {
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
-        } else if(firstImageToAverageType == FrameType::Duplicate) {
+        } else if(firstImageToAverageType == FrameAction::Duplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
@@ -454,23 +450,23 @@ namespace Nuclex::FrameFixer {
         }
       }
 
-      if(currentFrameType == FrameType::TopFieldFirst) {
+      if(currentFrameType == FrameAction::TopFieldFirst) {
         this->deinterlacer->Deinterlace(
-          currentImage, Algorithm::Deinterlacing::DeinterlaceMode::TopFieldFirst
+          currentImage, DeinterlaceMode::TopFieldFirst
         );
-      } else if(currentFrameType == FrameType::BottomFieldFirst) {
+      } else if(currentFrameType == FrameAction::BottomFieldFirst) {
         this->deinterlacer->Deinterlace(
-          currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldFirst
+          currentImage, DeinterlaceMode::BottomFieldFirst
         );
-      } else if(currentFrameType == FrameType::TopFieldOnly) {
+      } else if(currentFrameType == FrameAction::TopFieldOnly) {
         this->deinterlacer->Deinterlace(
-          currentImage, Algorithm::Deinterlacing::DeinterlaceMode::TopFieldOnly
+          currentImage, DeinterlaceMode::TopFieldOnly
         );
-      } else if(currentFrameType == FrameType::BottomFieldOnly) {
+      } else if(currentFrameType == FrameAction::BottomFieldOnly) {
         this->deinterlacer->Deinterlace(
-          currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldOnly
+          currentImage, DeinterlaceMode::BottomFieldOnly
         );
-      } else if(currentFrameType == FrameType::Interpolate) {
+      } else if(currentFrameType == FrameAction::Interpolate) {
         if(static_cast<bool>(this->interpolator)) {
           if(this->interpolator->CanInterpolateMiddleFrame()) {
             std::pair<std::size_t, std::size_t> sourceIndices = (
@@ -502,10 +498,10 @@ namespace Nuclex::FrameFixer {
       // Figure out if the frame that follows uses averaging
       bool nextImageUsesAveraging = false;
       if((frameIndex + 1) < frameCount) {
-        if(movie->Frames[frameIndex + 1].Type == FrameType::Average) {
+        if(movie->Frames[frameIndex + 1].Action == FrameAction::Average) {
           nextImageUsesAveraging = true;
-        } else if(movie->Frames[frameIndex + 1].Type == FrameType::Unknown) {
-          if(movie->Frames[frameIndex + 1].ProvisionalType == FrameType::Average) {
+        } else if(movie->Frames[frameIndex + 1].Action == FrameAction::Unknown) {
+          if(movie->Frames[frameIndex + 1].ProvisionalType == FrameAction::Average) {
             nextImageUsesAveraging = true;
           }
         }
@@ -519,7 +515,7 @@ namespace Nuclex::FrameFixer {
       if(nextImageUsesAveraging) {
         firstImageToAverageType = currentFrameType;
       } else { // next image tagged / not tagged for averaging
-        if(currentFrameType == FrameType::Triplicate) {
+        if(currentFrameType == FrameAction::Triplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
@@ -528,13 +524,13 @@ namespace Nuclex::FrameFixer {
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
-        } else if(currentFrameType == FrameType::Duplicate) {
+        } else if(currentFrameType == FrameAction::Duplicate) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
           );
         }
-        if(currentFrameType != FrameType::Discard) {
+        if(currentFrameType != FrameAction::Discard) {
           saveImage(
             currentImage, directory, frameIndex, outputFrameIndex++,
             this->inputFrameRange, this->outputFrameRange
@@ -599,25 +595,25 @@ namespace Nuclex::FrameFixer {
       }
     }
 
-    FrameType currentFrameType = getFrameType(movie->Frames[frameIndex], this->flipFields);
+    FrameAction currentFrameType = getFrameType(movie->Frames[frameIndex], this->flipFields);
 
-    if(currentFrameType == FrameType::TopFieldFirst) {
+    if(currentFrameType == FrameAction::TopFieldFirst) {
       this->deinterlacer->Deinterlace(
-        currentImage, Algorithm::Deinterlacing::DeinterlaceMode::TopFieldFirst
+        currentImage, DeinterlaceMode::TopFieldFirst
       );
-    } else if(currentFrameType == FrameType::BottomFieldFirst) {
+    } else if(currentFrameType == FrameAction::BottomFieldFirst) {
       this->deinterlacer->Deinterlace(
-        currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldFirst
+        currentImage, DeinterlaceMode::BottomFieldFirst
       );
-    } else if(currentFrameType == FrameType::TopFieldOnly) {
+    } else if(currentFrameType == FrameAction::TopFieldOnly) {
       this->deinterlacer->Deinterlace(
-        currentImage, Algorithm::Deinterlacing::DeinterlaceMode::TopFieldOnly
+        currentImage, DeinterlaceMode::TopFieldOnly
       );
-    } else if(currentFrameType == FrameType::BottomFieldOnly) {
+    } else if(currentFrameType == FrameAction::BottomFieldOnly) {
       this->deinterlacer->Deinterlace(
-        currentImage, Algorithm::Deinterlacing::DeinterlaceMode::BottomFieldOnly
+        currentImage, DeinterlaceMode::BottomFieldOnly
       );
-    } else if(currentFrameType == FrameType::Replace) {
+    } else if(currentFrameType == FrameAction::Replace) {
       imagePath = movie->GetFramePath(movie->Frames[frameIndex].ReplaceWithIndex.value());
       QImage replacementImage(QString::fromStdString(imagePath));
       currentImage.swap(replacementImage);

@@ -162,7 +162,7 @@ namespace Nuclex::FrameFixer::Database {
   // ------------------------------------------------------------------------------------------- //
 
   void FrameDatabase::upgradeSchemaFrom0To1() {
-    using Nuclex::FrameFixer::FrameType;
+    using Nuclex::FrameFixer::FrameAction;
 
     // Basic application information to identify database
     {
@@ -190,12 +190,11 @@ namespace Nuclex::FrameFixer::Database {
       bool successfullyPrepared = query.prepare(
         u8"INSERT INTO deinterlaceModes "
         u8"VALUES"
-        u8"  (:unknownEnumValue, 'Unknown'),"
+        u8"  (:progressiveEnumValue, 'Progressive'),"
         u8"  (:topFieldFirstEnumValue, 'TopFieldFirst'),"
         u8"  (:bottomFieldFirstEnumValue, 'BottomFieldFirst'),"
         u8"  (:topFieldOnlyEnumValue, 'TopFieldOnly'),"
-        u8"  (:bottomFieldOnlyEnumValue, 'BottomFieldOnly'),"
-        u8"  (:progressiveEnumValue, 'Progressive')"
+        u8"  (:bottomFieldOnlyEnumValue, 'BottomFieldOnly')"
         u8";"
       );
       if(!successfullyPrepared) {
@@ -210,11 +209,11 @@ namespace Nuclex::FrameFixer::Database {
 
         throw std::runtime_error(message);
       }
-      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameType::TopFieldFirst));
-      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameType::BottomFieldFirst));
-      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameType::TopFieldOnly));
-      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameType::BottomFieldOnly));
-      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
+      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameAction::Progressive));
+      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameAction::TopFieldFirst));
+      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameAction::BottomFieldFirst));
+      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameAction::TopFieldOnly));
+      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameAction::BottomFieldOnly));
 
       // Query is set up and all parameters are bound, now we can execute it
       bool successfullyExecuted = query.exec();
@@ -265,12 +264,12 @@ namespace Nuclex::FrameFixer::Database {
 
         throw std::runtime_error(message);
       }
-      query.bindValue(u8":unknownEnumValue", static_cast<int>(FrameType::Unknown));
-      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameType::TopFieldFirst));
-      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameType::BottomFieldFirst));
-      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameType::TopFieldOnly));
-      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameType::BottomFieldOnly));
-      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
+      query.bindValue(u8":unknownEnumValue", static_cast<int>(FrameAction::Unknown));
+      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameAction::TopFieldFirst));
+      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameAction::BottomFieldFirst));
+      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameAction::TopFieldOnly));
+      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameAction::BottomFieldOnly));
+      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameAction::Progressive));
 
       // Query is set up and all parameters are bound, now we can execute it
       bool successfullyExecuted = query.exec();

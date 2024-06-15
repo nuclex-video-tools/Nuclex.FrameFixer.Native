@@ -81,25 +81,25 @@ namespace Nuclex::FrameFixer {
       {
         QRect decorationRect(option.rect.bottomLeft(), QSize(20, 20));
         decorationRect.adjust(0, -20, 0, -20);
-        if(frame.Type == FrameType::Discard) {
+        if(frame.Action == FrameAction::Discard) {
           painter->save();
           paintCrossedOutOverlay(*painter, option);
           painter->restore();    
-        } else if(frame.Type == FrameType::TopFieldFirst) {
+        } else if(frame.Action == FrameAction::TopFieldFirst) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkBlue));
           painter->drawEllipse(decorationRect);
           painter->setPen(QPen(Qt::GlobalColor::white));
           painter->drawText(decorationRect, Qt::AlignCenter, "TB");
           painter->restore();    
-        } else if(frame.Type == FrameType::BottomFieldFirst) {
+        } else if(frame.Action == FrameAction::BottomFieldFirst) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkGreen));
           painter->drawEllipse(decorationRect);
           painter->setPen(QPen(Qt::GlobalColor::white));
           painter->drawText(decorationRect, Qt::AlignCenter, "BT");
           painter->restore();    
-        } else if(frame.Type == FrameType::TopFieldOnly) {
+        } else if(frame.Action == FrameAction::TopFieldOnly) {
           painter->save();
           //paintSingleFieldOverlay(*painter, option, true);
 
@@ -109,21 +109,21 @@ namespace Nuclex::FrameFixer {
           painter->drawText(decorationRect, Qt::AlignCenter, "T▲");
 
           painter->restore();    
-        } else if(frame.Type == FrameType::BottomFieldOnly) {
+        } else if(frame.Action == FrameAction::BottomFieldOnly) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkGreen));
           painter->drawEllipse(decorationRect);
           painter->setPen(QPen(Qt::GlobalColor::white));
           painter->drawText(decorationRect, Qt::AlignCenter, "B▼");
           painter->restore();    
-        } else if(frame.Type == FrameType::Progressive) {
+        } else if(frame.Action == FrameAction::Progressive) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkGray));
           painter->drawEllipse(decorationRect);
           painter->setPen(QPen(Qt::GlobalColor::white));
           painter->drawText(decorationRect, Qt::AlignCenter, "PR");
           painter->restore();    
-        } else if(frame.Type == FrameType::Average) {
+        } else if(frame.Action == FrameAction::Average) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkMagenta));
           painter->drawEllipse(decorationRect);
@@ -132,7 +132,7 @@ namespace Nuclex::FrameFixer {
           decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
           painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
           painter->restore();    
-        } else if(frame.Type == FrameType::Duplicate) {
+        } else if(frame.Action == FrameAction::Duplicate) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkYellow));
           painter->drawEllipse(decorationRect);
@@ -141,7 +141,7 @@ namespace Nuclex::FrameFixer {
           decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
           painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
           painter->restore();    
-        } else if(frame.Type == FrameType::Triplicate) {
+        } else if(frame.Action == FrameAction::Triplicate) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkYellow));
           painter->drawEllipse(decorationRect);
@@ -150,7 +150,7 @@ namespace Nuclex::FrameFixer {
           decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
           painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
           painter->restore();    
-        } else if(frame.Type == FrameType::Replace) {
+        } else if(frame.Action == FrameAction::Replace) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkRed));
           painter->drawEllipse(decorationRect);
@@ -159,7 +159,7 @@ namespace Nuclex::FrameFixer {
           decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
           painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
           painter->restore();    
-        } else if(frame.Type == FrameType::Deblend) {
+        } else if(frame.Action == FrameAction::Deblend) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkRed));
           painter->drawEllipse(decorationRect);
@@ -168,7 +168,7 @@ namespace Nuclex::FrameFixer {
           decorationRect.setLeft(decorationRect.left() + decorationRect.width() /2);
           painter->drawLine(decorationRect.topLeft(), decorationRect.bottomLeft());
           painter->restore();    
-        } else if(frame.Type == FrameType::Interpolate) {
+        } else if(frame.Action == FrameAction::Interpolate) {
           painter->save();
           painter->setBrush(QBrush(Qt::GlobalColor::darkRed));
           painter->drawEllipse(decorationRect);
@@ -180,7 +180,7 @@ namespace Nuclex::FrameFixer {
         }
       }
 
-      if(frame.Type == FrameType::Interpolate) {
+      if(frame.Action == FrameAction::Interpolate) {
         painter->save();
         painter->setPen(QPen(Qt::GlobalColor::white));
         QPoint upperLeft = option.rect.topLeft();

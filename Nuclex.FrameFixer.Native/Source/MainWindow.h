@@ -133,27 +133,27 @@ namespace Nuclex::FrameFixer {
     private: void renderClicked();
 
     /// <summary>Marks the current frame as a non-interlaced frame</param>
-    private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
+    private: void markProgressiveClicked() { toggleFrameType(FrameAction::Progressive); }
     /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
-    private: void markTopFieldFirstClicked()  { toggleFrameType(FrameType::TopFieldFirst); }
+    private: void markTopFieldFirstClicked()  { toggleFrameType(FrameAction::TopFieldFirst); }
     /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
-    private: void markBottomFieldFirstClicked()  { toggleFrameType(FrameType::BottomFieldFirst); }
+    private: void markBottomFieldFirstClicked()  { toggleFrameType(FrameAction::BottomFieldFirst); }
     /// <summary>Marks the current frame as a C frame wiht only its top field</param>
-    private: void markTopFieldOnlyClicked() { toggleFrameType(FrameType::TopFieldOnly); }
+    private: void markTopFieldOnlyClicked() { toggleFrameType(FrameAction::TopFieldOnly); }
     /// <summary>Marks the current frame as a C frame with only its bottom field</param>
-    private: void markBottomFieldOnlyClicked() { toggleFrameType(FrameType::BottomFieldOnly); }
+    private: void markBottomFieldOnlyClicked() { toggleFrameType(FrameAction::BottomFieldOnly); }
 
     /// <summary>Marks the current frame to be discarded</param>
-    private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
+    private: void markDiscardClicked() { toggleFrameType(FrameAction::Discard); }
     /// <summary>Marks the current frame for averaging</param>
-    private: void markAverageClicked() { toggleFrameType(FrameType::Average); }
+    private: void markAverageClicked() { toggleFrameType(FrameAction::Average); }
     /// <summary>Marks the current frame for duplication</param>
-    private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
+    private: void markDuplicateClicked() { toggleFrameType(FrameAction::Duplicate); }
     /// <summary>Marks the current frame for triplication</param>
-    private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
+    private: void markTriplicateClicked() { toggleFrameType(FrameAction::Triplicate); }
 
     /// <summary>Marks the current frame for deblending</param>
-    private: void markDeblendClicked() { toggleFrameType(FrameType::Deblend); }
+    private: void markDeblendClicked() { toggleFrameType(FrameAction::Deblend); }
     /// <summary>Marks the current frame to repeat the most recent interpolation</param>
     private: void markReplacedClicked();
     /// <summary>Marks the current frame to repeat the most recent interpolation</param>
@@ -161,7 +161,7 @@ namespace Nuclex::FrameFixer {
     /// <summary>Marks the current frame for neighbor interpolation</param>
     private: void markAppendInterpolatedClicked() {
       setupInterpolation(1);
-      toggleFrameType(FrameType::Interpolate);
+      toggleFrameType(FrameAction::Interpolate);
     }
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
@@ -169,7 +169,7 @@ namespace Nuclex::FrameFixer {
 
     /// <summary>Toggles the current frame between the specified type and none</summary>
     /// <param name="frameType">Frame type to apply or remove from the current frame</param>
-    private: void toggleFrameType(FrameType frameType);
+    private: void toggleFrameType(FrameAction frameType);
 
     /// <summary>Sets the current frame's interpolation source frames</summary>
     /// <param name="distance">Distance of the interpolation source frames</param>

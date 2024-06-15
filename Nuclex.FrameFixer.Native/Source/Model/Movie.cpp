@@ -113,25 +113,25 @@ namespace Nuclex::FrameFixer {
         QString typeAsString = tokens[2].trimmed();
         if(!typeAsString.isEmpty()) {
           if(typeAsString == u8"Discard") {
-            movie->Frames[frameIndex].Type = FrameType::Discard;
+            movie->Frames[frameIndex].Action = FrameAction::Discard;
           } else if((typeAsString == u8"BC") || (typeAsString == u8"TopFieldFirst")) {
-            movie->Frames[frameIndex].Type = FrameType::TopFieldFirst;
+            movie->Frames[frameIndex].Action = FrameAction::TopFieldFirst;
           } else if((typeAsString == u8"CD") || (typeAsString == u8"BottomFieldFirst")) {
-            movie->Frames[frameIndex].Type = FrameType::BottomFieldFirst;
+            movie->Frames[frameIndex].Action = FrameAction::BottomFieldFirst;
           } else if((typeAsString == u8"TopC") || (typeAsString == u8"TopFieldOnly")) {
-            movie->Frames[frameIndex].Type = FrameType::TopFieldOnly;
+            movie->Frames[frameIndex].Action = FrameAction::TopFieldOnly;
           } else if((typeAsString == u8"BottomC") || (typeAsString == u8"BottomFieldOnly")) {
-            movie->Frames[frameIndex].Type = FrameType::BottomFieldOnly;
+            movie->Frames[frameIndex].Action = FrameAction::BottomFieldOnly;
           } else if(typeAsString == u8"Progressive") {
-            movie->Frames[frameIndex].Type = FrameType::Progressive;
+            movie->Frames[frameIndex].Action = FrameAction::Progressive;
           } else if(typeAsString == u8"Average") {
-            movie->Frames[frameIndex].Type = FrameType::Average;
+            movie->Frames[frameIndex].Action = FrameAction::Average;
           } else if(typeAsString == u8"Duplicate") {
-            movie->Frames[frameIndex].Type = FrameType::Duplicate;
+            movie->Frames[frameIndex].Action = FrameAction::Duplicate;
           } else if(typeAsString == u8"Triplicate") {
-            movie->Frames[frameIndex].Type = FrameType::Triplicate;
+            movie->Frames[frameIndex].Action = FrameAction::Triplicate;
           } else if((typeAsString == u8"Blended") || (typeAsString == u8"Deblend")) {
-            movie->Frames[frameIndex].Type = FrameType::Deblend;
+            movie->Frames[frameIndex].Action = FrameAction::Deblend;
           } else if(typeAsString.startsWith(u8"InterpolateFrom(")) {
             int firstEndIndex = typeAsString.indexOf(u8'+', 16);
             if((firstEndIndex != -1) && (firstEndIndex > 16)) {
@@ -143,7 +143,7 @@ namespace Nuclex::FrameFixer {
                 std::size_t rightFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
                   typeAsString.mid(firstEndIndex + 1, secondEndIndex - (firstEndIndex + 1)).toStdString()
                 );
-                movie->Frames[frameIndex].Type = FrameType::Interpolate;
+                movie->Frames[frameIndex].Action = FrameAction::Interpolate;
                 movie->Frames[frameIndex].InterpolationSourceIndices = (
                   std::pair<std::size_t, std::size_t>(leftFrameIndex, rightFrameIndex)
                 );
@@ -155,7 +155,7 @@ namespace Nuclex::FrameFixer {
               std::size_t replacementFrameIndex = Nuclex::Support::Text::lexical_cast<std::size_t>(
                 typeAsString.mid(12, endIndex - 12).toStdString()
               );
-              movie->Frames[frameIndex].Type = FrameType::Replace;
+              movie->Frames[frameIndex].Action = FrameAction::Replace;
               movie->Frames[frameIndex].ReplaceWithIndex = replacementFrameIndex;
             }
           }
@@ -192,18 +192,18 @@ namespace Nuclex::FrameFixer {
         //  lexical_append(line, this->Frames[index].Combedness.value());
         //}
         line.append(u8", ");
-        switch(this->Frames[index].Type) {
-          case FrameType::Discard: { line.append(u8"Discard"); break; }
-          case FrameType::TopFieldFirst: { line.append(u8"TopFieldFirst"); break; }
-          case FrameType::BottomFieldFirst: { line.append(u8"BottomFieldFirst"); break; }
-          case FrameType::TopFieldOnly: { line.append(u8"TopFieldOnly"); break; }
-          case FrameType::BottomFieldOnly: { line.append(u8"BottomFieldOnly"); break; }
-          case FrameType::Progressive: { line.append(u8"Progressive"); break; }
-          case FrameType::Average: { line.append(u8"Average"); break; }
-          case FrameType::Duplicate: { line.append(u8"Duplicate"); break; }
-          case FrameType::Triplicate: { line.append(u8"Triplicate"); break; }
-          case FrameType::Deblend: { line.append(u8"Deblend"); break; }
-          case FrameType::Interpolate: {
+        switch(this->Frames[index].Action) {
+          case FrameAction::Discard: { line.append(u8"Discard"); break; }
+          case FrameAction::TopFieldFirst: { line.append(u8"TopFieldFirst"); break; }
+          case FrameAction::BottomFieldFirst: { line.append(u8"BottomFieldFirst"); break; }
+          case FrameAction::TopFieldOnly: { line.append(u8"TopFieldOnly"); break; }
+          case FrameAction::BottomFieldOnly: { line.append(u8"BottomFieldOnly"); break; }
+          case FrameAction::Progressive: { line.append(u8"Progressive"); break; }
+          case FrameAction::Average: { line.append(u8"Average"); break; }
+          case FrameAction::Duplicate: { line.append(u8"Duplicate"); break; }
+          case FrameAction::Triplicate: { line.append(u8"Triplicate"); break; }
+          case FrameAction::Deblend: { line.append(u8"Deblend"); break; }
+          case FrameAction::Interpolate: {
             line.append(u8"InterpolateFrom(");
             line.append(
               Nuclex::Support::Text::lexical_cast<std::string>(
@@ -219,7 +219,7 @@ namespace Nuclex::FrameFixer {
             line.append(u8")");
             break;
           }
-          case FrameType::Replace: {
+          case FrameAction::Replace: {
             line.append(u8"ReplaceWith(");
             line.append(
               Nuclex::Support::Text::lexical_cast<std::string>(

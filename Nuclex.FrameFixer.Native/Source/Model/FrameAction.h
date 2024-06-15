@@ -18,8 +18,8 @@ along with this library
 */
 #pragma endregion // CPL License
 
-#ifndef NUCLEX_FRAMEFIXER_FRAMETYPE_H
-#define NUCLEX_FRAMEFIXER_FRAMETYPE_H
+#ifndef NUCLEX_FRAMEFIXER_FRAMEACTION_H
+#define NUCLEX_FRAMEFIXER_FRAMEACTION_H
 
 #include "Nuclex/FrameFixer/Config.h"
 
@@ -31,7 +31,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Types of frames appearing in a telecined movie</summary>
-  enum class FrameType {
+  enum class FrameAction {
 
     /// <summary>Frame is unusable and should be thrown away</summary>
     Discard = -1,
@@ -165,4 +165,4 @@ namespace Nuclex::FrameFixer {
 
 } // namespace Nuclex::FrameFixer
 
-#endif // NUCLEX_FRAMEFIXER_FRAMETYPE_H
+#endif // NUCLEX_FRAMEFIXER_FRAMEACTION_H
