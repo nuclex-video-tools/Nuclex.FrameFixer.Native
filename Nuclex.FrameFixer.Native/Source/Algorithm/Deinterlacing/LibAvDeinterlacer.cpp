@@ -74,7 +74,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
       LibAvApi::LockAvFrameBuffer(frame);
 
       std::uint8_t *frameData = frame->data[0];
-      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+      std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+      for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
         std::copy_n(
           image.scanLine(lineIndex), // Will be QRgba64 (64 bit interleaved) pixels
           image.bytesPerLine(),
@@ -88,7 +89,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
       LibAvApi::LockAvFrameBuffer(frame);
 
       std::uint8_t *frameData = frame->data[0];
-      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+      std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+      for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
         std::copy_n(
           image.scanLine(lineIndex), // Will be QRgb (32 bit interleaved) pixels
           image.bytesPerLine(),
@@ -129,9 +131,11 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
         const std::uint8_t *redChannel = frame->data[2];
         const std::uint8_t *alphaChannel = frame->data[3];
 
-        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+        for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
           QRgba64 *targetScanline = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
-          for(std::size_t pixelIndex = 0; pixelIndex < frame->width; ++pixelIndex) {
+          std::size_t frameWidth = static_cast<std::size_t>(frame->width);
+          for(std::size_t pixelIndex = 0; pixelIndex < frameWidth; ++pixelIndex) {
             targetScanline[pixelIndex] = QRgba64::fromRgba64(
               reinterpret_cast<const quint16 *>(redChannel)[pixelIndex],
               reinterpret_cast<const quint16 *>(greenChannel)[pixelIndex],
@@ -152,9 +156,11 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
         const std::uint8_t *redChannel = frame->data[2];
         const std::uint8_t *alphaChannel = frame->data[3];
 
-        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+        for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
           QRgba64 *targetScanline = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
-          for(std::size_t pixelIndex = 0; pixelIndex < frame->width; ++pixelIndex) {
+          std::size_t frameWidth = static_cast<std::size_t>(frame->width);
+          for(std::size_t pixelIndex = 0; pixelIndex < frameWidth; ++pixelIndex) {
             targetScanline[pixelIndex] = QRgba64::fromRgba(
               reinterpret_cast<const quint8 *>(redChannel)[pixelIndex],
               reinterpret_cast<const quint8 *>(greenChannel)[pixelIndex],
@@ -171,7 +177,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
         }
       } else if(frame->format == AV_PIX_FMT_RGBA64LE) { // AV_PIX_FMT_BGR48LE
         const std::uint8_t *frameData = frame->data[0];
-        for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+        std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+        for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
           std::copy_n(
             frameData,
             frame->linesize[0],
@@ -191,7 +198,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
       }
 
       const std::uint8_t *frameData = frame->data[0];
-      for(std::size_t lineIndex = 0; lineIndex < frame->height; ++lineIndex) {
+      std::size_t frameHeight = static_cast<std::size_t>(frame->height);
+      for(std::size_t lineIndex = 0; lineIndex < frameHeight; ++lineIndex) {
         std::copy_n(
           frameData,
           frame->linesize[0],

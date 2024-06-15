@@ -60,6 +60,11 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
     const QImage &previousImage, const QImage &currentImage, const QImage &nextImage,
     QImage &targetImage, bool topField /* = true */
   ) {
+    (void)previousImage;
+    (void)currentImage;
+    (void)nextImage;
+    (void)targetImage;
+    (void)topField;
   }
 
   // ------------------------------------------------------------------------------------------- //

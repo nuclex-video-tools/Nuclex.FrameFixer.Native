@@ -48,11 +48,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void FrameThumbnailPaintDelegate::SetMovie(const std::shared_ptr<Movie> &movie) {
-    std::size_t frameCount = movie->Frames.size();
-
-    //beginResetModel();
     this->movie = movie;
-    //endResetModel();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -210,68 +206,6 @@ namespace Nuclex::FrameFixer {
         painter->restore();    
       }
 
-      bool isBridgedFrame = false;
-      bool isLeftSourceFrame = false;
-      bool isRightSourceFrame = false;
-      for(int checkOffset = -4; checkOffset <= +4; ++checkOffset) {
-        int checkedFrameIndex = static_cast<int>(frameIndex) + checkOffset;
-        if((checkedFrameIndex >= 0) && (checkedFrameIndex < this->movie->Frames.size())) {
-          if(this->movie->Frames[checkedFrameIndex].Type == FrameType::Interpolate) {
-            if(this->movie->Frames[checkedFrameIndex].InterpolationSourceIndices.has_value()) {
-              std::pair<std::size_t, std::size_t> sourceIndices = (
-                this->movie->Frames[checkedFrameIndex].InterpolationSourceIndices.value()
-              );
-              isBridgedFrame |= (
-                (sourceIndices.first < frameIndex) &&
-                (checkedFrameIndex > frameIndex)
-              );
-              isBridgedFrame |= (
-                (sourceIndices.second > frameIndex) &&
-                (checkedFrameIndex < frameIndex)
-              );
-              isLeftSourceFrame |= (sourceIndices.first == frameIndex);
-              isRightSourceFrame |= (sourceIndices.second == frameIndex);
-            }
-          }
-        }
-      }
-
-      if(isBridgedFrame) {
-        painter->save();
-        painter->setPen(QPen(Qt::GlobalColor::white));
-        QPoint upperLeft = option.rect.topLeft();
-        upperLeft.setY(upperLeft.y() + 2);
-        QPoint upperRight = option.rect.topRight();
-        upperRight.setY(upperRight.y() + 2);
-        painter->drawLine(upperLeft, upperRight);
-        painter->restore();    
-      } else if(isLeftSourceFrame) {
-        painter->save();
-        painter->setPen(QPen(Qt::GlobalColor::white));
-        QPoint upperLeft = option.rect.topLeft();
-        upperLeft.setY(upperLeft.y() + 2);
-        QPoint upperRight = option.rect.topRight();
-        upperRight.setY(upperRight.y() + 2);
-        QPoint center = (upperLeft + upperRight) / 2;
-        QPoint down(center.x(), center.y() + 10);
-        center.setX(center.x() + 10);
-        painter->drawLine(down, center);
-        painter->drawLine(center, upperRight);
-        painter->restore();    
-      } else if(isRightSourceFrame) {
-        painter->save();
-        painter->setPen(QPen(Qt::GlobalColor::white));
-        QPoint upperLeft = option.rect.topLeft();
-        upperLeft.setY(upperLeft.y() + 2);
-        QPoint upperRight = option.rect.topRight();
-        upperRight.setY(upperRight.y() + 2);
-        QPoint center = (upperLeft + upperRight) / 2;
-        QPoint down(center.x(), center.y() + 10);
-        center.setX(center.x() - 10);
-        painter->drawLine(upperLeft, center);
-        painter->drawLine(center, down);
-        painter->restore();    
-      }
     }
   }
 
@@ -300,6 +234,8 @@ namespace Nuclex::FrameFixer {
   void FrameThumbnailPaintDelegate::paintSingleFieldOverlay(
     QPainter &painter, const QStyleOptionViewItem &option, bool topFieldFilled
   ) const {
+    (void)topFieldFilled;
+
     int centerX = (option.rect.left() + option.rect.right()) / 2;
     int bottomY = option.rect.bottom();
 

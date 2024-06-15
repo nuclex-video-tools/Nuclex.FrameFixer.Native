@@ -128,7 +128,9 @@ namespace Nuclex::FrameFixer {
       {
         QRgba64 *scanLine1 = reinterpret_cast<QRgba64 *>(target.scanLine(0));
         QRgba64 *scanLine2 = reinterpret_cast<QRgba64 *>(target.scanLine(1));
-        for(std::size_t x = 0; x < target.width(); ++x) {
+
+        std::size_t targetWidth = static_cast<std::size_t>(target.width());
+        for(std::size_t x = 0; x < targetWidth; ++x) {
           QRgba64 qtColor = scanLine1[x];
           QColor::fromRgbF(
             static_cast<float>(qtColor.red()) / 65536.0f,
@@ -160,14 +162,17 @@ namespace Nuclex::FrameFixer {
       std::vector<HslColor> *lines[3] = { &line1, &line2, &line3 };
 
       // Run the filter over all pixels in the image
-      for(std::size_t lineIndex = 1; lineIndex < target.height() - 1; ++lineIndex) {
+      std::size_t targetHeight = static_cast<std::size_t>(target.height());
+      for(std::size_t lineIndex = 1; lineIndex < targetHeight - 1; ++lineIndex) {
 
         // Fill the third line (each loop, the lines are switched round robin such that
         // the former lines 2 and 3 take places 1 and 2).
         {
           std::vector<HslColor> &line = *lines[2];
           QRgba64 *scanLine = reinterpret_cast<QRgba64 *>(target.scanLine(lineIndex + 1));
-          for(std::size_t x = 0; x < target.width(); ++x) {
+
+          std::size_t targetWidth = static_cast<std::size_t>(target.width());
+          for(std::size_t x = 0; x < targetWidth; ++x) {
             QRgba64 qtColor = scanLine[x];
             QColor::fromRgbF(
               static_cast<float>(qtColor.red()) / 65536.0f,
@@ -187,7 +192,9 @@ namespace Nuclex::FrameFixer {
         {
           std::vector<HslColor> &line = *lines[1];
           QRgba64 *scanLine = reinterpret_cast<QRgba64 *>(target.scanLine(lineIndex));
-          for(std::size_t x = 1; x < target.width() - 1; ++x) {
+
+          std::size_t targetWidth = static_cast<std::size_t>(target.width());
+          for(std::size_t x = 1; x < targetWidth - 1; ++x) {
             float lightness = applyKernelToLightness(lines, lessEdgeDetectionKernel, x);
 
             RgbColor rgbColor;

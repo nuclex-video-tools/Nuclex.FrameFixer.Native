@@ -68,7 +68,7 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
   void BasicDeinterlacer::Deinterlace(
     QImage *previousImage, QImage &image, bool topField /* = true */
   ) {
-    std::size_t lineCount = image.height();
+    std::size_t lineCount = static_cast<std::size_t>(image.height());
 
     // Without a prior frame, interpolate the missing lines
     if(previousImage == nullptr) {
@@ -80,7 +80,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
           QRgba64 *pixelsBelow = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex + 1));
 
-          for(std::size_t x = 0; x < image.width(); ++x) {
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             quint32 red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
             quint32 green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
             quint32 blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);
@@ -101,7 +102,8 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
           QRgb *pixels = reinterpret_cast<QRgb *>(image.scanLine(lineIndex));
           QRgb *pixelsBelow = reinterpret_cast<QRgb *>(image.scanLine(lineIndex + 1));
 
-          for(std::size_t x = 0; x < image.width(); ++x) {
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             quint16 red = qRed(pixelsAbove[x]) + qRed(pixelsBelow[x]);
             quint16 green = qGreen(pixelsAbove[x]) + qGreen(pixelsBelow[x]);
             quint16 blue = qBlue(pixelsAbove[x]) + qBlue(pixelsBelow[x]);

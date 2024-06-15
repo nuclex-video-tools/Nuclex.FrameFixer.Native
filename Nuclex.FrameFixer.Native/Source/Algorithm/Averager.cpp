@@ -36,13 +36,14 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void Averager::Average(QImage &image, const QImage &otherImage) {
-    std::size_t lineCount = image.height();
+    std::size_t lineCount = static_cast<std::size_t>(image.height());
     for(std::size_t lineIndex = 0; lineIndex < lineCount; ++lineIndex) {
       if(image.bytesPerLine() >= image.width() * 8) {
         QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
         const QRgba64 *otherPixels = reinterpret_cast<const QRgba64 *>(otherImage.scanLine(lineIndex));
 
-        for(std::size_t x = 0; x < image.width(); ++x) {
+        std::size_t imageWidth = static_cast<std::size_t>(image.width());
+        for(std::size_t x = 0; x < imageWidth; ++x) {
           quint32 red = qRed(pixels[x]) + qRed(otherPixels[x]);
           quint32 green = qGreen(pixels[x]) + qGreen(otherPixels[x]);
           quint32 blue = qBlue(pixels[x]) + qBlue(otherPixels[x]);
@@ -62,7 +63,8 @@ namespace Nuclex::FrameFixer {
         QRgb *pixels = reinterpret_cast<QRgb *>(image.scanLine(lineIndex));
         const QRgb *otherPixels = reinterpret_cast<const QRgb *>(otherImage.scanLine(lineIndex));
 
-        for(std::size_t x = 0; x < image.width(); ++x) {
+        std::size_t imageWidth = static_cast<std::size_t>(image.width());
+        for(std::size_t x = 0; x < imageWidth; ++x) {
           quint16 red = qRed(pixels[x]) + qRed(otherPixels[x]);
           quint16 green = qGreen(pixels[x]) + qGreen(otherPixels[x]);
           quint16 blue = qBlue(pixels[x]) + qBlue(otherPixels[x]);
@@ -85,14 +87,16 @@ namespace Nuclex::FrameFixer {
     if(image.bytesPerLine() >= image.width() * 8) {
       std::vector<quint32> scanline(image.width() * 4);
     
-      std::size_t lineCount = image.height();
+      std::size_t lineCount = static_cast<std::size_t>(image.height());
       for(std::size_t lineIndex = 0; lineIndex < lineCount; ++lineIndex) {
 
         // Fetch the original image's scanline
         {
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             scanline[componentIndex++] = pixels[x].red();
             scanline[componentIndex++] = pixels[x].green();
             scanline[componentIndex++] = pixels[x].blue();
@@ -107,7 +111,9 @@ namespace Nuclex::FrameFixer {
           );
 
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             scanline[componentIndex++] += otherPixels[x].red();
             scanline[componentIndex++] += otherPixels[x].green();
             scanline[componentIndex++] += otherPixels[x].blue();
@@ -120,7 +126,9 @@ namespace Nuclex::FrameFixer {
         {
           QRgba64 *pixels = reinterpret_cast<QRgba64 *>(image.scanLine(lineIndex));
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             quint32 red = scanline[componentIndex++];
             quint32 green = scanline[componentIndex++];
             quint32 blue = scanline[componentIndex++];
@@ -136,16 +144,19 @@ namespace Nuclex::FrameFixer {
         }
       }
     } else {
-      std::vector<quint16> scanline(image.width() * 4);
+      std::size_t imageWidth = static_cast<std::size_t>(image.width());
+      std::vector<quint16> scanline(imageWidth * 4);
     
-      std::size_t lineCount = image.height();
+      std::size_t lineCount = static_cast<std::size_t>(image.height());
       for(std::size_t lineIndex = 0; lineIndex < lineCount; ++lineIndex) {
 
         // Fetch the original image's scanline
         {
           QRgb *pixels = reinterpret_cast<QRgb *>(image.scanLine(lineIndex));
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             scanline[componentIndex++] = qRed(pixels[x]);
             scanline[componentIndex++] = qGreen(pixels[x]);
             scanline[componentIndex++] = qBlue(pixels[x]);
@@ -160,7 +171,9 @@ namespace Nuclex::FrameFixer {
           );
 
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             scanline[componentIndex++] += qRed(otherPixels[x]);
             scanline[componentIndex++] += qGreen(otherPixels[x]);
             scanline[componentIndex++] += qBlue(otherPixels[x]);
@@ -171,7 +184,9 @@ namespace Nuclex::FrameFixer {
         {
           QRgb *pixels = reinterpret_cast<QRgb *>(image.scanLine(lineIndex));
           int componentIndex = 0;
-          for(std::size_t x = 0; x < image.width(); ++x) {
+
+          std::size_t imageWidth = static_cast<std::size_t>(image.width());
+          for(std::size_t x = 0; x < imageWidth; ++x) {
             quint16 red = scanline[componentIndex++];
             quint16 green = scanline[componentIndex++];
             quint16 blue = scanline[componentIndex++];

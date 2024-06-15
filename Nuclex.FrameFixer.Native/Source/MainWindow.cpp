@@ -47,27 +47,6 @@ along with this library
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  void SaveImage(const QImage &image, const std::string &directory, std::size_t frameIndex) {
-    std::string path = directory;
-
-    std::string::size_type length = directory.length();
-    if((length >= 1) && (directory[length - 1] != '/')) {
-      path = directory + u8"/";
-    } else {
-      path = directory;
-    }
-
-    std::string filename = Nuclex::Support::Text::lexical_cast<std::string>(frameIndex);
-    for(std::size_t index = filename.length(); index < 8; ++index) {
-      path.push_back(u8'0');
-    }
-    path.append(filename);
-    path.append(u8".png");
-
-    image.save(QString::fromStdString(path), u8"PNG");
-  }
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace

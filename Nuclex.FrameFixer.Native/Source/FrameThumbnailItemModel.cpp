@@ -68,6 +68,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   int FrameThumbnailItemModel::rowCount(const QModelIndex &parent) const {
+    (void)parent;
     if(static_cast<bool>(this->movie)) {
       return static_cast<int>(this->movie->Frames.size());
     } else {
@@ -86,7 +87,7 @@ namespace Nuclex::FrameFixer {
 
     // Verify that the widget is asking for a valid index, otherwise return nothing
     int rowIndex = index.row();
-    if((rowIndex < 0) || (rowIndex >= this->movie->Frames.size())) {
+    if((rowIndex < 0) || (static_cast<std::size_t>(rowIndex) >= this->movie->Frames.size())) {
       return QVariant();
     }
 
@@ -127,10 +128,10 @@ namespace Nuclex::FrameFixer {
           height = this->thumbnailResolution.height();
         }
         bitmap = bitmap.scaled(width, height, Qt::KeepAspectRatio);
-        if(bitmap.height() < this->thumbnailResolution.height()) {
-          //bitmap.
-          //thumbnail
-        }
+
+        // TODO: Add padding?
+        //if(bitmap.height() < this->thumbnailResolution.height()) {
+        //}
 
         thumbnail = bitmap;
       }

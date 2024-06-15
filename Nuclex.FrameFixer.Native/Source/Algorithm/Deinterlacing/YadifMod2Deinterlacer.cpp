@@ -95,6 +95,10 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
         fm_next = currentPixels + startIndex * pitch;
       }
 
+      (void)fm_ppitch;
+      (void)fm_npitch;
+      (void)nextImage;
+
       yadifDeinterlaceProc(
         currentPixels + (startIndex * pitch),
         previousPixels + (startIndex * pitch),

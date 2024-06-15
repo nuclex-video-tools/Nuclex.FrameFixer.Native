@@ -42,8 +42,9 @@ namespace Nuclex::FrameFixer {
       Index(std::size_t(-1)),
       Filename(filename),
       Type(FrameType::Unknown),
-      InterpolationSourceIndices(),
       ReplaceWithIndex(),
+      InterpolationSourceIndices(),
+      AlsoInsertInterpolatedAfter(),
       Combedness(),
       MixFactor(),
       ProvisionalType(FrameType::Unknown) {}

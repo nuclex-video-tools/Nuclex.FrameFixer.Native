@@ -43,9 +43,9 @@ namespace Nuclex::FrameFixer::Algorithm::Deinterlacing {
   // ------------------------------------------------------------------------------------------- //
 
   LibAvYadifDeinterlacer::LibAvYadifDeinterlacer(bool bwDifMode) :
+    bwDifMode(bwDifMode),
     priorFrame(),
-    nextFrame(),
-    bwDifMode(bwDifMode) {}
+    nextFrame() {}
 
   // ------------------------------------------------------------------------------------------- //
 

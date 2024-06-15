@@ -58,6 +58,7 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   int DeinterlacerItemModel::rowCount(const QModelIndex &parent) const {
+    (void)parent;
     return static_cast<int>(this->deinterlacers.size());
   }
 
@@ -69,7 +70,7 @@ namespace Nuclex::FrameFixer {
 
     // Verify that the widget is asking for a valid index, otherwise return nothing
     int rowIndex = index.row();
-    if((rowIndex < 0) || (rowIndex >= this->deinterlacers.size())) {
+    if((rowIndex < 0) || (static_cast<std::size_t>(rowIndex) >= this->deinterlacers.size())) {
       return QVariant();
     }
 

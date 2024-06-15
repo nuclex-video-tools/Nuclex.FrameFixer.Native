@@ -42,6 +42,8 @@ namespace Nuclex::FrameFixer::Algorithm::Interpolation {
   // ------------------------------------------------------------------------------------------- //
 
   QImage NullFrameInterpolator::Interpolate(const QImage &prior, const QImage &after) {
+    (void)prior;
+    (void)after;
     throw std::runtime_error(u8"Null interpolator cannot interpolate.");
   }
 
