@@ -17,7 +17,16 @@ Because I wanted to keep complexity low, it works on a folder of PNG files. A 90
 movie, stored as 48 bit PNG files (16 bit color channels) in standard NTSC resolution
 takes up about 100 GiB of disk space.
 
-![Scintilla Text Editor](./Documents/frame-fixer-main-window.png)
+![Frame Fixer Main Window](./Documents/frame-fixer-main-window.png)
+
+It offers various deinterlacers, including the deinterlacers built into ffmpeg:
+  * Linear interpolation of missing row
+  * NNedi3 via libav (AI-based deinterlacer)
+  * Yadif via libav (good, fast interlacer also used by mpv)
+  * Estdif via libav (edge slope tracing, interpolation with better diagonal lines)
+  * BWDif via libav (mixes Yadif + BBC's W3 and improved interpolation)
+
+![Frame Fixer Render Dialog](./Documents/frame-fixer-render-dialog.png)
 
 
 What is Telecine?
