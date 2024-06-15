@@ -22,7 +22,8 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "FrameDatabase.h"
-#include "../Model/FrameType.h"
+#include "../Model/DeinterlaceMode.h"
+#include "../Model/FrameAction.h"
 
 #include <QSqlQuery> // for QSqlQuery
 #include <QSqlError> // for QSqlError
@@ -163,77 +164,128 @@ namespace Nuclex::FrameFixer::Database {
   void FrameDatabase::upgradeSchemaFrom0To1() {
     using Nuclex::FrameFixer::FrameType;
 
-    executeSqlQueryAndCheck(
-      this->database, u8"CREATE TABLE application(name NVARCHAR(256) NOT NULL);"
-    );
-    executeSqlQueryAndCheck(this->database, u8"INSERT INTO application VALUES('FrameFixer');");
-    executeSqlQueryAndCheck(this->database, u8"CREATE TABLE version(current INTEGER NOT NULL);");
-    executeSqlQueryAndCheck(this->database, u8"INSERT INTO version VALUES(1);");
-
-    executeSqlQueryAndCheck(
-      this->database,
-      u8"CREATE TABLE frameTypes("
-      u8"  id INTEGER PRIMARY KEY,"
-      u8"  description NVARCHAR(256) NOT NULL"
-      u8");"
-    );
-
-    QSqlQuery query(*this->database.get());
-    bool successfullyPrepared = query.prepare(
-      u8"INSERT INTO frameTypes "
-      u8"VALUES"
-      u8"  (:discardEnumValue, 'Discard'),"
-      u8"  (:unknownEnumValue, 'Unknown'),"
-      u8"  (:topFieldFirstEnumValue, 'TopFieldFirst'),"
-      u8"  (:bottomFieldFirstEnumValue, 'BottomFieldFirst'),"
-      u8"  (:topFieldOnlyEnumValue, 'TopFieldOnly'),"
-      u8"  (:averageEnumValue, 'AverageWithPrevious'),"
-      u8"  (:duplicateEnumValue, 'Duplicate'),"
-      u8"  (:triplicateEnumValue, 'Triplicate'),"
-      u8"  (:progressiveEnumValue, 'Progressive'),"
-      u8"  (:replaceEnumValue, 'ReplaceWithOtherFrame'),"
-      u8"  (:deblendEnumValue, 'Deblend'),"
-      u8"  (:interpolateEnumValue, 'Interpolate')"
-      u8";"
-    );
-    if(!successfullyPrepared) {
-      std::string message(u8"Error preparing SQL statement to record frame types: ");
-
-      QSqlError lastError = query.lastError();
-      if(lastError.type() != QSqlError::ErrorType::NoError) {
-        message.append(lastError.text().toStdString());
-      } else {
-        message.append(u8"unknown QtSql error");
-      }
-
-      throw std::runtime_error(message);
+    // Basic application information to identify database
+    {
+      executeSqlQueryAndCheck(
+        this->database, u8"CREATE TABLE application(name NVARCHAR(256) NOT NULL);"
+      );
+      executeSqlQueryAndCheck(this->database, u8"INSERT INTO application VALUES('FrameFixer');");
+      executeSqlQueryAndCheck(
+        this->database, u8"CREATE TABLE version(current INTEGER NOT NULL);"
+      );
+      executeSqlQueryAndCheck(this->database, u8"INSERT INTO version VALUES(1);");
     }
-    query.bindValue(u8":discardEnumValue", static_cast<int>(FrameType::Discard));
-    query.bindValue(u8":unknownEnumValue", static_cast<int>(FrameType::Unknown));
-    query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameType::TopFieldFirst));
-    query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameType::BottomFieldFirst));
-    query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameType::TopFieldOnly));
-    query.bindValue(u8":averageEnumValue", static_cast<int>(FrameType::Average));
-    query.bindValue(u8":duplicateEnumValue", static_cast<int>(FrameType::Duplicate));
-    query.bindValue(u8":triplicateEnumValue", static_cast<int>(FrameType::Triplicate));
-    query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
-    query.bindValue(u8":replaceEnumValue", static_cast<int>(FrameType::Replace));
-    query.bindValue(u8":deblendEnumValue", static_cast<int>(FrameType::Deblend));
-    query.bindValue(u8":interpolateEnumValue", static_cast<int>(FrameType::Interpolate));
 
-    // Query is set up and all parameters are bound, now we can execute it
-    bool successfullyExecuted = query.exec();
-    if(!successfullyExecuted) {
-      std::string message(u8"Error executing SQL statement to record frame types: ");
+    // Deinterlace modes
+    {
+      executeSqlQueryAndCheck(
+        this->database,
+        u8"CREATE TABLE deinterlaceModes("
+        u8"  id INTEGER PRIMARY KEY,"
+        u8"  description NVARCHAR(64) NOT NULL"
+        u8");"
+      );
 
-      QSqlError lastError = query.lastError();
-      if(lastError.type() != QSqlError::ErrorType::NoError) {
-        message.append(lastError.text().toStdString());
-      } else {
-        message.append(u8"unknown QtSql error");
+      QSqlQuery query(*this->database.get());
+      bool successfullyPrepared = query.prepare(
+        u8"INSERT INTO deinterlaceModes "
+        u8"VALUES"
+        u8"  (:unknownEnumValue, 'Unknown'),"
+        u8"  (:topFieldFirstEnumValue, 'TopFieldFirst'),"
+        u8"  (:bottomFieldFirstEnumValue, 'BottomFieldFirst'),"
+        u8"  (:topFieldOnlyEnumValue, 'TopFieldOnly'),"
+        u8"  (:bottomFieldOnlyEnumValue, 'BottomFieldOnly'),"
+        u8"  (:progressiveEnumValue, 'Progressive')"
+        u8";"
+      );
+      if(!successfullyPrepared) {
+        std::string message(u8"Error preparing SQL statement to record deinterlace modes: ");
+
+        QSqlError lastError = query.lastError();
+        if(lastError.type() != QSqlError::ErrorType::NoError) {
+          message.append(lastError.text().toStdString());
+        } else {
+          message.append(u8"unknown QtSql error");
+        }
+
+        throw std::runtime_error(message);
       }
+      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameType::TopFieldFirst));
+      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameType::BottomFieldFirst));
+      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameType::TopFieldOnly));
+      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameType::BottomFieldOnly));
+      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
 
-      throw std::runtime_error(message);
+      // Query is set up and all parameters are bound, now we can execute it
+      bool successfullyExecuted = query.exec();
+      if(!successfullyExecuted) {
+        std::string message(u8"Error executing SQL statement to record frame types: ");
+
+        QSqlError lastError = query.lastError();
+        if(lastError.type() != QSqlError::ErrorType::NoError) {
+          message.append(lastError.text().toStdString());
+        } else {
+          message.append(u8"unknown QtSql error");
+        }
+
+        throw std::runtime_error(message);
+      }
+    }
+
+    {
+      executeSqlQueryAndCheck(
+        this->database,
+        u8"CREATE TABLE frameActions("
+        u8"  id INTEGER PRIMARY KEY,"
+        u8"  description NVARCHAR(256) NOT NULL"
+        u8");"
+      );
+
+      QSqlQuery query(*this->database.get());
+      bool successfullyPrepared = query.prepare(
+        u8"INSERT INTO frameActions "
+        u8"VALUES"
+        u8"  (:keepEnumValue, 'Keep'),"
+        u8"  (:discardEnumValue, 'Discard'),"
+        u8"  (:replaceEnumValue, 'Replace'),"
+        u8"  (:duplicateEnumValue, 'Duplicate'),"
+        u8"  (:triplicateEnumValue, 'Triplicate'),"
+        u8"  (:deblendEnumValue, 'Deblend')"
+        u8";"
+      );
+      if(!successfullyPrepared) {
+        std::string message(u8"Error preparing SQL statement to record deinterlace modes: ");
+
+        QSqlError lastError = query.lastError();
+        if(lastError.type() != QSqlError::ErrorType::NoError) {
+          message.append(lastError.text().toStdString());
+        } else {
+          message.append(u8"unknown QtSql error");
+        }
+
+        throw std::runtime_error(message);
+      }
+      query.bindValue(u8":unknownEnumValue", static_cast<int>(FrameType::Unknown));
+      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameType::TopFieldFirst));
+      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameType::BottomFieldFirst));
+      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameType::TopFieldOnly));
+      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameType::BottomFieldOnly));
+      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameType::Progressive));
+
+      // Query is set up and all parameters are bound, now we can execute it
+      bool successfullyExecuted = query.exec();
+      if(!successfullyExecuted) {
+        std::string message(u8"Error executing SQL statement to record frame types: ");
+
+        QSqlError lastError = query.lastError();
+        if(lastError.type() != QSqlError::ErrorType::NoError) {
+          message.append(lastError.text().toStdString());
+        } else {
+          message.append(u8"unknown QtSql error");
+        }
+
+        throw std::runtime_error(message);
+      }
     }
 
     executeSqlQueryAndCheck(

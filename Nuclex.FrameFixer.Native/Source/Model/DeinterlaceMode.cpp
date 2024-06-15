@@ -21,7 +21,7 @@ along with this library
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
-#include "./FrameType.h"
+#include "./DeinterlaceMode.h"
 
 // --------------------------------------------------------------------------------------------- //
 

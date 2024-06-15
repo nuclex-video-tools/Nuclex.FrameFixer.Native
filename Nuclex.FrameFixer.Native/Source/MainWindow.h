@@ -23,7 +23,8 @@ along with this library
 
 #include "Nuclex/FrameFixer/Config.h"
 
-#include "./Model/FrameType.h"
+#include "./Model/DeinterlaceMode.h"
+#include "./Model/FrameAction.h"
 #include "./Algorithm/Deinterlacing/Deinterlacer.h"
 
 #include <QMainWindow> // for QMainWindow

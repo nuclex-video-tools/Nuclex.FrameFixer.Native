@@ -22,7 +22,8 @@ along with this library
 #define NUCLEX_FRAMEFIXER_FRAME_H
 
 #include "Nuclex/FrameFixer/Config.h"
-#include "./FrameType.h"
+#include "./DeinterlaceMode.h"
+#include "./FrameAction.h"
 
 #include <cstddef> // for std::size_t
 #include <string> // for std::string
