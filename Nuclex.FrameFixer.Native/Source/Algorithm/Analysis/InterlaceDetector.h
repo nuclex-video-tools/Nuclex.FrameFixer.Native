@@ -25,6 +25,8 @@ along with this library
 
 #include <tuple>
 
+#if 0
+
 #include <Nuclex/Pixels/Bitmap.h>
 #include <Nuclex/Pixels/ColorModels/RgbPixelIterator.h>
 
@@ -110,5 +112,7 @@ namespace Nuclex::FrameFixer::Algorithm::Analysis {
   // ------------------------------------------------------------------------------------------- //
 
 } // namespace Nuclex::FrameFixer::Algorithm::Analysis
+
+#endif
 
 #endif // NUCLEX_FRAMEFIXER_ALGORITHM_ANALYSIS_INTERLACEDETECTOR_H

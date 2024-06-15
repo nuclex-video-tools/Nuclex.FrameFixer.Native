@@ -23,6 +23,8 @@ along with this library
 
 #include "./InterlaceDetector.h"
 
+#if 0
+
 #include <vector> // for std::vector
 
 namespace {
@@ -353,3 +355,5 @@ namespace Nuclex::FrameFixer::Algorithm::Analysis {
   // ------------------------------------------------------------------------------------------- //
 
 } // namespace Nuclex::FrameFixer::Algorithm::Analysis
+
+#endif

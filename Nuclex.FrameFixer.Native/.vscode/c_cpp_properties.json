@@ -7,9 +7,8 @@
                 "${workspaceFolder}/obj/cmake-Debug/NuclexFrameFixerNative_autogen/include/**",
                 "${workspaceFolder}/../Nuclex.Support.Native/Include/**",
                 "${workspaceFolder}/../Nuclex.Platform.Native/Include/**",
-                "${workspaceFolder}/../Nuclex.Pixels.Native/Include/**",
-                "${workspaceFolder}/../ThirdParty/celero/build/include/**",
-                "${workspaceFolder}/../ThirdParty/gtest/Include/**",
+                "${workspaceFolder}/../third-party/nuclex-googletest/build/googletest/include/**",
+                "${workspaceFolder}/../third-party/nuclex-celero/build/include/**",
                 "/usr/include/qt5/**"
             ],
             "defines": [

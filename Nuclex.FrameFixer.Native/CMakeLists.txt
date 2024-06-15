@@ -71,8 +71,10 @@ set(CMAKE_AUTORCC ON)
 # find includes in the corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Contains compiler options, compiler tag for output directory, etc.
-include("../BuildSystem/cmake/cplusplus.cmake")
+# This sets a bunch of compile flags and defined ${NUCLEX_COMPILER_TAG} to
+# say something like linux-gcc-13.2-amd64-debug. You should have this directory
+# if you do a full clone of a project that is using this third-party library build.
+include("../build-system/cmake/cplusplus.cmake")
 
 # The Unix build pipeline doesn't automatically include threading, so search for
 # the pthreads library in order to link against it later on.
@@ -96,14 +98,6 @@ if(NOT (TARGET NuclexPlatformNative))
 	add_subdirectory(
 		${PROJECT_SOURCE_DIR}/../Nuclex.Platform.Native
 		${CMAKE_BINARY_DIR}/NuclexPlatformNative
-	)
-endif()
-
-# Add Nuclex.Pixels.Native as a sub-project, it provides all the image processing code
-if(NOT (TARGET NuclexPixelsNative))
-	add_subdirectory(
-		${PROJECT_SOURCE_DIR}/../Nuclex.Pixels.Native
-		${CMAKE_BINARY_DIR}/NuclexPixelsNative
 	)
 endif()
 
@@ -132,7 +126,10 @@ if(BUILD_UNIT_TESTS)
 
 	# Add GoogleTest as a sub-project so we can link our unit test executable
 	if(NOT (TARGET GoogleTest))
-		add_subdirectory(${PROJECT_SOURCE_DIR}/../ThirdParty/gtest ${CMAKE_BINARY_DIR}/gtest)
+		add_subdirectory(
+			${PROJECT_SOURCE_DIR}/../third-party/nuclex-googletest
+			${CMAKE_BINARY_DIR}/nuclex-googletest
+		)
 	endif()
 endif()
 
@@ -141,7 +138,10 @@ if(BUILD_BENCHMARK)
 
 	# Add Celero as a sub-project so we can link our benchmark executable
 	if(NOT (TARGET Celero))
-		add_subdirectory(${PROJECT_SOURCE_DIR}/../ThirdParty/celero ${CMAKE_BINARY_DIR}/celero)
+		add_subdirectory(
+			${PROJECT_SOURCE_DIR}/../third-party/nuclex-celero
+			${CMAKE_BINARY_DIR}/nuclex-celero
+		)
 	endif()
 endif()
 
@@ -205,7 +205,6 @@ function(add_third_party_libraries target_name)
 		${target_name}
     PUBLIC NuclexSupportNative
     PUBLIC NuclexPlatformNative
-    PUBLIC NuclexPixelsNative
     PRIVATE Qt5::Widgets
     PRIVATE Qt5::Sql
 		PRIVATE Threads::Threads
@@ -298,15 +297,6 @@ set_property(GLOBAL PROPERTY QUIET_INSTALL ON)
 # a pre-compiled shared library, the correct library is used).
 install(
 	TARGETS NuclexFrameFixerNative
-	ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
-	LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
-	RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
-)
-
-# Do the same for Nuclex.Pixels.Native. Since we depend on this library
-# and have set the rpath accordingly, it needs to be in the same directory
-install(
-	TARGETS NuclexPixelsNative
 	ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
 	LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}
 	RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin/${NUCLEX_COMPILER_TAG}

@@ -22,51 +22,51 @@ along with this library
 #define NUCLEX_FRAMEFIXER_SOURCE 1
 
 #include "./Filter.h"
-
-#include <Nuclex/Pixels/ColorModels/HslColor.h>
-#include <Nuclex/Pixels/ColorModels/ColorModelConverter.h>
+#include "./RgbColor.h"
+#include "./HslColor.h"
 
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  float lessEdgeDetectionKernel[3][3] = {
+  qreal lessEdgeDetectionKernel[3][3] = {
     { -0.5f, -0.5f, -0.5f },
     { -0.5f,  4.0f, -0.5f },
     { -0.5f, -0.5f, -0.5f }
   };
 
-  float edgeDetectionKernel[3][3] = {
+  qreal edgeDetectionKernel[3][3] = {
     { -1.0f, -1.0f, -1.0f },
     { -1.0f,  8.0f, -1.0f },
     { -1.0f, -1.0f, -1.0f }
   };
 
-  float moreEdgeDetectionKernel[3][3] = {
+  qreal moreEdgeDetectionKernel[3][3] = {
     { -2.0f, -2.0f, -2.0f },
     { -2.0f, 16.0f, -2.0f },
     { -2.0f, -2.0f, -2.0f }
   };
 
-  float antiEdgeDetectionKernel[3][3] = {
+  qreal antiEdgeDetectionKernel[3][3] = {
     { 2.0f,   2.0f, 2.0f },
     { 2.0f, -16.0f, 2.0f },
     { 2.0f,   2.0f, 2.0f }
   };
 
+
   // ------------------------------------------------------------------------------------------- //
 
-  float applyKernelToLightness(
-    std::vector<Nuclex::Pixels::ColorModels::HslColor> *lines[3],
-    float kernel[3][3],
+  qreal applyKernelToLightness(
+    std::vector<Nuclex::FrameFixer::Algorithm::HslColor> *lines[3],
+    qreal kernel[3][3],
     std::size_t middleLineX
   ) {
-    float sum = 0.5f;
+    qreal sum = 0.5f;
 
     for(int y = -1; y < 2; ++y) {
       for(int x = -1; x < 2; ++x) {
-        float kernelValue = kernel[y + 1][x + 1];
-        float lightness = (*lines[y + 1])[x + middleLineX].Lightness;
+        qreal kernelValue = kernel[y + 1][x + 1];
+        qreal lightness = (*lines[y + 1])[x + middleLineX].Lightness;
         sum += kernelValue * lightness;
       }
     }
@@ -76,22 +76,34 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  float applyKernelToSaturation(
-    std::vector<Nuclex::Pixels::ColorModels::HslColor> *lines[3],
-    float kernel[3][3],
+  qreal applyKernelToSaturation(
+    std::vector<Nuclex::FrameFixer::Algorithm::HslColor> *lines[3],
+    qreal kernel[3][3],
     std::size_t middleLineX
   ) {
-    float sum = 0.5f;
+    qreal sum = 0.5f;
 
     for(int y = -1; y < 2; ++y) {
       for(int x = -1; x < 2; ++x) {
-        float kernelValue = kernel[y + 1][x + 1];
-        float saturation = (*lines[y + 1])[x + middleLineX].Saturation;
+        qreal kernelValue = kernel[y + 1][x + 1];
+        qreal saturation = (*lines[y + 1])[x + middleLineX].Saturation;
         sum += kernelValue * saturation;
       }
     }
 
     return sum;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  qreal clamp(qreal value, qreal min = 0.0f, qreal max = 1.0f) {
+    if(value < min) {
+      return min;
+    } else if(value >= max) {
+      return max;
+    } else {
+      return value;
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -103,9 +115,8 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void Filter::LuminanceHighPass(QImage &target) {
-    using Nuclex::Pixels::ColorModels::HslColor;
-    using Nuclex::Pixels::ColorModels::RgbColor;
-    using Nuclex::Pixels::ColorModels::ColorModelConverter;
+    using Nuclex::FrameFixer::Algorithm::HslColor;
+    using Nuclex::FrameFixer::Algorithm::RgbColor;
 
     if(target.bytesPerLine() >= target.width() * 8) {
       std::vector<HslColor> line1, line2, line3;
@@ -119,19 +130,30 @@ namespace Nuclex::FrameFixer {
         QRgba64 *scanLine2 = reinterpret_cast<QRgba64 *>(target.scanLine(1));
         for(std::size_t x = 0; x < target.width(); ++x) {
           QRgba64 qtColor = scanLine1[x];
-          RgbColor nxColor;
-          nxColor.Red = static_cast<float>(qtColor.red()) / 65536.0f;
-          nxColor.Green = static_cast<float>(qtColor.green()) / 65536.0f;
-          nxColor.Blue = static_cast<float>(qtColor.blue()) / 65536.0f;
-          nxColor.Alpha = 1.0f;
-          line1[x] = ColorModelConverter::HslFromRgb(nxColor);
+          QColor::fromRgbF(
+            static_cast<float>(qtColor.red()) / 65536.0f,
+            static_cast<float>(qtColor.green()) / 65536.0f,
+            static_cast<float>(qtColor.blue()) / 65536.0f,
+            1.0f
+          ).getHslF(
+            &line1[x].Hue,
+            &line1[x].Saturation,
+            &line1[x].Lightness,
+            &line1[x].Alpha
+          );
 
           qtColor = scanLine2[x];
-          nxColor.Red = static_cast<float>(qtColor.red()) / 65536.0f;
-          nxColor.Green = static_cast<float>(qtColor.green()) / 65536.0f;
-          nxColor.Blue = static_cast<float>(qtColor.blue()) / 65536.0f;
-          nxColor.Alpha = 1.0f;
-          line2[x] = ColorModelConverter::HslFromRgb(nxColor);
+          QColor::fromRgbF(
+            static_cast<float>(qtColor.red()) / 65536.0f,
+            static_cast<float>(qtColor.green()) / 65536.0f,
+            static_cast<float>(qtColor.blue()) / 65536.0f,
+            1.0f
+          ).getHslF(
+            &line2[x].Hue,
+            &line2[x].Saturation,
+            &line2[x].Lightness,
+            &line2[x].Alpha
+          );
         }
       }
 
@@ -147,12 +169,17 @@ namespace Nuclex::FrameFixer {
           QRgba64 *scanLine = reinterpret_cast<QRgba64 *>(target.scanLine(lineIndex + 1));
           for(std::size_t x = 0; x < target.width(); ++x) {
             QRgba64 qtColor = scanLine[x];
-            RgbColor nxColor;
-            nxColor.Red = static_cast<float>(qtColor.red()) / 65536.0f;
-            nxColor.Green = static_cast<float>(qtColor.green()) / 65536.0f;
-            nxColor.Blue = static_cast<float>(qtColor.blue()) / 65536.0f;
-            nxColor.Alpha = 1.0f;
-            line[x] = ColorModelConverter::HslFromRgb(nxColor);
+            QColor::fromRgbF(
+              static_cast<float>(qtColor.red()) / 65536.0f,
+              static_cast<float>(qtColor.green()) / 65536.0f,
+              static_cast<float>(qtColor.blue()) / 65536.0f,
+              1.0f
+            ).getHslF(
+              &line[x].Hue,
+              &line[x].Saturation,
+              &line[x].Lightness,
+              &line[x].Alpha
+            );
           }
         }
 
@@ -163,10 +190,19 @@ namespace Nuclex::FrameFixer {
           for(std::size_t x = 1; x < target.width() - 1; ++x) {
             float lightness = applyKernelToLightness(lines, lessEdgeDetectionKernel, x);
 
-            HslColor hslColor = line[x];
-            hslColor.Lightness = lightness; //(hslColor.Lightness * 3.0f + lightness) / 4.0f;;
-            //hslColor.Saturation = (hslColor.Saturation * 3.0f + saturation) / 4.0f;
-            RgbColor rgbColor = ColorModelConverter::RgbFromHsl(hslColor);
+            RgbColor rgbColor;
+            QColor::fromHslF(
+              line[x].Hue,
+              line[x].Saturation,
+              clamp(applyKernelToLightness(lines, lessEdgeDetectionKernel, x)),
+              line[x].Alpha
+            ).getRgbF(
+              &rgbColor.Red,
+              &rgbColor.Green,
+              &rgbColor.Blue,
+              &rgbColor.Alpha
+            );
+
             scanLine[x] = QRgba64::fromRgba64(
               static_cast<quint16>(rgbColor.Red * 65535.0f),
               static_cast<quint16>(rgbColor.Green * 65535.0f),

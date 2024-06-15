@@ -44,8 +44,6 @@ along with this library
 
 #include "./Algorithm/Filter.h"
 
-#include <Nuclex/Pixels/Storage/BitmapSerializer.h>
-
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
