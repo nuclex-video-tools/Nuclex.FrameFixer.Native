@@ -24,6 +24,7 @@ along with this library
 #include "Nuclex/FrameFixer/Config.h"
 
 #include <QAbstractItemModel>
+#include <QSize>
 
 #include <memory> // for std::shared_ptr
 
@@ -81,6 +82,8 @@ namespace Nuclex::FrameFixer {
     private: std::unique_ptr<
       Nuclex::Support::Collections::SequentialSlotCache<std::size_t, QVariant>
     > thumbnailCache;
+    /// <summary>Size the individual thumbnails should have</summary>
+    private: QSize thumbnailResolution;
 
   };
 

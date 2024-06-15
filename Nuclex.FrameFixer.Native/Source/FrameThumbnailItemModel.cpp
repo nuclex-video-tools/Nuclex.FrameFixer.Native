@@ -34,7 +34,8 @@ namespace Nuclex::FrameFixer {
   FrameThumbnailItemModel::FrameThumbnailItemModel(QObject *parent) :
     QAbstractListModel(parent),
     movie(),
-    thumbnailCache() {}
+    thumbnailCache(),
+    thumbnailResolution(128, 128) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -56,7 +57,12 @@ namespace Nuclex::FrameFixer {
   // ------------------------------------------------------------------------------------------- //
 
   void FrameThumbnailItemModel::SetThumbnailResolution(const QSize &resolution) {
-    // TODO
+    beginResetModel();
+    this->thumbnailResolution = resolution;
+    if(static_cast<bool>(this->thumbnailCache)) {
+      this->thumbnailCache->EvictDownTo(0);
+    }
+    endResetModel();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -107,8 +113,27 @@ namespace Nuclex::FrameFixer {
       }
 
       // Load the image, resize it to thumbnail format and return it for the 
-      QPixmap bitmap(QString::fromStdString(frameImagePath));
-      thumbnail = bitmap.scaled(80, 80, Qt::KeepAspectRatio);
+      {
+        QPixmap bitmap(QString::fromStdString(frameImagePath));
+
+        int width = bitmap.width();
+        int height = bitmap.height();
+        if(width > this->thumbnailResolution.width()) {
+          height = height * this->thumbnailResolution.width() / width;
+          width = this->thumbnailResolution.width();
+        }
+        if(height > this->thumbnailResolution.height()) {
+          width = width * this->thumbnailResolution.height() / height;
+          height = this->thumbnailResolution.height();
+        }
+        bitmap = bitmap.scaled(width, height, Qt::KeepAspectRatio);
+        if(bitmap.height() < this->thumbnailResolution.height()) {
+          //bitmap.
+          //thumbnail
+        }
+
+        thumbnail = bitmap;
+      }
 
       this->thumbnailCache->Insert(rowIndex, thumbnail);
       this->thumbnailCache->EvictDownTo(1024);

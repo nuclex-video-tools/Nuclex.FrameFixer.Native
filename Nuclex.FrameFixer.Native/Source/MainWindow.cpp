@@ -88,6 +88,8 @@ namespace Nuclex::FrameFixer {
 
     this->ui->setupUi(this);
 
+    this->thumbnailItemModel->SetThumbnailResolution(QSize(116, 116));
+
     this->ui->thumbnailList->setViewMode(QListView::ViewMode::IconMode);
     this->ui->thumbnailList->setIconSize(QSize(128, 128));
     // Prevent the thumbnails strip from wrapping around. Important, because otherwise
@@ -187,12 +189,20 @@ namespace Nuclex::FrameFixer {
       this, &MainWindow::markDeblendClicked
     );
     connect(
-      this->ui->markInterpolateNearButton, &QPushButton::clicked,
-      this, &MainWindow::markInterpolateNearClicked
+      this->ui->markDeblendButton, &QPushButton::clicked,
+      this, &MainWindow::markDeblendClicked
     );
     connect(
-      this->ui->markInterpolateFarButton, &QPushButton::clicked,
-      this, &MainWindow::markInterpolateFarClicked
+      this->ui->markReplacedButton, &QPushButton::clicked,
+      this, &MainWindow::markReplacedClicked
+    );
+    connect(
+      this->ui->markReplaceWithInterpolatedButton, &QPushButton::clicked,
+      this, &MainWindow::markReplaceWithInterpolatedClicked
+    );
+    connect(
+      this->ui->markAppendInterpolatedButton, &QPushButton::clicked,
+      this, &MainWindow::markAppendInterpolatedClicked
     );
 
     connect(
@@ -298,7 +308,14 @@ namespace Nuclex::FrameFixer {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void MainWindow::markRepeatClicked() {
+  void MainWindow::markReplacedClicked() {
+    if(static_cast<bool>(this->currentMovie)) {
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void MainWindow::markReplaceWithInterpolatedClicked() {
     if(static_cast<bool>(this->currentMovie)) {
     }
   }

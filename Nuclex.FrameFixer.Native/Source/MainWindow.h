@@ -131,8 +131,8 @@ namespace Nuclex::FrameFixer {
     /// </summary>
     private: void renderClicked();
 
-    /// <summary>Marks the current frame to be discarded</param>
-    private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
+    /// <summary>Marks the current frame as a non-interlaced frame</param>
+    private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
     /// <summary>Marks the current frame as a B-C frame in the telecine rhythm</param>
     private: void markTopFieldFirstClicked()  { toggleFrameType(FrameType::TopFieldFirst); }
     /// <summary>Marks the current frame as a C-D frame in the telecine rhythm</param>
@@ -141,28 +141,27 @@ namespace Nuclex::FrameFixer {
     private: void markTopFieldOnlyClicked() { toggleFrameType(FrameType::TopFieldOnly); }
     /// <summary>Marks the current frame as a C frame with only its bottom field</param>
     private: void markBottomFieldOnlyClicked() { toggleFrameType(FrameType::BottomFieldOnly); }
-    /// <summary>Marks the current frame as a non-interlaced frame</param>
-    private: void markProgressiveClicked() { toggleFrameType(FrameType::Progressive); }
+
+    /// <summary>Marks the current frame to be discarded</param>
+    private: void markDiscardClicked() { toggleFrameType(FrameType::Discard); }
     /// <summary>Marks the current frame for averaging</param>
     private: void markAverageClicked() { toggleFrameType(FrameType::Average); }
     /// <summary>Marks the current frame for duplication</param>
     private: void markDuplicateClicked() { toggleFrameType(FrameType::Duplicate); }
     /// <summary>Marks the current frame for triplication</param>
     private: void markTriplicateClicked() { toggleFrameType(FrameType::Triplicate); }
+
     /// <summary>Marks the current frame for deblending</param>
     private: void markDeblendClicked() { toggleFrameType(FrameType::Deblend); }
+    /// <summary>Marks the current frame to repeat the most recent interpolation</param>
+    private: void markReplacedClicked();
+    /// <summary>Marks the current frame to repeat the most recent interpolation</param>
+    private: void markReplaceWithInterpolatedClicked();
     /// <summary>Marks the current frame for neighbor interpolation</param>
-    private: void markInterpolateNearClicked() {
+    private: void markAppendInterpolatedClicked() {
       setupInterpolation(1);
       toggleFrameType(FrameType::Interpolate);
     }
-    /// <summary>Marks the current frame for far neighbor interpolation</param>
-    private: void markInterpolateFarClicked() {
-      setupInterpolation(2);
-      toggleFrameType(FrameType::Interpolate);
-    }
-    /// <summary>Marks the current frame to repeat the most recent interpolation</param>
-    private: void markRepeatClicked();
 
     /// <summary>Flood-fills the provisional frame types for previewing</param>
     private: void showStatisticsClicked();
