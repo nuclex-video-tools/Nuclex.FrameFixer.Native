@@ -1,22 +1,21 @@
-#pragma region CPL License
+#pragma region Apache License 2.0
 /*
-Nuclex FrameFixer
-Copyright (C) 2024 Nuclex Development Labs
+Nuclex Frame Fixer
+Copyright (C) 2024 Markus Ewald / Nuclex Development Labs
 
-This application is free software; you can redistribute it and/or modify it
-under the terms of the IBM Common Public License as published by
-the IBM Corporation; either version 1.0 of the License,
-or (at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This application is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the IBM Common Public License
-for more details.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the IBM Common Public License
-along with this library
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
-#pragma endregion // CPL License
+#pragma endregion // Apache License 2.0
 
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
@@ -50,7 +49,8 @@ namespace {
     // patterns or repeating the most recent 5-frame cycle.
     FrameAction frameType = frame.Action;
     if(frameType == FrameAction::Unknown) {
-      frameType = frame.ProvisionalType;
+      // TODO: Re-enable once the DeinterlaceMode split is complete
+      //frameType = frame.ProvisionalMode;
     }
 
     // Swap top and bottom field enum values if the field order is set to flipped.
@@ -407,9 +407,9 @@ namespace Nuclex::FrameFixer {
       // the current image. Otherwise, load the file for the current frame.
       if(!nextImage.isNull()) {
         nextImage.swap(currentImage);
-      } else if(movie->Frames[frameIndex].ReplaceWithIndex.has_value()) {
+      } else if(movie->Frames[frameIndex].LeftOrReplacementIndex.has_value()) {
         std::string imagePath = movie->GetFramePath(
-          movie->Frames[frameIndex].ReplaceWithIndex.value()
+          movie->Frames[frameIndex].LeftOrReplacementIndex.value()
         );
         currentImage.load(QString::fromStdString(imagePath));
       } else {
@@ -420,9 +420,9 @@ namespace Nuclex::FrameFixer {
       // If the deinterlacer needs a next frame, also load the image that
       // follows the current one
       if(needsNextFrame && ((frameIndex + 1) < frameCount)) {
-        if(movie->Frames[frameIndex + 1].ReplaceWithIndex.has_value()) {
+        if(movie->Frames[frameIndex + 1].LeftOrReplacementIndex.has_value()) {
           std::string imagePath = movie->GetFramePath(
-            movie->Frames[frameIndex + 1].ReplaceWithIndex.value()
+            movie->Frames[frameIndex + 1].LeftOrReplacementIndex.value()
           );
           nextImage.load(QString::fromStdString(imagePath));
         } else {
@@ -500,10 +500,6 @@ namespace Nuclex::FrameFixer {
       if((frameIndex + 1) < frameCount) {
         if(movie->Frames[frameIndex + 1].Action == FrameAction::Average) {
           nextImageUsesAveraging = true;
-        } else if(movie->Frames[frameIndex + 1].Action == FrameAction::Unknown) {
-          if(movie->Frames[frameIndex + 1].ProvisionalType == FrameAction::Average) {
-            nextImageUsesAveraging = true;
-          }
         }
       }
       if(this->inputFrameRange.has_value()) {
@@ -614,7 +610,7 @@ namespace Nuclex::FrameFixer {
         currentImage, DeinterlaceMode::BottomFieldOnly
       );
     } else if(currentFrameType == FrameAction::Replace) {
-      imagePath = movie->GetFramePath(movie->Frames[frameIndex].ReplaceWithIndex.value());
+      imagePath = movie->GetFramePath(movie->Frames[frameIndex].LeftOrReplacementIndex.value());
       QImage replacementImage(QString::fromStdString(imagePath));
       currentImage.swap(replacementImage);
     }

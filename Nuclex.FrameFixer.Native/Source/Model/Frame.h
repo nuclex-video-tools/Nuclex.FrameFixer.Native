@@ -1,22 +1,21 @@
-#pragma region CPL License
+#pragma region Apache License 2.0
 /*
-Nuclex FrameFixer
-Copyright (C) 2024 Nuclex Development Labs
+Nuclex Frame Fixer
+Copyright (C) 2024 Markus Ewald / Nuclex Development Labs
 
-This application is free software; you can redistribute it and/or modify it
-under the terms of the IBM Common Public License as published by
-the IBM Corporation; either version 1.0 of the License,
-or (at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This application is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the IBM Common Public License
-for more details.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the IBM Common Public License
-along with this library
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
-#pragma endregion // CPL License
+#pragma endregion // Apache License 2.0
 
 #ifndef NUCLEX_FRAMEFIXER_FRAME_H
 #define NUCLEX_FRAMEFIXER_FRAME_H
@@ -44,12 +43,12 @@ namespace Nuclex::FrameFixer {
       Filename(filename),
       Mode(),
       Action(FrameAction::Unknown),
-      ReplaceWithIndex(),
+      LeftOrReplacementIndex(),
       InterpolationSourceIndices(),
       AlsoInsertInterpolatedAfter(),
       Combedness(),
       MixFactor(),
-      ProvisionalType(FrameAction::Unknown) {}
+      ProvisionalMode(DeinterlaceMode::Dont) {}
 
     /// <summary>Absolute index of the frame from the beginning of the movie</summary>
     public: std::size_t Index;
@@ -57,16 +56,20 @@ namespace Nuclex::FrameFixer {
     public: std::string Filename;
 
     /// <summary>How the deinterlacer should treat this frame</summary>
+    /// <remarks>
+    ///   Deinterlacing, if requested, will always be done first, regardless of whether
+    ///   the frame is tagged to be duplicated, averaged or interpolated.
+    /// </remarks>
     public: std::optional<DeinterlaceMode> Mode;
-    /// <summary>Type of this frame in the framefixer sequence</summary>
+    /// <summary>Action that should be taken with this frame when it is rendered</summary>
     public: FrameAction Action;
 
-    // TODO: Combine ReplaceWithIndex and InterpolationSourceIndices
+    // TODO: Combine LeftOrReplacementIndex and InterpolationSourceIndices
     //   1 index = use that frame
     //   2 indices = interpolate between those frames
 
     /// <summary>Frame with which this one should be replaced</summary>
-    public: std::optional<std::size_t> ReplaceWithIndex;
+    public: std::optional<std::size_t> LeftOrReplacementIndex;
     /// <summary>Frames which will be interpolated to form this one</summary>
     public: std::optional<std::pair<std::size_t, std::size_t>> InterpolationSourceIndices;
     /// <summary>Whether to also insert an interpolated frame after this one</summary>
@@ -78,7 +81,7 @@ namespace Nuclex::FrameFixer {
     public: std::optional<double> MixFactor; 
 
     /// <summary>Type according to the telecine pattern</summary>
-    public: FrameAction ProvisionalType;
+    public: DeinterlaceMode ProvisionalMode;
 
   };
 

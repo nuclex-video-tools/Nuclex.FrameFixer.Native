@@ -1,22 +1,21 @@
-#pragma region CPL License
+#pragma region Apache License 2.0
 /*
-Nuclex FrameFixer
-Copyright (C) 2024 Nuclex Development Labs
+Nuclex Frame Fixer
+Copyright (C) 2024 Markus Ewald / Nuclex Development Labs
 
-This application is free software; you can redistribute it and/or modify it
-under the terms of the IBM Common Public License as published by
-the IBM Corporation; either version 1.0 of the License,
-or (at your option) any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This application is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the IBM Common Public License
-for more details.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the IBM Common Public License
-along with this library
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
-#pragma endregion // CPL License
+#pragma endregion // Apache License 2.0
 
 // If the application is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_FRAMEFIXER_SOURCE 1
@@ -236,7 +235,7 @@ namespace Nuclex::FrameFixer::Database {
         this->database,
         u8"CREATE TABLE frameActions("
         u8"  id INTEGER PRIMARY KEY,"
-        u8"  description NVARCHAR(256) NOT NULL"
+        u8"  description NVARCHAR(64) NOT NULL"
         u8");"
       );
 
@@ -244,8 +243,8 @@ namespace Nuclex::FrameFixer::Database {
       bool successfullyPrepared = query.prepare(
         u8"INSERT INTO frameActions "
         u8"VALUES"
-        u8"  (:keepEnumValue, 'Keep'),"
         u8"  (:discardEnumValue, 'Discard'),"
+        u8"  (:keepEnumValue, 'Keep'),"
         u8"  (:replaceEnumValue, 'Replace'),"
         u8"  (:duplicateEnumValue, 'Duplicate'),"
         u8"  (:triplicateEnumValue, 'Triplicate'),"
@@ -264,12 +263,12 @@ namespace Nuclex::FrameFixer::Database {
 
         throw std::runtime_error(message);
       }
-      query.bindValue(u8":unknownEnumValue", static_cast<int>(FrameAction::Unknown));
-      query.bindValue(u8":topFieldFirstEnumValue", static_cast<int>(FrameAction::TopFieldFirst));
-      query.bindValue(u8":bottomFieldFirstEnumValue", static_cast<int>(FrameAction::BottomFieldFirst));
-      query.bindValue(u8":topFieldOnlyEnumValue", static_cast<int>(FrameAction::TopFieldOnly));
-      query.bindValue(u8":bottomFieldOnlyEnumValue", static_cast<int>(FrameAction::BottomFieldOnly));
-      query.bindValue(u8":progressiveEnumValue", static_cast<int>(FrameAction::Progressive));
+      query.bindValue(u8":discardEnumValue", static_cast<int>(FrameAction::Discard));
+      query.bindValue(u8":keepEnumValue", static_cast<int>(FrameAction::Unknown));
+      query.bindValue(u8":replaceEnumValue", static_cast<int>(FrameAction::Replace));
+      query.bindValue(u8":duplicateEnumValue", static_cast<int>(FrameAction::Duplicate));
+      query.bindValue(u8":triplicateEnumValue", static_cast<int>(FrameAction::Triplicate));
+      query.bindValue(u8":deblendEnumValue", static_cast<int>(FrameAction::Deblend));
 
       // Query is set up and all parameters are bound, now we can execute it
       bool successfullyExecuted = query.exec();
@@ -293,11 +292,14 @@ namespace Nuclex::FrameFixer::Database {
       u8"  id INTEGER PRIMARY KEY,"
       u8"  number INTEGER NOT NULL,"
       u8"  filename NVARCHAR(256) NOT NULL,"
-      u8"  type INTEGER NOT NULL,"
-      u8"  replacementIndex INTEGER,"
+      u8"  mode INTEGER,"
+      u8"  action INTEGER,"
+      u8"  leftIndex INTEGER,"
+      u8"  rightIndex INTEGER,"
       u8"  combedness REAL,"
-      u8"  similarity REAL,"
-      u8"  FOREIGN KEY(type) REFERENCES frameTypes(id)"
+      u8"  similarityToPrevious REAL,"
+      u8"  FOREIGN KEY(mode) REFERENCES deinterlaceModes(id)"
+      u8"  FOREIGN KEY(action) REFERENCES frameActions(id)"
       u8");"
     );
 
@@ -307,6 +309,7 @@ namespace Nuclex::FrameFixer::Database {
 	    u8"  number"
       u8")"
     );
+    // PRAGMA table_info(frames) = (0, 'uid', 'INTEGER', 0, 'User ID');
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -321,7 +324,7 @@ namespace Nuclex::FrameFixer::Database {
     if(!this->database->tables().contains("version")) {
       throw std::runtime_error(
         u8"SQLite frame database has no version table. "
-        u8"This is probably not a CriuGui frame database."
+        u8"This is probably not a Frame Fixer frame database."
       );
     }
 
@@ -346,7 +349,7 @@ namespace Nuclex::FrameFixer::Database {
     if(!versionRowFound) {
       throw std::runtime_error(
         u8"Frame database has no rows in its version table. "
-        u8"This is probably not a CriuGui frame database."
+        u8"This is probably not a Frame Fixer frame database."
       );
     }
 
